@@ -1,0 +1,276 @@
+﻿// Dette skriptet er brukergrensesnittet for import.jsx 
+// Viser et fint panel i InDesign der man kan velge hvilke saker fra prodsys som skal importeres
+
+var importPanel = {};
+
+importPanel.visDialog = function(testing) {
+    var produsertStatus = ["I arbeid", "Overligger", "---", "Til desk", "Gammel desk", "---", "Edit2web", "Web", "Gammel web", "SLETT SAK"];
+    var flaggStatus = ["0", "journalist", "mellomleder", "red.leder", "redaktør"]; // brukes ikke
+    var panelSize = 10; // max antall saker som vises i menyen
+    var importButton = File(dokTools.getScriptFolder() + "/import.png"); // en bildefil for importknappen. Hvis man ikke bruker bilde blir knappen så stor.
+    var windowTitle = "Importer saker" + (testing ? " TESTMODUS" : "");
+    var win = new Window("palette", windowTitle, undefined); // Selve vinduet som GUI vises i
+    win.location = [60, 60]; // hvor på skjermen paletten skal dukke opp
+    if ($.os.match("Macintosh")) {
+        var smallFont = ScriptUI.newFont("Arial", "bold", 9) // litt mindre font enn standardstørrelsen
+    } else {
+        var smallFont = ScriptUI.newFont("Arial", "bold", 9)
+    }
+    var sakstyper = artikkeltyper.liste(); // en array over de ulike sakstypene som artikkeltyper.jsxdev kjenner til
+    var minSak;
+    var prodsysSaker = [];
+    win.panel1 = win.add("panel");
+    win.panel1.orientation = "row";
+    win.panel1.spacing = 0;
+    win.panel1.margins = [2, 2, 2, 2];
+    var listePanel = win.panel1.add("panel", undefined, undefined, {
+        borderStyle: "sunken"
+    });
+    listePanel.alignChildren = "fill";
+    listePanel.margins = [0, 0, 0, 0];
+    listePanel.firstIndex = 0;
+
+    var sortProdsys = function(a, b) { // sorterer sakene etter produsertstatus og navn. Saker med status "Til Desk" havner øverst
+        var svar;
+        if (a.produsert == b.produsert) {
+            svar = a.arbeidstittel > b.arbeidstittel;
+        } else {
+            // svar = (a.produsert==prodsys.tilDeskStatus?-1:a.produsert) > (b.produsert==prodsys.tilDeskStatus?-1:b.produsert);
+            svar = a.produsert > b.produsert;
+        }
+        return svar;
+    }
+
+    listePanel.sjekkProdsys = function() { // henter saker fra prodsys
+        var prodsysSaker = [];
+        try {
+            var prodsysSaker = prodsys.get();
+        } catch (e) {
+            var prodsysSaker = [];
+            alert("Får ikke kontakt med prodsys\n" + e);
+        }
+        prodsysSaker.sort(sortProdsys);
+        listePanel.firstIndex = 0;
+        for (var i = 0; i < prodsysSaker.length; i++) {
+            var minIndex = sakstyper.length - 1;
+            var minSakstype, erTtype;
+            minSak = prodsysSaker[i];
+            minLoop: for (var n = 0; n < sakstyper.length; n += 1) {
+                minSakstype = artikkeltyper[sakstyper[n].toLowerCase()];
+                erType = minSakstype.erType(minSak);
+                if (minSak.produsert == prodsys.tilDeskStatus && listePanel.firstIndex == 0 && prodsysSaker.length > panelSize) {
+                    listePanel.firstIndex = Math.min(i, prodsysSaker.length - panelSize);
+                }
+                if (erType === "mappe") { // gjetter hvilken sakstype det dreier seg om - se artikkeltyper.jsxinc Dette er nødvendig i tilfelle lista over sakstyper i produksjonssystemet ikke er oppdatert.
+                    minIndex = n; // foreløpig gjetting
+                } else if (erType === true) {
+                    minIndex = n; // definitiv gjetting
+                    break minLoop;
+                }
+            }
+            minSak.sakstype = minIndex; // sette hvilken artikkeltype som skal være valgt i rullegardinmenyen på forhånd
+        }
+        return prodsysSaker;
+    }
+
+    listePanel.refresh = function() { // fjerner innholdet i panelet og lager et nytt - i tilfelle antall saker i prodsys er endra eller noe sånt.
+        for (var linje = listePanel.children.length - 1; linje >= 0; linje--) {
+            listePanel.remove(listePanel.children[linje]);
+        }
+        listePanel.create();
+        win.layout.layout(true);
+        listePanel.update(listePanel.firstIndex);
+    }
+
+    listePanel.create = function() {
+        prodsysSaker = listePanel.sjekkProdsys();
+        if (listePanel.scrollbar) {
+            win.panel1.remove(listePanel.scrollbar);
+            listePanel.scrollbar = undefined;
+        }
+        var listSize;
+        if (prodsysSaker.length > panelSize) { // scrollbar hvis sakslista er for lang
+            var myScrollbar = listePanel.scrollbar = win.panel1.add("scrollbar", undefined, listePanel.firstIndex, 0, prodsysSaker.length - panelSize);
+            myScrollbar.alignment = ["right", "fill"];
+            myScrollbar.preferredSize.width = 16;
+            myScrollbar.onChanging = function() {
+                forsteSak = Math.floor(myScrollbar.value);
+                listePanel.update(forsteSak);
+            }
+            myScrollbar.stepdelta = Math.floor(panelSize / 2);
+            myScrollbar.jumpdelta = myScrollbar.stepdelta;
+            listSize = panelSize;
+        } else {
+            listSize = prodsysSaker.length;
+        }
+        for (var linje = 0; linje < listSize; linje++) {
+            var minRad = listePanel.add("group");
+            minRad.prodsysSakerIndex = 0;
+            minRad.spacing = 5; // regulerer hvor trangt det skal være mellom elementene i panelet
+            minRad.margins = [5, -5, 5, -5]; // regulerer hvor trangt det skal være mellom elementene i panelet [venstre,topp,høyre,bunn]
+
+            minRad.produsert = minRad.add("dropdownlist", undefined, produsertStatus); // produsert status
+            minRad.produsert.graphics.font = smallFont;
+            minRad.produsert.alignment = ["right", "top"];
+            minRad.produsert.preferredSize = [90, 16];
+            minRad.produsert.helpTip = "Flytt saken i prodsys";
+
+            minRad.tittel = minRad.add("statictext", undefined, "arbeidstittel", undefined); // arbeidstittel
+            minRad.tittel.alignment = ["left", "top"];
+            minRad.tittel.preferredSize = [225, 16];
+            minRad.tittel.helpTip = "";
+
+            minRad.mappe = minRad.add("dropdownlist", undefined, sakstyper); // sakstype
+            minRad.mappe.graphics.font = smallFont;
+            minRad.mappe.alignment = ["left", "top"];
+            minRad.mappe.preferredSize = [120, 16];
+            minRad.mappe.helpTip = "Velg sakstype før du importerer";
+
+            minRad.button = minRad.add("iconbutton", undefined, importButton, {
+                name: "importer",
+                style: "toolbutton"
+            });
+            minRad.button.alignment = ["right", "top"];
+            minRad.button.preferredSize = [44, 16];
+            minRad.button.helpTip = "importer saken";
+        }
+        listePanel.update();
+    }
+
+    listePanel.update = function(firstIndex) { // firstIndex er indexen på første sak som skal vises i panelet
+        listePanel.firstIndex = (firstIndex === undefined) ? listePanel.firstIndex : firstIndex; // hvis firstIndex er undefined blir ikke indexen endret
+        prodsysSaker.sort(sortProdsys);
+
+        var sidetall;
+        var minRad;
+        var minSak;
+        var backGroundColor;
+        for (var linje = 0; linje < listePanel.children.length; linje++) {
+            minRad = listePanel.children[linje];
+            minRad.prodsysSakerIndex = linje + listePanel.firstIndex;
+            minSak = prodsysSaker[minRad.prodsysSakerIndex];
+            backGroundColor = minSak.produsert == prodsys.tilDeskStatus ? (minRad.prodsysSakerIndex % 2 ? [0.95, 0.95, 0.70] : [1.0, 1.0, 0.65]) : (minRad.prodsysSakerIndex % 2 ? [0.85, 0.85, 0.85] : [0.9, 0.9, 0.9]);
+            minRad.graphics.backgroundColor = minRad.graphics.newBrush(minRad.graphics.BrushType.SOLID_COLOR, backGroundColor);
+
+            // minrad.tittel
+            sidetall = minSak.arbeidstittel.match(/side\s?(\d+)/i);
+            if (sidetall == null) {
+                minRad.tittel.text = minSak.arbeidstittel.substr(0, 35); // arbeidstittel
+            } else {
+                minRad.tittel.text = minSak.arbeidstittel.replace(/side\s?(\d+)/ig, "").substr(0, 26) + " SIDE " + sidetall[1]; // arbeidstittel
+            }
+            minRad.tittel.helpTip = minSak.tekst.substr(0, 200).replace(/@[^:]+:/g, "").replace(/[\r\n]+/g, "\n");
+
+            // minrad.mappe
+            minRad.mappe.enabled = minSak.produsert == prodsys.tilDeskStatus; // knappen er ikke enabled hvis saken ikke er lagt til desk
+            minRad.mappe.onChange = null; // skrur av funksjonen før seleksjonen i dropdownmenyen endres
+            minRad.mappe.selection = minSak.sakstype;
+            minRad.mappe.onChange = function(aktivSak, aktivRad) {
+                return function() {
+                    minSak.sakstype = aktivRad.mappe.selection.index;
+                }
+            }(minSak, minRad);
+
+            // minrad.produsert
+            minRad.produsert.onChange = null; // skrur av funksjonen før seleksjonen i dropdownmenyen endres
+            minRad.produsert.selection = minSak.produsert;
+            minRad.produsert.onChange = function(aktivSak, aktivRad) {
+                return function() {
+                    aktivSak.produsert = aktivRad.produsert.selection.index;
+                    try {
+                        prodsys.post(aktivSak.prodsak_id, '{"produsert":' + aktivSak.produsert + '}');
+                    } catch (e) {
+                        alert("Får ikke oppdatert saken i prodsys\n" + e);
+                    }
+                    listePanel.update();
+                }
+            }(minSak, minRad);
+
+            // minrad.button
+            minRad.button.enabled = minSak.produsert == prodsys.tilDeskStatus; // knappen er ikke enabled hvis saken ikke er lagt til desk
+            minRad.button.onClick = function(aktivSak, aktivRad) { // snedig innpakking av funksjonen for å oppnå "closure" hvis jeg har skjønt det riktig. Det funker i allefall.
+                return function() { // dette er funksjonen som blir utført når importknappen trykkes.
+                    var artikkeltype = artikkeltyper[sakstyper[aktivRad.mappe.selection.index].toLowerCase()]; // henter verdien fra rullegardinmenyen
+                    importerSak(aktivSak, artikkeltype, win.importerbilder.value); // importerer saken og plasserer den på siden.
+                    win.importerbilder.value = true;
+                    aktivSak.produsert = prodsys.gammelDeskStatus;
+                    listePanel.update();
+                }
+            }(minSak, minRad); // kaller funksjonen som nettopp er laget - dette er så snedig at jeg ikke helt har skjønt hvordan det funker selv.
+        }
+    }
+
+    listePanel.create();
+
+    win.gjenopprettSak = function() { // sjekker prodsys om det er noen saker som er klare for import
+        var prodsak_id = win.saks_id.text; // kan inneholde id til en sak 
+        var nysak; // den saken som man ønsker å plassere i lista.
+        if (prodsak_id != "") { // hvis noen har skrevet noe
+            prodsak_id = prodsak_id.match(/\d+/); // finner ut om det er et tall - match returnerer enten en Array med ett tall eller null.
+            if (prodsak_id) {
+                prodsak_id = prodsak_id[0] // match returnerer en Array eller null - men jeg trenger bare det første objektet
+                try {
+                    nysak = prodsys.get(prodsak_id) // spør prodsys etter saken.
+                } catch (e) {
+                    alert("Finnes ikke\nSak nummer " + prodsak_id + " finnes ikke i produksjonssystemet")
+                }
+                if (nysak) {
+                    nysak.produsert = prodsys.tilDeskStatus;
+                    try {
+                        prodsys.post(nysak.prodsak_id, '{"produsert":' + prodsys.tilDeskStatus + '}');
+                    } catch (e) {};
+                    prodsysSaker.push(nysak);
+                }
+            }
+        } else { // hvis tekstfeltet er tomt
+
+        }
+        listePanel.refresh(); // oppdaterer innholdet i listepanelet
+        win.saks_id.text = ""; // tømmer tekstfeltet
+        win.saks_id.active = false; // fjerner fokus fra tekstfeltet
+    }
+
+    win.panel2 = win.add("group", undefined, undefined); // gruppe med kontroller nederst i vinduet
+
+    // importer bilder
+    win.importerbilder_label = win.panel2.add("statictext", undefined, "plasser bilder:");
+    win.importerbilder = win.panel2.add("checkbox");
+    win.importerbilder.value = true;
+
+    // Ruta "prodsak_id:"
+    win.saks_id_label = win.panel2.add("statictext", undefined, "prodsak_id:");
+    win.saks_id = win.panel2.add("edittext", undefined, "", {
+        enterKeySignalsOnChange: true
+    }); // tekstfelt der man kan skrive in id
+    win.saks_id.characters = 5;
+    win.saks_id.onChange = function() { // hvis man skriver et tall og trykker enter
+        win.gjenopprettSak();
+        win.saks_id.active = true; // setter fokus tilbake i feltet så man fort kan hente inn flere saker
+    }
+    win.saks_id.helpTip = "Flytt en slettet sak tilbake til prodsys";
+
+    // Knappen "Sjekk prodsys"
+    win.hentSakerBtn = win.panel2.add("button", undefined, "Sjekk prodsys", undefined); // en knapp
+    win.hentSakerBtn.helpTip = "Oppdater sakslista fra prodsys";
+    win.hentSakerBtn.onClick = win.gjenopprettSak; // spør prodsys etter nye saker til menyen
+
+    // Knappen "Lukk"
+    win.lukkMegBtn = win.panel2.add("button", undefined, "Lukk", undefined); // knapp som lukker vinduet.
+    win.lukkMegBtn.helpTip = "Lukk dette vinduet"
+    win.lukkMegBtn.onClick = function() {
+        win.close(); // lukker vinduet
+    }
+
+    win.show(); // viser vinduet i InDesign
+}
+
+// for testing av importPanel.jsxinc
+//~ #include prodsys.jsxinc
+//~ #include dokTools.jsxinc
+//~ #include config.jsxinc
+//~ #include artikkeltyper.jsxinc
+
+//~ function importerSak(JSONsak,artikkeltype){
+//~ 	alert("sak: "+JSONsak.arbeidstittel+"\n"+artikkeltype.name);
+//~ }
+//~ importPanel.visDialog();

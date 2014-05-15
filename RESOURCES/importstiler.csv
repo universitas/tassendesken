@@ -1,0 +1,41 @@
+name,mappe,byline,bylineboks,epostbyline,temaord,seksjon,trynebilde,autolayout,@tit,@stikktit,@ing,@mt,@navn,@txt,@spm,@bl,@ill,@bt,@fakta,@fak1,@fak2,@fak3,@fak4,@sitat,@sitatbyline,@slagord,@temaord,@webtema,@plak,@plakdag,@plaktxt,@beskjed,@epost,@kom,@tingo
+50 år siden,år,,,,,Nyhet,,,SLETT,,,,,D hermetegn,,,,,,D kilde,,,,,,,SLETT,,,,,,,,D txt 1
+Ad notam,adnotam,,,,,Bakside,,,B tit adnotam,,,B mt adnotam,,,,,,,,,,,,,,,SLETT,,,,,,,,D txt 1
+Anmeldelse (liten),anmeldelser,Navn Navnesen,,anmeldelser@universitas.no,???,Anmeldelser,,,D tit 30,,,,,D txt 1,,A signatur,,,,P anmtit,P anminfo,P anminfo,P anminfo,,,,A temaord,,,,,,,,D txt 1
+Anmeldelse (stor),hovedanmeldelse,Navn Navnesen,,anmeldelser@universitas.no,???,Anmeldelser,,,D tit 60,,,,,D txt 0 initial 3 linjer,,A signatur,,,A txt 1,P anmtit,P anminfo,P anminfo,P anminfo,,,,A temaord,,,,,,,,D txt 1
+Bakpå nyhetene,frampeik,,,,,Side2,,,D web mt,,,,,D web txt 1,,,,,,,,,,,,,SLETT,,,,,,,D kilde,D txt 1
+Ekspertintervjuet,omverden,Navn Navnesen,,universitas@universitas.no,,Omverden,,TRUE,N tit 30,,A ingress,,,,,A bl høyre,,,,,,,,,,,SLETT,,,,,,,,
+Fem på plassen,fempaaplassen,,,,,Nyhet,,,SLETT,,A 5påplassen spørsmål,A 5påplassen navn,,A 5påplassen,,A fotobyline,,A fotobyline,,,,,,,,,SLETT,,,,,,,,D txt 1
+Forside (hovedsak),forside,,,,,Forside,,TRUE,F tit,F stikktit,F ingress,,,F ingress,,,,,,,,,,,,,SLETT,,,,,,,,D txt 1
+Forside (stolpe),forsidestolpe,,,,,Forside,,,F tit,F stikktit,F ingress,,,F ingress,,,,,,,,,,,,,SLETT,,,,,,,,D txt 1
+Kommentar,kommentar,Navn Navnesen; Ansatt i Universitas,kommentar,debatt@universitas.no,kommentar,Side2,TRUE,TRUE,D tit 80,D stikktit stor,D stikktit stor,,,D txt 0 initial 4 linjer,,D bl,,A fotobyline,,,,,,,,,SLETT,,,,,,,,D txt 1
+Kronikk,kronikk,Navn Navnesen; Ansatt i Universitas,kommentar,,kronikk,Debatt,TRUE,TRUE,D tit 60,D stikktit stor,D stikktit stor,,,D txt 0 initial 3 linjer,,D bl,,,,,,,,,,,A temaord,,,,,,,,D txt 1
+Kultur,kultur,Navn Navnesen,kultur,kulturredaksjonen@universitas.no,???,Kultur,,TRUE,K tit 60,K stikktit,,,,,,A bl,,,,A faktatxt,A faktakilde,,,,,,A temaord,,,,,,,,D txt 1
+Kultur undersak,,,,kulturredaksjonen@universitas.no,,Kultur,,TRUE,K undersaktittel,K stikktit,,,,,,A bl,,,,A faktatxt,A faktakilde,,,,,,A temaord,,,,,,,,D txt 1
+Kulturkommentar,kulturkommentar,Navn Navnesen; Ansatt i Universitas,kulturkommentar,debatt@universitas.no,kommentar,Kultur,TRUE,TRUE,D tit 80,D stikktit stor,D stikktit stor,,,D txt 0 initial 4 linjer,,D bl,,A fotobyline,,,,,,,,,A temaord,,,,,,,,D txt 1
+Kulturnotis,kulturnotis,,,,,Kultur,,,K tit notis,,,,,K notis,,,,,,,,,,,,,K notis,,,,,,,,D txt 1
+Leder,leder,,,,,Side2,,,D leder tit,,,,,D leder txt 0,,SLETT,,,,,,,,,,,SLETT,,,,,,,,D txt 1
+Leserbrev,leserbrev,Navn Navnesen; Ansatt i Universitas,leserbrev,,???,Debatt,TRUE,,D innleggtit,,,,,D txt 1,,D bl,,,,,,,,A sitat liten,,,A temaord,,,,,,,,D txt 1
+Magasin,magasin,Navn Navnesen,,magasin@universitas.no,???,Magasin,,TRUE,M tit 120,M stikktit,M ing,,,A txt 1 tingo,,M bl,,M bt,M faktatit,M faktatxt,M faktakilde,,,M sitat,,,M bl,,,,,,,,A txt 1 tingo
+Magasin undersak,,,,magasin@universitas.no,???,Nyhet,,TRUE,M tit 60,M stikktit,,,,A txt 1 tingo,,M bl,,M bt,M faktatit,M faktatxt,M faktakilde,,,M sitat stor,,,SLETT,,,,,,,,A txt 1 tingo
+Masterintervjuet,masterintervjuet,Navn Navnesen,,kulturredaksjonen@universitas.no,,Kultur,,TRUE,K tit 35,K minstudietid,A ingress,,,,,A bl høyre,,,,,,,,A sitat liten,,,SLETT,,,,,,,,D txt 1
+Min Studietid,minstudietid,Navn Navnesen,,magasin@universitas.no,,Kultur,,TRUE,K tit 35,,K minstudietid,,,,,A bl høyre,,,,,,,,A sitat liten,,,SLETT,,,,,,,,D txt 1
+Nettdebatt,web,,,,,Debatt,,,SLETT,,,D web mt,,D web txt 1,,,,,D web info,D web info,,,,,,,SLETT,,,,,,,D web info,D txt 1
+News,news,,,,,Nyhet,,,N tit notis,,,,,N notis,,A signatur,,,,,,,,,,,SLETT,,,,,,,,D txt 1
+Nyhet,nyhet,Navn Navnesen,nyhet,universitas@universitas.no,???,Nyhet,,TRUE,N tit 60,N stikktit,,,,,,A bl,,,,A faktatxt,A faktakilde,,,,,,A temaord,,,,,,,,A txt 1 tingo
+Nyhet undersak,,,,universitas@universitas.no,,Nyhet,,TRUE,N undersaktittel,N stikktit,,,,,,A bl,,,,A faktatxt,A faktakilde,,,,,,A temaord,,,,,,,,A txt 1 tingo
+Nyhetsnotis,nyhetsnotis,,,,,Nyhet,,,N tit notis,,,,,N notis,,,,,,,,,,,,,N notis,,,,,,,,A txt 1 tingo
+Petit,petit,,,,,Kultur,,,D tit 30,,,,,D txt 0 initial 3 linjer,,A signatur,,,,,,,,A sitat liten,,,SLETT,,,,,,,,D txt 1
+Plakaten,plakaten,,,,,Anmeldelser,,,SLETT,,,,,P plaktxt,,,,,,P anmtit,,,,,,,SLETT,,,P plakdag,P plaktxt,,,,D txt 1
+Quiz,quiz,,,,,Bakside,,,A temaord,,,,,B quiz,,A bl høyre av,,,,B quizsvar,,,,,,,A temaord,,,,,,,,D txt 1
+Rebus,rebus,,,,,Bakside,,,SLETT,,,,,B hint,,A bl høyre av,,,,,,,,,,,SLETT,,,,,,,,D txt 1
+Signert,signert,Navn Navnesen; Ansatt i Universitas,kommentar,debatt@universitas.no,signert,Side2,TRUE,,D tit 30,D stikktit liten,D stikktit liten,,,D txt 0 initial 3 linjer,,D bl,,,,,,,,A sitat liten,,,A temaord,,,,,,,,D txt 1
+Sitatet,sitatet,,,,,Debatt,,,SLETT,,,,,A sitat stor,,A sitatbyline,A sitatbyline,,,,,,,A sitat stor,,,SLETT,,,,,,,,D txt 1
+SMS,sms,,,,,Debatt,,,SLETT,,,D sms,,D sms,,,,,,,,,,,,,SLETT,,,,,,,,D txt 1
+Twitter,twitter,,,,,Side2,,,SLETT,,,,,D twitter,,,,,D twitter 2,D twitter 2,,,,,,,SLETT,,,,,,,,D txt 1
+Ukas Advarsel,advarsel,Navn Navnesen; Ansatt i Universitas,,,,Anmeldelser,TRUE,,K tit notis,,,,,A txt grotesk 1,,D bl,,,,P anmtit,P anminfo,P anminfo,P anminfo,,,,SLETT,,,,,,,,D txt 1
+Ukas Anbefaling,utvalgte,Navn Navnesen; Ansatt i Universitas,,,,Anmeldelser,TRUE,,K tit notis,,,,,A txt grotesk 1,,D bl,,,,P anmtit,P anminfo,P anminfo,P anminfo,,,,SLETT,,,,,,,,D txt 1
+Vi spør,vispor,Navn Navnesen,,baksiden@universitas.no,,Bakside,,TRUE,B tit vispør,,A spørsmål,,A ingress,A txt 2,,A bl høyre,,,,,,,,A sitat liten,,,SLETT,,,,,,,,A txt 1 tingo
+Øyeblikket,oyeblikket,av Navn Navnesen,,,,Side2,,,SLETT,,,,,A bt,,A bl høyre av,,,,,,,,,,,SLETT,,,,,,,,D txt 1
+Reportasje,studietid,Navn Navnesen,kultur,reportasje@universitas.no,???,Kultur,,TRUE,K tit reportasje,K stikktit,,,,A txt 1,,A bl,,,,A faktatxt,A faktakilde,,,,,,A temaord,,,,,,,,A txt 1 tingo
+Annet,annet,Navn Navnesen,nyhet,universitas@universitas.no,???,Nyhet,,,N tit 60,A ingress,A ingress,A mt,D bl,A txt 1,A spørsmål,A signatur,A fotobyline,A bt,A faktatit,P anmtit,P anminfo,P anminfo,P anminfo,A sitat,A sitatbyline,B tit adnotam,A temaord,A temaord,N tit 60,P plakdag,P plaktxt,D kilde,A epost,D kilde,D txt 1

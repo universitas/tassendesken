@@ -1,0 +1,6 @@
+﻿// Diverse konstanter for å konfigurere skriptene. De fleste trivielle endringer skal kunne gjøres i denne fila.
+// Oppstartskriptene bruker ikke denne config-fila, så de må endres for seg.
+
+config.api.URL = "HEMMELIG"; // url til webapi
+config.api.USER = "HEMMELIG"; // brukernavn til webapi
+config.api.PASSWORD = "HEMMELIG"; // passord til webapi

@@ -1,0 +1,13 @@
+# Mac
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Sublime Text
+*.sublime-*
+
+# Secret passwords and stuff
+config_user.jsxinc
