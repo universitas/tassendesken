@@ -9,315 +9,316 @@ var artikkeltyper = {};
 var minArtikkeltype = {};
 
 artikkeltyper.liste = function() { // returnerer et objekt som inneholder en array over artikkeltypenavn og en array av selve artikkeltype-objektet. Brukes for å lage rullegardinmenyer i dialogboksen i import.jsx
-    var resultat = [];
-    for (var element in this) { // this = objektet artikkeltyper
-        if (this[element] instanceof Artikkeltype) {
-            resultat.push(this[element].name);
-        }
+  var resultat = [];
+  for (var element in this) { // this = objektet artikkeltyper
+    if (this[element] instanceof Artikkeltype) {
+      resultat.push(this[element].name);
     }
-    return resultat;
-}
+  }
+  return resultat;
+};
 
 
 artikkeltyper.nyBylineBoks = function(targetStory, seksjon, tabellInnhold) {
-    var myDocument = targetStory.parent;
-    var myTextFrame = targetStory.textContainers[0];
-    var tablewidth = 46;
-    var insetSpacing;
-    var trynebilde = null;
-    var keyWord = "<RIGHTTAB>";
-    if (myTextFrame instanceof TextFrame) {
-        insetSpacing = myTextFrame.textFramePreferences.insetSpacing;
-        insetSpacing = (insetSpacing instanceof Array) ? insetSpacing[1] + insetSpacing[3] : insetSpacing * 2;
-        tablewidth = ((myTextFrame.geometricBounds[3] - myTextFrame.geometricBounds[1] - insetSpacing) - ((myTextFrame.textFramePreferences.textColumnCount - 1) * myTextFrame.textFramePreferences.textColumnGutter)) / myTextFrame.textFramePreferences.textColumnCount;
-    }
-    switch (seksjon) {
-        case "kultur":
-        case "nyhet":
-            if (tabellInnhold.length > 1) { // slår sammen alle bylines til en celle
-                var bylineCellInnhold = tabellInnhold.slice(1).join("\r");
-                bylineCellInnhold = bylineCellInnhold.replace(/\s*:\s*/g, "\t"); // bytter ut kolon med tabulator
-                tabellInnhold = [tabellInnhold[0], bylineCellInnhold];
-            }
+  var myDocument = targetStory.parent;
+  var myTextFrame = targetStory.textContainers[0];
+  var tablewidth = 46;
+  var insetSpacing;
+  var trynebilde = null;
+  var keyWord = "<RIGHTTAB>";
+  if (myTextFrame instanceof TextFrame) {
+    insetSpacing = myTextFrame.textFramePreferences.insetSpacing;
+    insetSpacing = (insetSpacing instanceof Array) ? insetSpacing[1] + insetSpacing[3] : insetSpacing * 2;
+    tablewidth = ((myTextFrame.geometricBounds[3] - myTextFrame.geometricBounds[1] - insetSpacing) - ((myTextFrame.textFramePreferences.textColumnCount - 1) * myTextFrame.textFramePreferences.textColumnGutter)) / myTextFrame.textFramePreferences.textColumnCount;
+  }
+  switch (seksjon) {
+    case "kultur":
+    case "nyhet":
+      if (tabellInnhold.length > 1) { // slår sammen alle bylines til en celle
+        var bylineCellInnhold = tabellInnhold.slice(1).join("\r");
+        bylineCellInnhold = bylineCellInnhold.replace(/\s*:\s*/g, "\t"); // bytter ut kolon med tabulator
+        tabellInnhold = [tabellInnhold[0], bylineCellInnhold];
+      }
 
-            targetStory.insertionPoints[0].contents = "\r" // legger til et tomt avsnitt på starten av teksten
-            var myTableStyle = dokTools.velgStil(myDocument, "table", "bylineboks"); // finner riktig tablestyle for tabellen
-            var myHeaderCellStyle = dokTools.velgStil(myDocument, "cell", ("header " + seksjon.toUpperCase())); // finner riktig cellstyle for header - avhenging av seksjonstype
-            var myAvsnittstil = dokTools.velgStil(myDocument, "paragraph", "A bylineboks"); // finner riktig paragraphstyle for boksen i parent story
-            var myTable = targetStory.insertionPoints[0].tables.add({
-                columnCount: 1,
-                bodyRowCount: tabellInnhold.length
-            }); // legger til tabell i storyen
-            myTable.width = tablewidth; // setter bredde på tabellen
-            targetStory.insertionPoints[0].appliedParagraphStyle = myAvsnittstil; // setter Paragraphstyle
-            myTable.appliedTableStyle = myTableStyle; // setter Tablestyle
-            myTable.cells[0].appliedCellStyle = myHeaderCellStyle; // setter Cellstyle for header-cellen
-            myTable.contents = tabellInnhold; // putter alt innholdet inn i tabellen i hver sin celle
-            myTable.cells.everyItem().clearCellStyleOverrides(); // fjerner overrides
-            for (i = 1; i < myTable.cells.length; i++) {
-                myCell = myTable.cells[i];
-                if (!myCell.contents.match(/\t/)) {
-                    if (myCell.contents.match(/(foto)/i)) {
-                        myCell.contents = "foto\t" + myCell.contents.replace(/\(foto\)/i, "");
-                    } else {
-                        myCell.contents = "tekst\t" + myCell.contents;
-                    }
-                }
-            }
-            break;
+      targetStory.insertionPoints[0].contents = "\r"; // legger til et tomt avsnitt på starten av teksten
+      var myTableStyle = dokTools.velgStil(myDocument, "table", "bylineboks"); // finner riktig tablestyle for tabellen
+      var myHeaderCellStyle = dokTools.velgStil(myDocument, "cell", ("header " + seksjon.toUpperCase())); // finner riktig cellstyle for header - avhenging av seksjonstype
+      var myAvsnittstil = dokTools.velgStil(myDocument, "paragraph", "A bylineboks"); // finner riktig paragraphstyle for boksen i parent story
+      var myTable = targetStory.insertionPoints[0].tables.add({
+        columnCount: 1,
+        bodyRowCount: tabellInnhold.length
+      }); // legger til tabell i storyen
+      myTable.width = tablewidth; // setter bredde på tabellen
+      targetStory.insertionPoints[0].appliedParagraphStyle = myAvsnittstil; // setter Paragraphstyle
+      myTable.appliedTableStyle = myTableStyle; // setter Tablestyle
+      myTable.cells[0].appliedCellStyle = myHeaderCellStyle; // setter Cellstyle for header-cellen
+      myTable.contents = tabellInnhold; // putter alt innholdet inn i tabellen i hver sin celle
+      myTable.cells.everyItem().clearCellStyleOverrides(); // fjerner overrides
+      for (i = 1; i < myTable.cells.length; i++) {
+        myCell = myTable.cells[i];
+        if (!myCell.contents.match(/\t/)) {
+          if (myCell.contents.match(/(foto)/i)) {
+            myCell.contents = "foto\t" + myCell.contents.replace(/\(foto\)/i, "");
+          } else {
+            myCell.contents = "tekst\t" + myCell.contents;
+          }
+        }
+      }
+      break;
 
-        case "leserbrev":
-            targetStory.insertionPoints[0].contents = "\r"
-            var mellomlegg = 2;
-            var trynesize = config.trynesize.innlegg; // {width: x; height; y}
-            var myTableStyle = dokTools.velgStil(myDocument, "table", "bylineboks DEBATT");
-            var myHeaderCellStyle = dokTools.velgStil(myDocument, "cell", "header DEBATT");
-            var tryneCellStyle = dokTools.velgStil(myDocument, "cell", "tryne");
-            var myTryneObjectStyle = dokTools.velgStil(myDocument, "object", "[None]");
-            var myAvsnittstil = dokTools.velgStil(myDocument, "paragraph", "D innleggboks");
-            var myTable;
-            var tryneCell;
-            var x1, x2, y1, y2; // geometricBounds for trynebildet
-            myTable = targetStory.insertionPoints[0].tables.add({
-                columnCount: 2,
-                bodyRowCount: tabellInnhold.length
-            }) // to kolonner, en rad mindre enn 
-            myTable.width = tablewidth;
-            //targetStory.insertionPoints[0].contents=keyWord;// legger til et mellomrom, sånn at avsnittstilen skal funke riktig BRUKES IKKE LENGER
-            targetStory.insertionPoints[0].appliedParagraphStyle = myAvsnittstil;
-            tabellInnhold = [""].concat(tabellInnhold) // en tom celle der trynebilde skal være;
-            myTable.columns[0].merge(); // slår sammen alle cellene i kolonne 1
-            tryneCell = myTable.cells[0];
-            tryneCell.appliedCellStyle = tryneCellStyle; // myTable.cells[0] er cellen der trynebildet skal være;
-            tryneCell.height = trynesize.height;
-            tryneCell.width = trynesize.width + mellomlegg;
-            myTable.cells[1].width = tablewidth - tryneCell.width;
-            myTable.cells[1].appliedCellStyle = myHeaderCellStyle;
-            myTable.appliedTableStyle = myTableStyle;
-            myTable.cells.everyItem().clearCellStyleOverrides();
-            myTable.contents = tabellInnhold;
-            trynebilde = tryneCell.texts[0].rectangles.add();
-            trynebilde.contentType = ContentType.graphicType;
-            trynebilde.appliedObjectStyle = myTryneObjectStyle;
-            trynebilde.geometricBounds = [trynebilde.geometricBounds[0], trynebilde.geometricBounds[1], trynebilde.geometricBounds[0] + tryneCell.height, trynebilde.geometricBounds[1] + tryneCell.width - mellomlegg];
-            break;
+    case "leserbrev":
+      targetStory.insertionPoints[0].contents = "\r";
+      var mellomlegg = 2;
+      var trynesize = config.trynesize.innlegg; // {width: x; height; y}
+      var myTableStyle = dokTools.velgStil(myDocument, "table", "bylineboks DEBATT");
+      var myHeaderCellStyle = dokTools.velgStil(myDocument, "cell", "header DEBATT");
+      var tryneCellStyle = dokTools.velgStil(myDocument, "cell", "tryne");
+      var myTryneObjectStyle = dokTools.velgStil(myDocument, "object", "[None]");
+      var myAvsnittstil = dokTools.velgStil(myDocument, "paragraph", "D innleggboks");
+      var myTable;
+      var tryneCell;
+      var x1, x2, y1, y2; // geometricBounds for trynebildet
+      myTable = targetStory.insertionPoints[0].tables.add({
+        columnCount: 2,
+        bodyRowCount: tabellInnhold.length
+      });// to kolonner, en rad mindre enn 
+      myTable.width = tablewidth;
+      //targetStory.insertionPoints[0].contents=keyWord;// legger til et mellomrom, sånn at avsnittstilen skal funke riktig BRUKES IKKE LENGER
+      targetStory.insertionPoints[0].appliedParagraphStyle = myAvsnittstil;
+      tabellInnhold = [""].concat(tabellInnhold);// en tom celle der trynebilde skal være;
+      myTable.columns[0].merge(); // slår sammen alle cellene i kolonne 1
+      tryneCell = myTable.cells[0];
+      tryneCell.appliedCellStyle = tryneCellStyle; // myTable.cells[0] er cellen der trynebildet skal være;
+      tryneCell.height = trynesize.height;
+      tryneCell.width = trynesize.width + mellomlegg;
+      myTable.cells[1].width = tablewidth - tryneCell.width;
+      myTable.cells[1].appliedCellStyle = myHeaderCellStyle;
+      myTable.appliedTableStyle = myTableStyle;
+      myTable.cells.everyItem().clearCellStyleOverrides();
+      myTable.contents = tabellInnhold;
+      trynebilde = tryneCell.texts[0].rectangles.add();
+      trynebilde.contentType = ContentType.graphicType;
+      trynebilde.appliedObjectStyle = myTryneObjectStyle;
+      trynebilde.geometricBounds = [trynebilde.geometricBounds[0], trynebilde.geometricBounds[1], trynebilde.geometricBounds[0] + tryneCell.height, trynebilde.geometricBounds[1] + tryneCell.width - mellomlegg];
+      break;
 
-        case "kommentar":
-        case "kulturkommentar":
-            targetStory.insertionPoints[0].contents = "\r";
-            var headerHeight = 8; // høyden på headerbolk i millimeter
-            var trynesize = config.trynesize.kommentar; // {width: x; height; y}
-            var myTableStyle = dokTools.velgStil(myDocument, "table", "bylineboks DEBATT");
-            var myHeaderCellStyle = dokTools.velgStil(myDocument, "cell", "header " + seksjon.toUpperCase());
-            var tryneCellStyle = dokTools.velgStil(myDocument, "cell", "tryne_stor");
-            var myTryneObjectStyle = dokTools.velgStil(myDocument, "object", "bylinebilde kommentar");
-            var myAvsnittstil = dokTools.velgStil(myDocument, "paragraph", "D bylineboks");
-            var myTable;
-            var tryneCell;
-            var x1, x2, y1, y2; // geometricBounds for trynebildet
-            myTable = targetStory.insertionPoints[0].tables.add({
-                columnCount: 2,
-                bodyRowCount: tabellInnhold.length
-            }) // to kolonner, en rad mindre enn 
-            tabellInnhold = [tabellInnhold[0], ""].concat(tabellInnhold.slice(1)) // en tom celle der trynebilde skal være;
-            myTable.width = myTextFrame.textFramePreferences.textColumnFixedWidth;
-            targetStory.insertionPoints[0].appliedParagraphStyle = myAvsnittstil;
-            //myTable.columns[1].merge();
-            tryneCell = myTable.cells[3];
-            tryneCell2 = myTable.cells[1];
-            tryneCell.appliedCellStyle = tryneCellStyle; // myTable.cells[1] er cellen der trynebildet skal være;
-            tryneCell2.appliedCellStyle = tryneCellStyle; // myTable.cells[3] er en ekstra celle ovenfor den andre.
-            tryneCell.height = trynesize.height - trynesize.toppen - headerHeight;
-            tryneCell.width = trynesize.width;
-            myTable.cells[0].width = tablewidth - tryneCell.width;
-            myTable.cells[0].height = headerHeight;
-            myTable.cells[0].appliedCellStyle = myHeaderCellStyle;
-            myTable.appliedTableStyle = myTableStyle;
-            myTable.cells.everyItem().clearCellStyleOverrides();
-            myTable.contents = tabellInnhold;
-            trynebilde = tryneCell.texts[0].rectangles.add();
-            trynebilde.contentType = ContentType.graphicType;
-            trynebilde.appliedObjectStyle = myTryneObjectStyle;
-            trynebilde.geometricBounds = [trynebilde.geometricBounds[0], trynebilde.geometricBounds[1], trynebilde.geometricBounds[0] + trynesize.height, trynebilde.geometricBounds[1] + tryneCell.width];
-            break;
+    case "kommentar":
+    case "kulturkommentar":
+      targetStory.insertionPoints[0].contents = "\r";
+      var headerHeight = 8; // høyden på headerbolk i millimeter
+      var trynesize = config.trynesize.kommentar; // {width: x; height; y}
+      var myTableStyle = dokTools.velgStil(myDocument, "table", "bylineboks DEBATT");
+      var myHeaderCellStyle = dokTools.velgStil(myDocument, "cell", "header " + seksjon.toUpperCase());
+      var tryneCellStyle = dokTools.velgStil(myDocument, "cell", "tryne_stor");
+      var myTryneObjectStyle = dokTools.velgStil(myDocument, "object", "bylinebilde kommentar");
+      var myAvsnittstil = dokTools.velgStil(myDocument, "paragraph", "D bylineboks");
+      var myTable;
+      var tryneCell;
+      var x1, x2, y1, y2; // geometricBounds for trynebildet
+      myTable = targetStory.insertionPoints[0].tables.add({
+        columnCount: 2,
+        bodyRowCount: tabellInnhold.length
+      });// to kolonner, en rad mindre enn 
+      tabellInnhold = [tabellInnhold[0], ""].concat(tabellInnhold.slice(1));// en tom celle der trynebilde skal være;
+      myTable.width = myTextFrame.textFramePreferences.textColumnFixedWidth;
+      targetStory.insertionPoints[0].appliedParagraphStyle = myAvsnittstil;
+      //myTable.columns[1].merge();
+      tryneCell = myTable.cells[3];
+      tryneCell2 = myTable.cells[1];
+      tryneCell.appliedCellStyle = tryneCellStyle; // myTable.cells[1] er cellen der trynebildet skal være;
+      tryneCell2.appliedCellStyle = tryneCellStyle; // myTable.cells[3] er en ekstra celle ovenfor den andre.
+      tryneCell.height = trynesize.height - trynesize.toppen - headerHeight;
+      tryneCell.width = trynesize.width;
+      myTable.cells[0].width = tablewidth - tryneCell.width;
+      myTable.cells[0].height = headerHeight;
+      myTable.cells[0].appliedCellStyle = myHeaderCellStyle;
+      myTable.appliedTableStyle = myTableStyle;
+      myTable.cells.everyItem().clearCellStyleOverrides();
+      myTable.contents = tabellInnhold;
+      trynebilde = tryneCell.texts[0].rectangles.add();
+      trynebilde.contentType = ContentType.graphicType;
+      trynebilde.appliedObjectStyle = myTryneObjectStyle;
+      trynebilde.geometricBounds = [trynebilde.geometricBounds[0], trynebilde.geometricBounds[1], trynebilde.geometricBounds[0] + trynesize.height, trynebilde.geometricBounds[1] + tryneCell.width];
+      break;
 
-        case "signatur":
-            var avsnittstil = dokTools.velgStil(myDocument, "paragraph", "A signatur");
-            for (var n = 1; n < tabellInnhold.length - 1; n++) {
-                targetStory.insertionPoints[-1].appliedCharacterStyle = myDocument.characterStyles[0]; //no character style
-                targetStory.insertionPoints[-1].contents = "\r" + tabellInnhold[1];
-                targetStory.paragraphs[-1].appliedParagraphStyle = avsnittstil;
-            }
-            break;
+    case "signatur":
+      var avsnittstil = dokTools.velgStil(myDocument, "paragraph", "A signatur");
+      for (var n = 1; n < tabellInnhold.length - 1; n++) {
+        targetStory.insertionPoints[-1].appliedCharacterStyle = myDocument.characterStyles[0]; //no character style
+        targetStory.insertionPoints[-1].contents = "\r" + tabellInnhold[1];
+        targetStory.paragraphs[-1].appliedParagraphStyle = avsnittstil;
+      }
+      break;
 
-        default:
-            break;
-    }
-    return trynebilde;
-}
+    default:
+      break;
+  }
+  return trynebilde;
+};
 
 var Artikkeltype = function() { // prototype for artikkeltype
-    this.epostbyline = null // ingen epostbyline pr default
-    this.bylineboks = null // ingen bylineboks
-    this.autolayout = "" // skal saken få automatisk layout med bilder og dill?
-    this.seksjonsmappe = "." // mappa der bildene til saken skal være
-    this.mappe = "Annet"; // prodsys sitt navn på sakstypen
-    this.name = "Annet"; // dette scriptets navn på sakstypen
-    this.undersak = "Annet"; // sakstypen for undersak
-    this.erType = function(myJSON) {
-        return (this.mappe === myJSON.mappe ? "mappe" : false);
-    }; // returns true hvis myString trolig er denne artikkeltypen. Denne metoden kan være nyttig hvis prodsys sine artikkeltyper ("mapper") ikke stemmer helt overens med de som faktisk brukes i avisa.
-    this.taGrep = function(myString) {
-        return myString
-    }; // gjør diverse GREP (regular expressions/søk og erstatt og lignende) med råteksten 
-    this.gjorKlar = function(minArtikkel) {
-        return true;
-    }; // funksjon som gjør siden klar for å plassere artikkelen (trengs kun for noen spesielle sakstyper)
-    this.opprydding = function(minPageItem) { // funksjon som rydder opp hver enkel tekstramme i en sak
-        if (this.autolayout == "TRUE") {
-            if (minPageItem.constructor.name == "TextFrame") {
-                dokTools.removeWhiteSpace(minPageItem.parentStory);
-                if (minPageItem.parentStory.lines.length > 1) {
-                    minPageItem.fit(FitOptions.FRAME_TO_CONTENT);
-                }
-                if (minPageItem.parentStory.contents == "") {
-                    minPageItem.remove();
-                    return false;
-                }
-                app.select(minPageItem, SelectionOptions.addTo);
-            }
+  this.epostbyline = null; // ingen epostbyline pr default
+  this.bylineboks = null; // ingen bylineboks
+  this.autolayout = ""; // skal saken få automatisk layout med bilder og dill?
+  this.seksjonsmappe = "."; // mappa der bildene til saken skal være
+  this.mappe = "Annet"; // prodsys sitt navn på sakstypen
+  this.name = "Annet"; // dette scriptets navn på sakstypen
+  this.undersak = "Annet"; // sakstypen for undersak
+  this.erType = function(myJSON) {
+    return (this.mappe === myJSON.mappe ? "mappe" : false);
+  }; // returns true hvis myString trolig er denne artikkeltypen. Denne metoden kan være nyttig hvis prodsys sine artikkeltyper ("mapper") ikke stemmer helt overens med de som faktisk brukes i avisa.
+  this.taGrep = function(myString) {
+    return myString;
+  }; // gjør diverse GREP (regular expressions/søk og erstatt og lignende) med råteksten 
+  this.gjorKlar = function(minArtikkel) {
+    return true;
+  }; // funksjon som gjør siden klar for å plassere artikkelen (trengs kun for noen spesielle sakstyper)
+  this.opprydding = function(minPageItem) { // funksjon som rydder opp hver enkel tekstramme i en sak
+    if (this.autolayout == "TRUE") {
+      if (minPageItem.constructor.name == "TextFrame") {
+        dokTools.removeWhiteSpace(minPageItem.parentStory);
+        if (minPageItem.parentStory.lines.length > 1) {
+          minPageItem.fit(FitOptions.FRAME_TO_CONTENT);
         }
-        return true;
+        if (minPageItem.parentStory.contents === "") {
+          minPageItem.remove();
+          return false;
+        }
+        app.select(minPageItem, SelectionOptions.addTo);
+      }
     }
-    this.lagBylineboks = function(targetStory, tabellInnhold) { // funksjon som lager bylineboks 
-        return artikkeltyper.nyBylineBoks(targetStory, this.bylineboks, tabellInnhold);
-    }
-}
+    return true;
+  };
+  this.lagBylineboks = function(targetStory, tabellInnhold) { // funksjon som lager bylineboks 
+    return artikkeltyper.nyBylineBoks(targetStory, this.bylineboks, tabellInnhold);
+  };
+};
 
 
 for (var n = 1; n < artikkelTypeArray.length; n++) {
-    minArtikkeltype = new Artikkeltype();
-    for (var m = 0; m < artikkelTypeArray[n].length; m++) {
-        minArtikkeltype[artikkelTypeArray[0][m]] = artikkelTypeArray[n][m];
-    }
-    artikkeltyper[minArtikkeltype.name.toLowerCase()] = minArtikkeltype;
+  minArtikkeltype = new Artikkeltype();
+  for (var m = 0; m < artikkelTypeArray[n].length; m++) {
+    minArtikkeltype[artikkelTypeArray[0][m]] = artikkelTypeArray[n][m];
+  }
+  artikkeltyper[minArtikkeltype.name.toLowerCase()] = minArtikkeltype;
 }
 
+// TODO gjør om til switch / case, så blir linteren glad.
 
 with(artikkeltyper["nyhet"]) {
-    undersak = "nyhet undersak";
+  undersak = "nyhet undersak";
 }
 
 with(artikkeltyper["nyhet undersak"]) {
-    undersak = "nyhet undersak";
+  undersak = "nyhet undersak";
 }
 
 with(artikkeltyper["kultur"]) {
-    undersak = "kultur undersak";
+  undersak = "kultur undersak";
 }
 
 with(artikkeltyper["kultur undersak"]) {
-    undersak = "kultur undersak";
+  undersak = "kultur undersak";
 }
 
 with(artikkeltyper["anmeldelse (liten)"]) {
-    erType = function(myJSON) {
-        return (myJSON.mappe == "anmeldelser" && !(/@ing:/.test(myJSON.tekst)));
-    }
+  erType = function(myJSON) {
+    return (myJSON.mappe == "anmeldelser" && !(/@ing:/.test(myJSON.tekst)));
+  };
 }
 
 with(artikkeltyper["anmeldelse (stor)"]) {
-    erType = function(myJSON) {
-        return (myJSON.mappe == "anmeldelser" && /@ing:/.test(myJSON.tekst));
-    }
+  erType = function(myJSON) {
+    return (myJSON.mappe == "anmeldelser" && /@ing:/.test(myJSON.tekst));
+  };
 }
 
 with(artikkeltyper["quiz"]) {
-    erType = function(myJSON) {
-        return (/svar:/i.test(myJSON.tekst)) ? true : false;
-    }
+  erType = function(myJSON) {
+    return (/svar:/i.test(myJSON.tekst)) ? true : false;
+  };
 }
 
 with(artikkeltyper["leserbrev"]) {
-    erType = function(myJSON) {
-        return (myJSON.mappe == "leserbrev" && /@temaord:/.test(myJSON.tekst));
-    }
+  erType = function(myJSON) {
+    return (myJSON.mappe == "leserbrev" && /@temaord:/.test(myJSON.tekst));
+  };
 }
 
 with(artikkeltyper["twitter"]) {
-    erType = function(myJSON) {
-        return (/twitter/i.test(myJSON.arbeidstittel)) ? true : false;
-    }
+  erType = function(myJSON) {
+    return (/twitter/i.test(myJSON.arbeidstittel)) ? true : false;
+  };
 }
 
 with(artikkeltyper["nettdebatt"]) {
-    erType = function(myJSON) {
-        return (/nettdebatt/i.test(myJSON.arbeidstittel)) ? true : false;
-    }
+  erType = function(myJSON) {
+    return (/nettdebatt/i.test(myJSON.arbeidstittel)) ? true : false;
+  };
 }
 
 with(artikkeltyper["signert"]) {
-    erType = function(myJSON) {
-        return (/signert/i.test(myJSON.tekst)) ? true : false;
-    }
+  erType = function(myJSON) {
+    return (/signert/i.test(myJSON.tekst)) ? true : false;
+  };
 }
 
 with(artikkeltyper["bakpå nyhetene"]) {
-    erType = function(myJSON) {
-        return (/bakpå/i.test(myJSON.arbeidstittel)) ? true : false;
-    }
+  erType = function(myJSON) {
+    return (/bakpå/i.test(myJSON.arbeidstittel)) ? true : false;
+  };
 }
 
 with(artikkeltyper["sms"]) {
-    taGrep = function(myString) {
-        myString = myString.replace(/<@B>$/mig, "");
-        myString = myString.replace(/<@B>/ig, "<RIGHTTAB>");
-        return myString;
-    }
+  taGrep = function(myString) {
+    myString = myString.replace(/<@B>$/mig, "");
+    myString = myString.replace(/<@B>/ig, "<RIGHTTAB>");
+    return myString;
+  };
 }
 
 with(artikkeltyper["signert"]) {
-    erType = function(myJSON) {
-        return (/signert/i.test(myJSON.arbeidstittel)) ? true : false;
-    }
+  erType = function(myJSON) {
+    return (/signert/i.test(myJSON.arbeidstittel)) ? true : false;
+  };
 }
 
 with(artikkeltyper["ukas advarsel"]) {
-    erType = function(myJSON) {
-        return (/advarsel/i.test(myJSON.arbeidstittel)) ? true : false;
-    }
+  erType = function(myJSON) {
+    return (/advarsel/i.test(myJSON.arbeidstittel)) ? true : false;
+  };
 }
 
 with(artikkeltyper["ukas anbefaling"]) {
-    erType = function(myJSON) {
-        return (/anbefaling/i.test(myJSON.arbeidstittel)) ? true : false;
-    }
+  erType = function(myJSON) {
+    return (/anbefaling/i.test(myJSON.arbeidstittel)) ? true : false;
+  };
 }
 
 with(artikkeltyper["magasin"]) {
-    taGrep = function(myString) {
-        var fullByline = (myString.match(/@bl:[^@]+/) || ["@bl:tekst:navn\r\nfoto:navn"])[0];
-        var myTemaord = (myString.match(/@temaord:[^@]+/) || ["@temaord:sjanger"])[0];
-        var bylines = fullByline.replace(/@bl:/, "").replace(/^\s+/, "").replace(/\s+$/, "").split("\r");
-        var myByline;
+  taGrep = function(myString) {
+    var fullByline = (myString.match(/@bl:[^@]+/) || ["@bl:tekst:navn\r\nfoto:navn"])[0];
+    var myTemaord = (myString.match(/@temaord:[^@]+/) || ["@temaord:sjanger"])[0];
+    var bylines = fullByline.replace(/@bl:/, "").replace(/^\s+/, "").replace(/\s+$/, "").split("\r");
+    var myByline;
 
-        for (var i = 0; i < bylines.length; i++) {
-            myByline = bylines[i];
-            if (myByline.match(/foto/i)) {
-                myByline = myByline.replace(/\(?foto\)?:?/i, "");
-                myByline = myByline.replace(/^\s+/, "").replace(/\s+$/, "");
-                myByline = "foto: " + myByline;
-            } else {
-                myByline = myByline.replace(/tekst:? /i, "");
-                myByline = myByline.replace(/^\s+/, "").replace(/\s+$/, "");
-                myByline = "tekst: " + myByline;
-            }
-            bylines[i] = myByline;
-        }
-        myString = myString.replace(myTemaord, "");
-        myTemaord = myTemaord.replace(/@temaord:/i, "").replace(/^\s+/, "").replace(/\s+$/, "");
-        myByline = "@bl:" + myTemaord + "<RIGHTTAB>" + bylines.join("\u2003") + "\r";
-        myString = myString.replace(fullByline, myByline);
-        return myString;
+    for (var i = 0; i < bylines.length; i++) {
+      myByline = bylines[i];
+      if (myByline.match(/foto/i)) {
+        myByline = myByline.replace(/\(?foto\)?:?/i, "");
+        myByline = myByline.replace(/^\s+/, "").replace(/\s+$/, "");
+        myByline = "foto: " + myByline;
+      } else {
+        myByline = myByline.replace(/tekst:? /i, "");
+        myByline = myByline.replace(/^\s+/, "").replace(/\s+$/, "");
+        myByline = "tekst: " + myByline;
+      }
+      bylines[i] = myByline;
     }
+    myString = myString.replace(myTemaord, "");
+    myTemaord = myTemaord.replace(/@temaord:/i, "").replace(/^\s+/, "").replace(/\s+$/, "");
+    myByline = "@bl:" + myTemaord + "<RIGHTTAB>" + bylines.join("\u2003") + "\r";
+    myString = myString.replace(fullByline, myByline);
+    return myString;
+  };
 }
