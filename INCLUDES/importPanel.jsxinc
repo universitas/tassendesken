@@ -14,7 +14,7 @@ importPanel.visDialog = function(testing) {
   var smallFont = ScriptUI.newFont("Arial", "bold", 9);
   if (!$.os.match("Macintosh")) {
     smallFont = ScriptUI.newFont("Arial", "bold", 9); // litt mindre font enn standardstørrelsen
-  } 
+  }
   var sakstyper = artikkeltyper.liste(); // en array over de ulike sakstypene som artikkeltyper.jsxdev kjenner til
   var minSak;
   var prodsysSaker = [];
@@ -43,7 +43,7 @@ importPanel.visDialog = function(testing) {
   listePanel.sjekkProdsys = function() { // henter saker fra prodsys
     var prodsysSaker = [];
     try {
-      var prodsysSaker = prodsys.get();
+      prodsysSaker = prodsys.get();
     } catch (e) {
       var prodsysSaker = [];
       alert("Får ikke kontakt med prodsys\n" + e);
@@ -57,7 +57,9 @@ importPanel.visDialog = function(testing) {
       minLoop: for (var n = 0; n < sakstyper.length; n += 1) {
         minSakstype = artikkeltyper[sakstyper[n].toLowerCase()];
         erType = minSakstype.erType(minSak);
-        if (minSak.produsert == prodsys.tilDeskStatus && listePanel.firstIndex === 0 && prodsysSaker.length > panelSize) {
+        if (minSak.produsert == prodsys.tilDeskStatus &&
+          listePanel.firstIndex === 0 &&
+          prodsysSaker.length > panelSize) {
           listePanel.firstIndex = Math.min(i, prodsysSaker.length - panelSize);
         }
         if (erType === "mappe") { // gjetter hvilken sakstype det dreier seg om - se artikkeltyper.jsxinc Dette er nødvendig i tilfelle lista over sakstyper i produksjonssystemet ikke er oppdatert.
@@ -204,12 +206,12 @@ importPanel.visDialog = function(testing) {
   win.gjenopprettSak = function() { // sjekker prodsys om det er noen saker som er klare for import
     var prodsak_id = win.saks_id.text; // kan inneholde id til en sak 
     var nysak; // den saken som man ønsker å plassere i lista.
-    if (prodsak_id != "") { // hvis noen har skrevet noe
+    if (prodsak_id !== "") { // hvis noen har skrevet noe
       prodsak_id = prodsak_id.match(/\d+/); // finner ut om det er et tall - match returnerer enten en Array med ett tall eller null.
       if (prodsak_id) {
-        prodsak_id = prodsak_id[0];// match returnerer en Array eller null - men jeg trenger bare det første objektet
+        prodsak_id = prodsak_id[0]; // match returnerer en Array eller null - men jeg trenger bare det første objektet
         try {
-          nysak = prodsys.get(prodsak_id);// spør prodsys etter saken.
+          nysak = prodsys.get(prodsak_id); // spør prodsys etter saken.
         } catch (e) {
           alert("Finnes ikke\nSak nummer " + prodsak_id + " finnes ikke i produksjonssystemet");
         }
@@ -241,12 +243,13 @@ importPanel.visDialog = function(testing) {
   win.saks_id = win.panel2.add("edittext", undefined, "", {
     enterKeySignalsOnChange: true
   }); // tekstfelt der man kan skrive in id
+  win.saks_id.helpTip = "Flytt en slettet sak tilbake til prodsys";
   win.saks_id.characters = 5;
+  
   win.saks_id.onChange = function() { // hvis man skriver et tall og trykker enter
     win.gjenopprettSak();
     win.saks_id.active = true; // setter fokus tilbake i feltet så man fort kan hente inn flere saker
   };
-  win.saks_id.helpTip = "Flytt en slettet sak tilbake til prodsys";
 
   // Knappen "Sjekk prodsys"
   win.hentSakerBtn = win.panel2.add("button", undefined, "Sjekk prodsys", undefined); // en knapp

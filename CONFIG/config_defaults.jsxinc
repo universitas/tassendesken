@@ -5,11 +5,14 @@
 var config = {}; // config-objektet
 
 config.api = {};
-config.api.URL = "HEMMELIG"; // url til webapi
-config.api.USER = "HEMMELIG"; // brukernavn til webapi
-config.api.PASSWORD = "HEMMELIG"; // passord til webapi
+config.api.HOST = "example.com:80"; // vertsmaskin
+config.api.API_PATH_TEXT = "/admin/api/indesign/"; // API for artikler
+config.api.API_PATH_PHOTO = "/admin/api/prodbilde/"; // API for bilder
+config.api.USER = "WHOAMI"; // brukernavn til webapi
+config.api.PASSWORD = "VERYSECRET"; // passord til webapi
+config.api.BASE64 = "NOTPUBLIC"; // TODO ta vekk herfra
 
-config.kriseGB = [42, -532, 300, -286, 5, 42, 4] // hvis man ikke finner noen gb, brukes denne i stedet. [topp, venstre, bunn, høyre, spalteantall, spaltebredde,spaltemellomrom] i mm
+config.kriseGB = [42, -532, 300, -286, 5, 42, 4]; // hvis man ikke finner noen gb, brukes denne i stedet. [topp, venstre, bunn, høyre, spalteantall, spaltebredde,spaltemellomrom] i mm
 config.billedtekststil = "A bt"; // paragraphstyle for bildetekst IKKE FJERN DENNE!
 config.objektstiler = {};
 config.objektstiler.bylineboks = "bylineboks"; // tabellstilen for bylineboks
@@ -26,93 +29,93 @@ config.tegnPerSpalte = 1200; // brukes for å tippe hvor mange spalter en artikk
 config.storSak = 4000; // saker over denne legden regnes som store når importskriptet gjetter sakstype
 config.trynesize = {};
 config.trynesize.innlegg = {
-    height: 16,
-    width: 14
+  height: 16,
+  width: 14
 }; // størrelse på bylinebilder i leserinnlegg i millimeter
 config.trynesize.kommentar = {
-    height: 30,
-    width: 22,
-    toppen: 10
+  height: 30,
+  width: 22,
+  toppen: 10
 }; // størrelse på bylinebilder i kommentar i millimeter. "Toppen" stikker utenfor tabellen.
 config.italicStyle = "I"; // character style som representerer kursiv
 config.pdfSettings = "UNIVERSITAS"; // navnet på pdf-setting-fila
 config.overrideStyles = {
-    stikktit: null,
-    tit: null,
-    ing: null
+  stikktit: null,
+  tit: null,
+  ing: null
 }; // stiler som skal plukkes opp fra malen i stedet for artikkelstilen. (Sånn får en sjuspalter annen tittel enn en tospalter)
 
 if ($.os.match("Macintosh")) {
-    config.rotMappe = "/univ-desken/"; // Rotmappe for macOS
+  config.rotMappe = "/univ-desken/"; // Rotmappe for macOS
 } else {
-    config.rotMappe = "//platon/univ-desken/"; // Rotmappe for Windows
+  config.rotMappe = "//platon/univ-desken/"; // Rotmappe for Windows
 }
 
 config.trynemappe = config.rotMappe + "/BYLINEFOTO"; // mappa der trynebilder ligger
-config.epostCSV = config.rotMappe + "/UTTEGNER/SCRIPTS_CS55/epostbyline.csv" // liste over epostadresser i bruk i epostbyline
-config.importCSV = config.rotMappe + "/UTTEGNER/SCRIPTS_CS55/importstiler.csv" // tabell med artikkeltype-konfigurasjon
-config.eksportCSV = config.rotMappe + "/UTTEGNER/SCRIPTS_CS55/eksportstiler.csv" // tabell med hva de ulike paragraph styles skal oversettes til ved eksport
-config.saksmaler = config.rotMappe + "/UTTEGNER/MALER/Saksmaler.indl" // bibliotek med saksmaler
+config.epostCSV = config.rotMappe + "/UTTEGNER/SCRIPTS_CS55/epostbyline.csv"; //  liste over epostadresser i bruk i epostbyline
+config.importCSV = config.rotMappe + "/UTTEGNER/SCRIPTS_CS55/importstiler.csv"; //  tabell med artikkeltype-konfigurasjon
+config.eksportCSV = config.rotMappe + "/UTTEGNER/SCRIPTS_CS55/eksportstiler.csv"; //  tabell med hva de ulike paragraph styles skal oversettes til ved eksport
+config.saksmaler = config.rotMappe + "/UTTEGNER/MALER/Saksmaler.indl"; //  bibliotek med saksmaler
 config.saksmalLibrary = config.rotMappe + "/UTTEGNER/MALER/Saksmaler.indl"; // Biblioteket som saksmalene skal legges til
-config.backupLibrary = config.rotMappe + "/UTTEGNER/MALER/BACKUP/Saksmaler.indl" // Backup tas før skriptet kjøres
-config.mal_avis = config.rotMappe + "/UTTEGNER/MALER/MAL_AVIS.indt" // Avismalen
-config.backupMal = config.rotMappe + "/UTTEGNER/MALER/BACKUP/MAL_AVIS.indt" // Backup tas før fila blir overskrevet
+config.backupLibrary = config.rotMappe + "/UTTEGNER/MALER/BACKUP/Saksmaler.indl"; //  Backup tas før skriptet kjøres
+config.mal_avis = config.rotMappe + "/UTTEGNER/MALER/MAL_AVIS.indt"; //  Avismalen
+config.backupMal = config.rotMappe + "/UTTEGNER/MALER/BACKUP/MAL_AVIS.indt"; //  Backup tas før fila blir overskrevet
 
 config.rotRegExp = new RegExp(config.rotMappe + "../"); // brukes for å finne bildefiler
 
 config.avismal = [
-    // sider som skal være i MAL_AVIS.indt  master: Navn på masterpage for oppslaget (Må staves HELT korrekt), 
-    //tomside: om oppslaget skal være tomt eller inneholde alt som finnes på første oppslag av typen i SAKSMALER-dokumentet.
-    {
-        master: "F-Front",
-        tomside: false
-    }, // forside 1
-    {
-        master: "2-Side 2-3",
-        tomside: false
-    }, // side 2-3
-    {
-        master: "N-Nyhet Intro",
-        tomside: false
-    }, //nyhetsintro 4-5
-    {
-        master: "N-Nyhet",
-        tomside: true
-    }, //nyhetsoppslag 6-7
-    {
-        master: "N-Nyhet",
-        tomside: true
-    }, //nyhetsoppslag 8-9
-    {
-        master: "N-Nyhet",
-        tomside: true
-    }, //nyhetsoppslag 10-11
-    {
-        master: "D-Debatt Intro",
-        tomside: false
-    }, //debattsider12-13
-    {
-        master: "K-Kultur Intro",
-        tomside: true
-    }, //kulturintro14-15
-    {
-        master: "K-Kultur",
-        tomside: true
-    }, //kulturoppslag16-17
-    {
-        master: "K-Kultur",
-        tomside: true
-    }, //kulturoppslag18-19
-    {
-        master: "R-Reportasje",
-        tomside: true
-    }, // reportasjen 20-21
-    {
-        master: "A-Anmeldelser",
-        tomside: false
-    }, //anmeldelser og kulturplakat 22-23
-    {
-        master: "B-Baksida",
-        tomside: false
-    } //baksida 24
+  // sider som skal være i MAL_AVIS.indt  master: Navn på masterpage for oppslaget (Må staves HELT korrekt), 
+  //tomside: om oppslaget skal være tomt eller inneholde alt som finnes på første oppslag av typen i SAKSMALER-dokumentet.
+  {
+    master: "F-Front",
+    tomside: false
+  }, // forside 1
+  {
+    master: "2-Side 2-3",
+    tomside: false
+  }, // side 2-3
+  {
+    master: "N-Nyhet Intro",
+    tomside: false
+  }, //nyhetsintro 4-5
+  {
+    master: "N-Nyhet",
+    tomside: true
+  }, //nyhetsoppslag 6-7
+  {
+    master: "N-Nyhet",
+    tomside: true
+  }, //nyhetsoppslag 8-9
+  {
+    master: "N-Nyhet",
+    tomside: true
+  }, //nyhetsoppslag 10-11
+  {
+    master: "D-Debatt Intro",
+    tomside: false
+  }, //debattsider12-13
+  {
+    master: "K-Kultur Intro",
+    tomside: true
+  }, //kulturintro14-15
+  {
+    master: "K-Kultur",
+    tomside: true
+  }, //kulturoppslag16-17
+  {
+    master: "K-Kultur",
+    tomside: true
+  }, //kulturoppslag18-19
+  {
+    master: "R-Reportasje",
+    tomside: true
+  }, // reportasjen 20-21
+  {
+    master: "A-Anmeldelser",
+    tomside: false
+  }, //anmeldelser og kulturplakat 22-23
+  {
+    master: "B-Baksida",
+    tomside: false
+  } //baksida 24
 ];
