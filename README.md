@@ -48,6 +48,4 @@
     │   ├── startopp_indesign.jsx
     │   ├── startopp_photoshop.jsx
     │   └── startopp_universitas.jsx
-    ├── deskscript.sublime-project
-    ├── deskscript.sublime-workspace
     └── README.md
