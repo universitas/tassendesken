@@ -1,0 +1,19 @@
+#! /bin/bash
+/usr/bin/gs \
+  -sDefaultCMYKProfile=ISOnewspaper26v4.icc  \
+  -dFastWebView=true \
+  -sDEVICE=pdfwrite  \
+  -dBATCH  \
+  -dNOPAUSE  \
+  -dCompatibilityLevel=1.4 \
+  -dConvertCMYKImagesToRGB=true \
+  -dDownsampleColorImages=true \
+  -dDownsampleGrayImages=true \
+  -dDownsampleMonoImages=true \
+  -dColorImageResolution=120 \
+  -dGrayImageResolution=120 \
+  -dMonoImageResolution=120 \
+  -dProcessColorModel=/DeviceRGB \
+  -dUseCIEColor=true \
+  -sOutputFile=avis.pdf \
+   UNI11VER*.pdf
