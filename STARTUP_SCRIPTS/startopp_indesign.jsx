@@ -1,8 +1,90 @@
 ﻿// Dette skriptet skal kjøre før indesign cs5.5+ starter. Det kopierer en del filer fra serveren til hver enkelt mac eller pc
 
-var version = app.version.substr(0,3); // Versjon av InDesign der "8.0" er CS6. Er nødvendig for å finne mappa der lokale innstillinger må lagres.
+// var version = app.version.substr(0,3); // Versjon av InDesign der "8.0" er CS6. Er nødvendig for å finne mappa der lokale innstillinger må lagres.
+function get_folders(){
 
-alert("startup_indesign")
+	VERSION = app.version.substr(0,3);
+	LANGUAGE = 'en_GB';
+
+	if ($.os.match("Macintosh")){
+		DESKTOP = '~/Desktop';
+		PREF = '~/Library/Preferences/Adobe InDesign/Version ' +VERSION + '/' + LANGUAGE +'/';
+		SETTINGS ='~/Library/Application Support/Adobe/';
+		SERVER = '/univ-desken/';
+	} else {
+		DESKTOP = Folder.desktop;
+		PREF = Folder.userData + '/Adobe/InDesign/Version ' +VERSION + '/' + LANGUAGE +'/';
+		SETTINGS = Folder.userData + '/Adobe/';
+		SERVER = '//kant.uio.no/div-universitas-desken/';
+	}
+
+	folders = {
+		local: {
+			keyboard_shortcuts: PREF + 'InDesign Shortcut Sets/',
+			startup_scripts: PREF +'Scripts/Startup Scripts/',
+			script_panel: PREF + 'Scripts/Scripts Panel/',
+			color_profile: SETTINGS + 'Color/Settings/',
+			job_options: SETTINGS + 'Adobe PDF/Settings/',
+			desktop: DESKTOP,
+		},
+		server: {
+			libraries: SERVER + 'UTTEGNER/MALER_CS55',
+			repo: SERVER + 'SCRIPTS/COPY_TO_LOCAL'
+		}
+	};
+
+	return folders;
+}
+
+folders = get_folders();
+
+var files_to_copy = [
+	{
+		filename: '*.psp', // Keyboard shortcuts indesign
+		localfolder: folders.local.keyboard_shortcuts,
+		remotefolder: folders.server.repo
+	},
+	{
+		filename: '*.joboptions', // pdf joboptions indesign
+		localfolder: folders.local.job_options,
+		remotefolder: folders.server.repo
+	},
+	{
+		filename: 'local_startopp_indesign.jsx', // indesign startup script
+		localfolder: folders.local.startup_scripts,
+		remotefolder: folders.server.repo
+	},
+	{
+		filename: 'local_*.jsx', // scripts to indesign script panel
+		localfolder: folders.local.script_panel,
+		remotefolder: folders.server.repo
+	},
+	{
+		filename: '*.csf', // color profile
+		localfolder: folders.local.color_profile,
+		remotefolder: folders.server.repo
+	},
+	{
+		filename: '*.indl', // indesign libraries
+		localfolder: folders.local.desktop,
+		remotefolder: folders.server.libraries
+	},
+];
+
+function main() {
+	for (var n=0; files_to_copy.length > j; j++){
+		file = files_to_copy[n];
+
+		filename = file.filename;
+		serverfolder = file.remotefolder;
+		destination = file.localfolder;
+
+		copyFiles(localfolder, serverfolder, filename);
+
+	}
+
+	app.colorSettings.cmsSettings="universitas"; // sets the correct colour settings
+}
 
 function copyFiles(localFolder, serverFolder, fileName) { // kopierer filer fra et sted (univ-desken) til et annet (brukerens område på den lokale maskina)
 	if (!serverFolder.exists){
@@ -16,10 +98,10 @@ function copyFiles(localFolder, serverFolder, fileName) { // kopierer filer fra 
 		var myFile= myScripts[j];
 		var target = new File(localFolder+"/"+myFile.name);
 		if ((!target.exists||(target.exists && target.length != myFile.length))&&myFile.name.substr(0, 2)!="._"){
-			var funker = myFile.copy(target); 
+			var funker = myFile.copy(target);
 		}
 	}
-} 
+}
 
 function deleteFiles(myFolder, fileName){
 	var myFile, myFiles;
@@ -28,34 +110,10 @@ function deleteFiles(myFolder, fileName){
 		for (var j=0; myFiles.length > j; j++){
 			myFile = myFiles[j];
 			try{
-				myFile.remove()
+				myFile.remove();
 			}catch(e){}
 		}
 	}
 }
 
-try{
-
-	if ($.os.match("Macintosh")){
-		copyFiles(Folder("~/Library/Preferences/Adobe%20InDesign/Version%20"+version+"/en_GB/InDesign%20Shortcut%20Sets/"), Folder("/univ-desken/UTTEGNER/SCRIPTS_CS55/"), "*.indk"); // Keyboard shortcuts
-		copyFiles(Folder("~/Library/Application%20Support/Adobe/Adobe%20PDF/Settings/"), Folder("/univ-desken/UTTEGNER/SCRIPTS_CS55/"), "*.joboptions"); // PDF Export options
-		copyFiles(Folder("~/Library/Preferences/Adobe%20InDesign/Version%20"+version+"/en_GB/Scripts/Startup%20Scripts/"), Folder("/univ-desken/UTTEGNER/SCRIPTS_CS55/OPPDATER/STARTUP_INDESIGN/"), "*.*"); // Startup scripts CS5
-		copyFiles(Folder("~/Library/Preferences/Adobe%20InDesign/Version%20"+version+"/en_GB/Scripts/Scripts%20Panel/"), Folder("/univ-desken/UTTEGNER/SCRIPTS_CS55/"), "local_*.jsx"); // Javascript files
-		copyFiles(Folder("~/Desktop/"), Folder("/univ-desken/UTTEGNER/MALER/"), "*.indl");// library files
-		app.colorSettings.cmsSettings="universitas"; // sets the correct colour settings
-	}else{ //Windows
-        copyFiles(Folder(Folder.userData+"/Adobe/InDesign/Version "+version+"/en_GB/InDesign Shortcut Sets"), Folder("//platon/univ-desken/UTTEGNER/SCRIPTS_CS55/"), "*.indk"); // Keyboard shortcuts
-        copyFiles(Folder(Folder.userData+"/Adobe/Adobe PDF/Settings"), Folder("//platon/univ-desken/UTTEGNER/SCRIPTS_CS55/"), "*.joboptions"); // PDF Export options
-        copyFiles(Folder(Folder.userData+"/Adobe/InDesign/Version "+version+"/en_GB/Scripts/Startup Scripts"), Folder("//platon/univ-desken/UTTEGNER/SCRIPTS_CS55/OPPDATER/STARTUP_INDESIGN/"), "*.*"); // Startup scripts CS5
-        copyFiles(Folder(Folder.userData+"/Adobe/InDesign/Version "+version+"/en_GB/Scripts/Scripts Panel"), Folder("//platon/univ-desken/UTTEGNER/SCRIPTS_CS55/"), "local_*.jsx"); // Javascript files
-        copyFiles(Folder(Folder.desktop), Folder("//platon/univ-desken/UTTEGNER/MALER_CS55/"), "*.indl");// library files
-        copyFiles(Folder(Folder.userData+"/Adobe/Color/Settings"), Folder("//platon/univ-desken/UTTEGNER/SCRIPTS_CS55/"), "*.csf"); // Color Profile
-        app.colorSettings.cmsSettings="universitas"; // sets the correct colour settings
-	}
-}
-
-catch(e){
-	alert(e);
-}
-
-
+main();

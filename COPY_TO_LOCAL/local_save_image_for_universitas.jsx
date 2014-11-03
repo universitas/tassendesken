@@ -1,4 +1,4 @@
-﻿#include prodsys.jsxinc 
+﻿#include prodsys.jsxinc
 var artikkeltyper = { // Hvilken mappe skal bildefilene lagres i? Dette objektet BØR oppdateres hvis det skjer endringer i prodsys.
 	nyhet: "Nyhet",
 	nett: "Nyhet",
@@ -57,29 +57,12 @@ if (app.documents.length<dokumentPanelSize){
 	panelSize = panelSize + (dokumentPanelSize - app.documents.length) * 2;
 }
 
-
-
-
-// BRUKES IKKE LENGER FORDI KJETIL BLE FORVIRRA
-//~ var fotograf;
-
-//~ try{
-//~ 	fotograf = app.getCustomOptions("fotograf");
-//~ 	mittNavn = fotograf.getString(0);
-//~ }catch(e){
-//~ 	fotograf = new ActionDescriptor;
-//~ 	fotograf.putString(0, mittNavn);
-//~ 	app.putCustomOptions ("fotograf", fotograf, true)
-//~ }
-
 if (app.documents.length == 0){
 	alert("Lagre bilder til universitas\nDet er ingen åpne dokumenter å lagre"); // avbryter
 } else if (!Folder(rotmappe).exists) {
 	alert("Lagre bilder til universitas\nDu er ikke koblet til "+rotmappe); // avbryter
 } else {
 	main(); // viser dialogvindu
-//~ 	fotograf.putString(0, mittNavn);
-//~ 	app.putCustomOptions ("fotograf", fotograf, true)
 }
 
 function main(){
@@ -94,7 +77,7 @@ function main(){
 	var myDok;
 	var myRow;
 	var myDialog = new Window('dialog', 'Lagre til Universitas'); // brukergrensesnittet vises i denne dialogboksen
-	
+
 	for (n=mineSaker.length-1;n>=0;n-=1){ // sorter ut hvilke saker som er aktuelle å koble bilder til
 		if (mineSaker[n].produsert!="0"&&mineSaker[n].produsert!="3"){ // fjerner ting som ikke har status = 0
 			mineSaker.splice(n,1)
@@ -102,7 +85,7 @@ function main(){
 	}
 	mineSaker = [{value:true, arbeidstittel:"IKKE KOBLE TIL NOEN SAK", tekst:"hvis du velger dette blir ikke bildet koblet til produksjonssystemet", mappe:""}].concat(mineSaker.reverse()); // legger til et valg i starten av lista
 
-	var panel1 = myDialog.add("panel", undefined, "Saker i prodsys:"); // liste over saker 
+	var panel1 = myDialog.add("panel", undefined, "Saker i prodsys:"); // liste over saker
 	panel1.orientation = "row";
 	panel1.tekst = panel1.add("group");
 	panel1.tekst.orientation = "column";
@@ -111,265 +94,265 @@ function main(){
 	var panel2 = myDialog.add("panel"); // her skriver man inn info om fotograf, utgave, sakstittel, seksjon etc.
 	panel2.orientation = "row";
 	panel2.spacing = 10;
-	
+
 	label = panel2.add("statictext",undefined,"fotograf:");
-	label.graphics.font=smallFont;
-	
-	var fotoInit = panel2.add("edittext",undefined, mittNavn); // felt til å skrive inn initaler for fotograf
-	fotoInit.characters = 3;
-	fotoInit.active = true;
-		
+	label.graphics.font=smallfont;
+
+	var fotoinit = panel2.add("edittext",undefined, mittnavn); // felt til å skrive inn initaler for fotograf
+	fotoinit.characters = 3;
+	fotoinit.active = true;
+
 	label = panel2.add("statictext",undefined,"nr:"); // felt tl å skrive inn utgavenummer
-	label.graphics.font=smallFont;
+	label.graphics.font=smallfont;
 	var utgavenummer = panel2.add("edittext",undefined, utgave()); // funksjonen utgave() finner navnet på mappa med høyest nummer
 	utgavenummer.characters = 2;
-	
+
 	label = panel2.add("statictext",undefined,"tittel:"); // tittel på saken
-	label.graphics.font=smallFont;
-	var sakstittel = panel2.add("edittext",undefined, ""); 
+	label.graphics.font=smallfont;
+	var sakstittel = panel2.add("edittext",undefined, "");
 	sakstittel.characters = 11;
 
 	label = panel2.add("statictext",undefined,"seksjon:"); // navn på seksjonen
-	label.graphics.font=smallFont;
+	label.graphics.font=smallfont;
 	var mappenavn = panel2.add("edittext",undefined,"");
 	mappenavn.characters = 7;
-	
-	var panel3 = myDialog.add("panel", undefined, "lagre bildefiler:"); // her velger man filnavn og hvilke bilder som skal lagres.
+
+	var panel3 = mydialog.add("panel", undefined, "lagre bildefiler:"); // her velger man filnavn og hvilke bilder som skal lagres.
 	panel3.spacing = 2;
 
-	
-	fotoInit.onChanging = function(){
+
+	fotoinit.onchanging = function(){
 		filnavn(1); // oppdaterer filnavnene
 	};
 
-	fotoInit.onChange = function(){
-		fotoInit.text = fotoInit.text.toUpperCase(); // teksten blir store bokstaver
-		fotoInit.text = fotoInit.text.replace(/[^A-Å]/gi,""); // fjerner ikke-bokstaver
-		mittNavn = fotoInit.text;
+	fotoinit.onchange = function(){
+		fotoinit.text = fotoinit.text.touppercase(); // teksten blir store bokstaver
+		fotoinit.text = fotoinit.text.replace(/[^a-å]/gi,""); // fjerner ikke-bokstaver
+		mittnavn = fotoinit.text;
 		filnavn(1);
 	};
 
-	utgavenummer.onChange = function(){
-		utgavenummer.text = utgavenummer.text.replace(/\D/g,""); // fjerner alt annet enn tall
-		if (parseInt(utgavenummer.text)>99){ 
+	utgavenummer.onchange = function(){
+		utgavenummer.text = utgavenummer.text.replace(/\d/g,""); // fjerner alt annet enn tall
+		if (parseint(utgavenummer.text)>99){
 			utgavenummer.text = 99; // max utgavenummer
 		}
-		if (parseInt(utgavenummer.text)<1){
+		if (parseint(utgavenummer.text)<1){
 			utgavenummer.text = 1; // minste utgavenummer
 		}
 		filnavn(1);
 	};
-	sakstittel.onChange = function(){
-		sakstittel.text = sakstittel.text.toLowerCase();
+	sakstittel.onchange = function(){
+		sakstittel.text = sakstittel.text.tolowercase();
 		sakstittel.text = sakstittel.text.replace(/æ/g,"a").replace(/ø/g,"o").replace(/å/g,"a").replace(/[^a-z0-9]/g,""); // kutter ut ikke-norske bokstaver og ikke-alfanumeriske tegn
 		filnavn(1);
 	};
-	mappenavn.onChange = function(){
-		var myRegexp = new RegExp ("^"+mappenavn.text,"i");		
-		folderExists=false; 
+	mappenavn.onchange = function(){
+		var myregexp = new regexp ("^"+mappenavn.text,"i");
+		folderexists=false;
 		for(n=0;n<seksjoner.length;n+=1){ // går gjennom seksjonene for å se om de matcher med det som er skrevet i feltet
-			if (myRegexp.test(seksjoner[n])&&mappenavn.text!=""){
+			if (myregexp.test(seksjoner[n])&&mappenavn.text!=""){
 				mappenavn.text=seksjoner[n]; // finner en match og bytter ut teksten med navnet på seksjonen
-				folderExists=true; 
+				folderexists=true;
 			}
 		}
-		if (!folderExists){ // ingen match og feltet tømmes
+		if (!folderexists){ // ingen match og feltet tømmes
 			mappenavn.text="";
 		}
 		filnavn(1);
 	};
 
-	var panel4 = myDialog.add("group"); // knapper for ok og avbryt
+	var panel4 = mydialog.add("group"); // knapper for ok og avbryt
 
-	myDialog.defaultElement = panel4.add("button", undefined, "ok"); 
-	myDialog.defaultElement.enabled = false; // kan ikke trykke "ok" uten at nok informasjon er punchet inn
-	myDialog.cancelElement = panel4.add("button", undefined, "avbryt");	
-	
-	panel1.minimumSize.width = 450;
-	panel2.minimumSize.width = 450;
-	panel3.minimumSize.width = 450;
+	mydialog.defaultelement = panel4.add("button", undefined, "ok");
+	mydialog.defaultelement.enabled = false; // kan ikke trykke "ok" uten at nok informasjon er punchet inn
+	mydialog.cancelelement = panel4.add("button", undefined, "avbryt");
+
+	panel1.minimumsize.width = 450;
+	panel2.minimumsize.width = 450;
+	panel3.minimumsize.width = 450;
 	panel1.tekst.margins = [0,0,0,7];
 
-	if (mineSaker.length < panelSize){
-		panelSize = mineSaker.length; // panelSize er grensen for om det skal være scrollbar
+	if (minesaker.length < panelsize){
+		panelsize = minesaker.length; // panelsize er grensen for om det skal være scrollbar
 	}
-	
-	var saksListe=[]; // lista over sakene som skal vises i panelet 
-	for (var n = 0; n < panelSize; n+=1){
-		myRow = panel1.tekst.add("group");
-		saksListe[n]=myRow;
-		myRow.text = myRow.add("statictext", undefined, mineSaker[n].mappe);
-		myRow.text.alignment = ["left","bottom"];
-		myRow.text.preferredSize = [75,12]
-		myRow.text2 = myRow.add("statictext", undefined, mineSaker[n].arbeidstittel.substr(0,38));
-		myRow.text2.alignment = ["fill","bottom"];
-		myRow.button = myRow.add("radiobutton");
-		myRow.button.alignment = ["right","bottom"];
-		myRow.button.preferredSize = [18,20]
-		myRow.text.graphics.font = smallFont;
-		myRow.preferredSize = [400,20];
-		myRow.alignment = "fill";
+
+	var saksliste=[]; // lista over sakene som skal vises i panelet
+	for (var n = 0; n < panelsize; n+=1){
+		myrow = panel1.tekst.add("group");
+		saksliste[n]=myrow;
+		myrow.text = myrow.add("statictext", undefined, minesaker[n].mappe);
+		myrow.text.alignment = ["left","bottom"];
+		myrow.text.preferredsize = [75,12]
+		myrow.text2 = myrow.add("statictext", undefined, minesaker[n].arbeidstittel.substr(0,38));
+		myrow.text2.alignment = ["fill","bottom"];
+		myrow.button = myrow.add("radiobutton");
+		myrow.button.alignment = ["right","bottom"];
+		myrow.button.preferredsize = [18,20]
+		myrow.text.graphics.font = smallfont;
+		myrow.preferredsize = [400,20];
+		myrow.alignment = "fill";
 	}
-	
-	function saksListeFyll(start){
+
+	function sakslistefyll(start){
 		var n;
-		for (var m = 0; m < panelSize; m+=1){
-			myRow = saksListe[m];
+		for (var m = 0; m < panelsize; m+=1){
+			myrow = saksliste[m];
 			n = m+start;
-			myRow.text.text = mineSaker[n].mappe;
-			myRow.text2.text = mineSaker[n].arbeidstittel.substr(0,38);
-			myRow.button.value = mineSaker[n].value;
-			myRow.button.onClick = function(sak,button){
+			myrow.text.text = minesaker[n].mappe;
+			myrow.text2.text = minesaker[n].arbeidstittel.substr(0,38);
+			myrow.button.value = minesaker[n].value;
+			myrow.button.onclick = function(sak,button){
 				return function(){
-					valgtsak = (sak!=0)? mineSaker[sak]: undefined;
-					for (q=0;q<saksListe.length;q++){
-						saksListe[q].button.value=false;
+					valgtsak = (sak!=0)? minesaker[sak]: undefined;
+					for (q=0;q<saksliste.length;q++){
+						saksliste[q].button.value=false;
 					}
-					for (q=0;q<mineSaker.length;q++){
-						mineSaker[q].value=false;
+					for (q=0;q<minesaker.length;q++){
+						minesaker[q].value=false;
 					}
-					mineSaker[sak].value=true;
+					minesaker[sak].value=true;
 					button.value=true;
-					if (valgtsak){ 
+					if (valgtsak){
 						mappenavn.text = artikkeltyper[valgtsak.mappe]||"";
-						sakstittel.text = valgtsak.arbeidstittel.toLowerCase().replace(/^[\d\s]+/,"").replace(/æ/g,"a").replace(/ø/g,"o").replace(/å/g,"a").replace(/[^a-z0-9]/g,"").substr(0,12);
+						sakstittel.text = valgtsak.arbeidstittel.tolowercase().replace(/^[\d\s]+/,"").replace(/æ/g,"a").replace(/ø/g,"o").replace(/å/g,"a").replace(/[^a-z0-9]/g,"").substr(0,12);
 						filnavn(1);
 					}
 				}
-			}(n,myRow.button);
-			myRow.helpTip = mineSaker[n].tekst.substr(0,500);
+			}(n,myrow.button);
+			myrow.helptip = minesaker[n].tekst.substr(0,500);
 		}
 	}
-	saksListeFyll(0);
-	
-	
-	
+	sakslistefyll(0);
 
-	if (mineSaker.length > panelSize) {
-		panel1.scrollbar = panel1.add("scrollbar",undefined,0,0,mineSaker.length-panelSize);
-		panel1.scrollbar.jumpDelta = 1;
-		panel1.scrollbar.stepDelta = 1;
+
+
+
+	if (minesaker.length > panelsize) {
+		panel1.scrollbar = panel1.add("scrollbar",undefined,0,0,minesaker.length-panelsize);
+		panel1.scrollbar.jumpdelta = 1;
+		panel1.scrollbar.stepdelta = 1;
 		panel1.scrollbar.alignment = ["right","fill"];
-		panel1.scrollbar.preferredSize.width = 15;
-		panel1.scrollbar.preferredSize.height = 100;
-		panel1.scrollbar.onChanging = function(){
-			saksListeFyll(Math.floor(panel1.scrollbar.value));
-			myDialog.layout.layout(true);
+		panel1.scrollbar.preferredsize.width = 15;
+		panel1.scrollbar.preferredsize.height = 100;
+		panel1.scrollbar.onchanging = function(){
+			sakslistefyll(math.floor(panel1.scrollbar.value));
+			mydialog.layout.layout(true);
 		}
 	}
-		
+
 	var filer = [];
-	var myDocuments = [app.activeDocument];
-	for (var n=0; n < app.documents.length&&n < dokumentPanelSize-1; n++){
-		if (app.documents[n]!=app.activeDocument){
-			myDocuments.push(app.documents[n]);
+	var mydocuments = [app.activedocument];
+	for (var n=0; n < app.documents.length&&n < dokumentpanelsize-1; n++){
+		if (app.documents[n]!=app.activedocument){
+			mydocuments.push(app.documents[n]);
 		}
 	}
-	
-	for (var n = 0; n < myDocuments.length; n+=1){
-		myDok = myDocuments[n];
+
+	for (var n = 0; n < mydocuments.length; n+=1){
+		mydok = mydocuments[n];
 		if (n>0){
 			separator = panel3.add("panel");
-			separator.preferredSize = [420,2];
+			separator.preferredsize = [420,2];
 		}
-		// Rad 1
-		myRow = panel3.add("group");
-		myRow.alignment = "fill";
-		myRow.maxSize = [420,12];
+		// rad 1
+		myrow = panel3.add("group");
+		myrow.alignment = "fill";
+		myrow.maxsize = [420,12];
 
-		filer[n] = {dokument:myDok};
-		filer[n].checkbox = myRow.add("checkbox")
- 		filer[n].checkbox.onClick = function(){
+		filer[n] = {dokument:mydok};
+		filer[n].checkbox = myrow.add("checkbox")
+ 		filer[n].checkbox.onclick = function(){
 			filnavn(1);
 		}
-		label = myRow.add("statictext", undefined, myDok.name.substr(0,25), undefined);
-		label.graphics.font=smallFont;
-		filer[n].filnavn = myRow.add("edittext",undefined,(myDok.name+".").replace(/\..*/,".jpg").replace(/\s+/g,"_"));
+		label = myrow.add("statictext", undefined, mydok.name.substr(0,25), undefined);
+		label.graphics.font=smallfont;
+		filer[n].filnavn = myrow.add("edittext",undefined,(mydok.name+".").replace(/\..*/,".jpg").replace(/\s+/g,"_"));
 		filer[n].filnavn.characters = 35;
-		filer[n].filnavn.graphics.font=smallFont;
+		filer[n].filnavn.graphics.font=smallfont;
 		filer[n].filnavn.alignment = ["right","fill"];
-		
-		filer[n].filnavn.onChange = function(myEditText){
+
+		filer[n].filnavn.onchange = function(myedittext){
 			return function(){
-				myEditText.text = (myEditText.text+".").replace(/\..*/,".jpg").replace(/\s+/g,"_");
+				myedittext.text = (myedittext.text+".").replace(/\..*/,".jpg").replace(/\s+/g,"_");
 			}
 		}(filer[n].filnavn);
-				
+
 		filer[n].checkbox.enabled = false;
 
-		// Rad 2
-		myRow = panel3.add("group");
-		myRow.alignment = "fill";
-		myRow.maxSize = [420,12];
-		label = myRow.add("statictext", undefined, "prioritet:", undefined);
-		label.graphics.font=smallFont;
-		filer[n].prioritet = myRow.add("edittext",undefined,"1");
-		filer[n].prioritet.graphics.font=smallFont;
-			
-		filer[n].prioritet.onChange = function(myEditText){
+		// rad 2
+		myrow = panel3.add("group");
+		myrow.alignment = "fill";
+		myrow.maxsize = [420,12];
+		label = myrow.add("statictext", undefined, "prioritet:", undefined);
+		label.graphics.font=smallfont;
+		filer[n].prioritet = myrow.add("edittext",undefined,"1");
+		filer[n].prioritet.graphics.font=smallfont;
+
+		filer[n].prioritet.onchange = function(myedittext){
 			return function(){
-				var myPrioritet= parseInt(myEditText.text) 
-				if (false==(myPrioritet>=0&&myPrioritet<=5)){
-					myEditText.text = "0";
+				var myprioritet= parseint(myedittext.text)
+				if (false==(myprioritet>=0&&myprioritet<=5)){
+					myedittext.text = "0";
 				}
 			}
 		}(filer[n].prioritet);
-	
-		label = myRow.add("statictext", undefined, "nøkkelord:", undefined);
-		label.helpTip = "Skriv inn navn på personer, steder og så videre for å gjøre bildet søkbart"
-		label.graphics.font=smallFont;		
+
+		label = myrow.add("statictext", undefined, "nøkkelord:", undefined);
+		label.helptip = "skriv inn navn på personer, steder og så videre for å gjøre bildet søkbart"
+		label.graphics.font=smallfont;
 		label.alignment = ["right","fill"];
-		filer[n].bildetekst = myRow.add("edittext",undefined,"");
-		filer[n].bildetekst.graphics.font=smallFont;
+		filer[n].bildetekst = myrow.add("edittext",undefined,"");
+		filer[n].bildetekst.graphics.font=smallfont;
 		filer[n].bildetekst.characters = 35;
 		filer[n].bildetekst.alignment = ["right","fill"];
-		filer[n].bildetekst.helpTip = label.helpTip;
-		
+		filer[n].bildetekst.helptip = label.helptip;
+
 		if (n == 0){
 			filer[n].checkbox.value = true;
 		} else {
 			filer[n].checkbox.value = false;
 		}
-	}		
-		
-		
-	var svar = myDialog.show();
-	if (svar == 1){ // hvis man trykker "OK"
+	}
+
+
+	var svar = mydialog.show();
+	if (svar == 1){ // hvis man trykker "ok"
 		var json = '{"bilete":[';
 		var save = false;
-		var minFil;
+		var minfil;
 		var fila;
 		var mappami;
 		var path = [];
 		for (var n=0; n<filer.length; n+=1){
-			minFil = filer[n];
-			myDok = minFil.dokument;
-			mappami = minFil.mappe;
-			if (minFil.checkbox.value==true&&minFil.fil){
+			minfil = filer[n];
+			mydok = minfil.dokument;
+			mappami = minfil.mappe;
+			if (minfil.checkbox.value==true&&minfil.fil){
 				while (mappami.exists==false){
 					//path.push(mappami.name.replace(/(\d\d)/, "_$1"));
 					path.push(mappami.name);
 					mappami = mappami.parent;
 				}
-				
+
 				while (path.length > 0){
-					mappami = new Folder(mappami.fullName+"/"+path.pop());
+					mappami = new folder(mappami.fullname+"/"+path.pop());
 					if (mappami.exists==false){
 						mappami.create();
 					}
 				}
-			
-				var filnavn = mappami.fullName+"/"+minFil.filnavn.text;
-				var bildetekst = minFil.bildetekst.text;
-				var prioritet = minFil.prioritet.text;
-				
-				fila = new File(filnavn);
-				app.activeDocument = myDok;
-				myDok.info.keywords = bildetekst.replace(/ ?, ?/g,",").split(",");
-				if (myDok.layers.length == 1&&myDok.layers[0].isBackgroundLayer){ // er dokumentet flattened?
-					myDok.saveAs(fila, jpgsettings); // save as 
+
+				var filnavn = mappami.fullname+"/"+minfil.filnavn.text;
+				var bildetekst = minfil.bildetekst.text;
+				var prioritet = minfil.prioritet.text;
+
+				fila = new file(filnavn);
+				app.activedocument = mydok;
+				mydok.info.keywords = bildetekst.replace(/ ?, ?/g,",").split(",");
+				if (mydok.layers.length == 1&&mydok.layers[0].isbackgroundlayer){ // er dokumentet flattened?
+					mydok.saveas(fila, jpgsettings); // save as
 				} else {
-					myDok.saveAs(fila, jpgsettings, true); // save as copy
+					mydok.saveas(fila, jpgsettings, true); // save as copy
 				}
 				json += '{"prodbilde_id":"0","bildefil":"'+fila.name+'","bildetekst":"'+bildetekst+'","prioritet":"'+prioritet+'"},'
 				save = true;
@@ -380,76 +363,76 @@ function main(){
 			try{
 				prodsys.post(valgtsak.prodsak_id,json);
 			}catch(e){
-				//errorAlert(e, "Feil ved eksport");
+				//erroralert(e, "feil ved eksport");
 			}
 		}
 	}
-	
-	
+
+
 	function filnavn(siffer){
 		siffer = 0;
  		var filnavn;
-		var myFile;
-		var myFolder;
-		var initialer = fotoInit.text.toUpperCase().replace(/[^A-Å]/gi,"");
+		var myfile;
+		var myfolder;
+		var initialer = fotoinit.text.touppercase().replace(/[^a-å]/gi,"");
 		var nummer = ("0"+utgavenummer.text).slice(-2);
 		var mappe = mappenavn.text;
 		var arbeidstittel = sakstittel.text;
 		var mappepath;
-		
-		if (initialer&&nummer&&mappe&&arbeidstittel){			
+
+		if (initialer&&nummer&&mappe&&arbeidstittel){
 			mappepath = rotmappe+nummer+"/"+mappe+"/";
-			myFolder = new Folder(mappepath);
-			if (!myFolder.exists){
+			myfolder = new folder(mappepath);
+			if (!myfolder.exists){
 				mappepath = rotmappe+"_"+nummer+"/"+mappe+"/";
-				myFolder = new Folder(mappepath);
+				myfolder = new folder(mappepath);
 			}
-			mappe = mappe.slice(0,3).toUpperCase();
+			mappe = mappe.slice(0,3).touppercase();
 			siffer = 1;
 			for (var n=0; n < filer.length; n+=1){
 				if (filer[n].checkbox.enabled == false){
 					filer[n].checkbox.enabled = true;
-					myDialog.defaultElement.enabled = true;
+					mydialog.defaultelement.enabled = true;
 				}
 				if (filer[n].checkbox.value == true){
 					do{
 						filnavn = nummer+"_"+mappe+"_"+arbeidstittel+"_"+((siffer<10)? "0"+siffer: siffer)+"_"+initialer+".jpg";
-						myFile = new File(mappepath+filnavn);
+						myfile = new file(mappepath+filnavn);
 						siffer += 1
-					} while (myFile.exists);
+					} while (myfile.exists);
 					filer[n].filnavn.text = filnavn;
-					filer[n].fil = myFile;
-					filer[n].mappe = myFolder;
+					filer[n].fil = myfile;
+					filer[n].mappe = myfolder;
 				} else {
-					filer[n].filnavn.text = nummer+"_"+mappe+"_"+arbeidstittel+"_"+"XX"+"_"+initialer+".jpg";
+					filer[n].filnavn.text = nummer+"_"+mappe+"_"+arbeidstittel+"_"+"xx"+"_"+initialer+".jpg";
 				}
 			}
 		} else {
 			for (var n=0; n < filer.length; n+=1){
 				// filer[n].checkbox.value = false;
 				filer[n].checkbox.enabled = false;
-				myDialog.defaultElement.enabled = false;
+				mydialog.defaultelement.enabled = false;
 			}
 		}
 	}
 }
 
-function errorAlert(message, title) {
-	var d = new Window('dialog', title);
+function erroralert(message, title) {
+	var d = new window('dialog', title);
 	var msg = message.split("\n");
-	var f = d.graphics.font; 
-	d.top = d.add("group"); 
+	var f = d.graphics.font;
+	d.top = d.add("group");
 	d.top.orientation="row";
 	d.right = d.top.add("group", undefined); d.right.orientation="column";
 	d.bold = d.right.add('statictext', undefined, msg[0]);
-	d.bold.graphics.font = ScriptUI.newFont(f.name,ScriptUI.FontStyle.BOLD,f.size);
-	d.rom = d.right.add('edittext', undefined, msg.slice(1).join("\n"), 
+	d.bold.graphics.font = scriptui.newfont(f.name,scriptui.fontstyle.bold,f.size);
+	d.rom = d.right.add('edittext', undefined, msg.slice(1).join("\n"),
 		{readonly:false, borderless: false, multiline: true, scrollable: true});
-	d.rom.graphics.font = ScriptUI.newFont(f.name,f.style,f.size-2);
-	d.rom.preferredSize = [300,300];
+	d.rom.graphics.font = scriptui.newfont(f.name,f.style,f.size-2);
+	d.rom.preferredsize = [300,300];
 	d.rom.alignment="fill";
 	d.rom.active = true;
-	d.ok = d.add("button", undefined, "OK", { name: "ok"});
+	d.ok = d.add("button", undefined, "ok", { name: "ok"});
 	d.ok.alignment = "right";
 	d.show();
 }
@@ -473,13 +456,13 @@ function utgave(){ // finner ut hvilket nummer som er det neste ved å lete ette
 	return 0;
 }
 
-function parseCSV(filePath){ // leser en CSV-fil og returnerer en array med tabellen i fila
-	var csvfil;
-	var result;
-	csvfil=new File(filePath);
-	csvfil.open();
-	fileContent = csvfil.read();
-	csvfil.close();
-	eval("result=[['"+fileContent.replace(/,/g, "','").replace (/\n/g, "'],['")+"']];");
-	return result;
-}
+// function parseCSV(filePath){ // leser en CSV-fil og returnerer en array med tabellen i fila
+// 	var csvfil;
+// 	var result;
+// 	csvfil=new File(filePath);
+// 	csvfil.open();
+// 	fileContent = csvfil.read();
+// 	csvfil.close();
+// 	eval("result=[['"+fileContent.replace(/,/g, "','").replace (/\n/g, "'],['")+"']];");
+// 	return result;
+// }

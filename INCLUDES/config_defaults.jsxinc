@@ -3,7 +3,13 @@
 
 var config = {}; // config-objektet
 
-config.api = {};
+if ($.os.match("Macintosh")) {
+    config.rotMappe = "/div-univ-desken/"; // Rotmappe for macOS
+} else {
+    config.rotMappe = "//kant.uio.no/div-univ-desken/"; // Rotmappe for Windows
+}
+
+config.api = {}; // legg inn riktig api-innlogging i config_local.jsxinc
 config.api.URL = "HEMMELIG"; // url til webapi
 config.api.USER = "HEMMELIG"; // brukernavn til webapi
 config.api.PASSWORD = "HEMMELIG"; // passord til webapi
@@ -21,7 +27,7 @@ config.objektstiler.bilde = "bilde"; // objektstilen for bilder
 config.objektstiler.faksimile = "faksimile"; // objektstilen for faksimiler
 config.objektstiler.beskjed = "beskjed"; // objektstilen for faksimiler
 config.objektstiler.spaltestrek = "spaltestrek"; // objektstilen for vertikal strek mellom spalter
-config.tegnPerSpalte = 1200; // brukes for å tippe hvor mange spalter en artikkel er 
+config.tegnPerSpalte = 1200; // brukes for å tippe hvor mange spalter en artikkel er
 config.storSak = 4000; // saker over denne legden regnes som store når importskriptet gjetter sakstype
 config.trynesize = {};
 config.trynesize.innlegg = {
@@ -41,11 +47,6 @@ config.overrideStyles = {
     ing: null
 }; // stiler som skal plukkes opp fra malen i stedet for artikkelstilen. (Sånn får en sjuspalter annen tittel enn en tospalter)
 
-if ($.os.match("Macintosh")) {
-    config.rotMappe = "/univ-desken/"; // Rotmappe for macOS
-} else {
-    config.rotMappe = "//platon/univ-desken/"; // Rotmappe for Windows
-}
 
 config.trynemappe = config.rotMappe + "/BYLINEFOTO"; // mappa der trynebilder ligger
 config.epostCSV = config.rotMappe + "/UTTEGNER/SCRIPTS_CS55/epostbyline.csv" // liste over epostadresser i bruk i epostbyline
@@ -60,7 +61,7 @@ config.backupMal = config.rotMappe + "/UTTEGNER/MALER/BACKUP/MAL_AVIS.indt" // B
 config.rotRegExp = new RegExp(config.rotMappe + "../"); // brukes for å finne bildefiler
 
 config.avismal = [
-    // sider som skal være i MAL_AVIS.indt  master: Navn på masterpage for oppslaget (Må staves HELT korrekt), 
+    // sider som skal være i MAL_AVIS.indt  master: Navn på masterpage for oppslaget (Må staves HELT korrekt),
     //tomside: om oppslaget skal være tomt eller inneholde alt som finnes på første oppslag av typen i SAKSMALER-dokumentet.
     {
         master: "F-Front",
