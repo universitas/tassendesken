@@ -1,4 +1,4 @@
-﻿#include prodsys.jsxinc
+﻿#include prodsys.jsxinc 
 var artikkeltyper = { // Hvilken mappe skal bildefilene lagres i? Dette objektet BØR oppdateres hvis det skjer endringer i prodsys.
 	nyhet: "Nyhet",
 	nett: "Nyhet",

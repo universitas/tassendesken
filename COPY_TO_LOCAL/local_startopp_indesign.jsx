@@ -1,4 +1,4 @@
-﻿#targetengine "session"
+﻿#targetengine "session" 
 
 function tassenMenu(){ // lager en meny i Indesign for egne skripts
     var myEvent;
