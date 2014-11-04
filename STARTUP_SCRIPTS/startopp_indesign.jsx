@@ -28,8 +28,8 @@ function get_folders(){
 			desktop: DESKTOP,
 		},
 		server: {
-			libraries: SERVER + 'UTTEGNER/MALER_CS55',
-			repo: SERVER + 'SCRIPTS/COPY_TO_LOCAL'
+			libraries: SERVER + 'UTTEGNER/MALER/',
+			repo: SERVER + 'SCRIPTS/COPY_TO_LOCAL/'
 		}
 	};
 
@@ -72,14 +72,14 @@ var files_to_copy = [
 ];
 
 function main() {
-	for (var n=0; files_to_copy.length > j; j++){
+	for (var n=0; files_to_copy.length > n; n++){
 		file = files_to_copy[n];
 
 		filename = file.filename;
-		serverfolder = file.remotefolder;
-		destination = file.localfolder;
+		source = Folder(file.remotefolder);
+		destination = Folder(file.localfolder);
 
-		copyFiles(localfolder, serverfolder, filename);
+		copyFiles(destination, source, filename);
 
 	}
 
@@ -93,13 +93,18 @@ function copyFiles(localFolder, serverFolder, fileName) { // kopierer filer fra 
 	if (!localFolder.exists){
 		localFolder.create();
 		}
-	var myScripts = serverFolder.getFiles(fileName);
-	for (var j = 0; myScripts.length > j; j++) {
-		var myFile= myScripts[j];
+	var myFiles = serverFolder.getFiles(fileName);
+	for (var j = 0; myFiles.length > j; j++) {
+     var myFile= myFiles[j];
+     if (myFile.name.substr(0,2)=='._'){
+       continue;
+     }
+		var funker = false;
 		var target = new File(localFolder+"/"+myFile.name);
-		if ((!target.exists||(target.exists && target.length != myFile.length))&&myFile.name.substr(0, 2)!="._"){
-			var funker = myFile.copy(target);
-		}
+		if (!target.exists || (target.exists && target.length != myFile.length)){
+			funker = myFile.copy(target);
+		} 
+    $.writeln(funker, target);
 	}
 }
 

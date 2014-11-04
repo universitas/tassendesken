@@ -20,7 +20,7 @@ function main(){
 
   appname = get_app_name();
   if (appname) {
-    scriptfile = SERVERNAME + SCRIPTFOLDER + '/startup_' + appname + '.jsx';
+    scriptfile = SERVERNAME + SCRIPTFOLDER + '/startopp_' + appname + '.jsx';
     eval_remote_script(scriptfile);
   }
 }
@@ -28,8 +28,8 @@ function main(){
 function get_app_name(){
   var appname;
 
-  if( BridgeTalk.appnameSpecifier.match("indesign") ){
-    if (engineName=="main") {
+  if( BridgeTalk.appSpecifier.match("indesign") ){
+    if ($.engineName=="main") {
       // Kjører dette skriptet hvis det er InDesign som åpnes, men bare i #engine = "main"
       // (inDesign starter to andre engines ved oppstart)
       appname = 'indesign';

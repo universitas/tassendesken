@@ -1,5 +1,5 @@
 ﻿// laster først alle defaults-settingene og deretter lokale overrides
 // config_locals blir ikke tracket av git, og kan inneholde passord som lastes opp på GitHub.
 
-# include config_defaults.jsxinc
-# include config_locals.jsxinc
+#include "config_defaults.jsxinc"
+#include "config_local.jsxinc"

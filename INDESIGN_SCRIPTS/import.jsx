@@ -1,4 +1,4 @@
-/* 
+﻿/* 
 import.jsx
 Dette skriptet er ryggraden i import fra prodsys til InDesign. 
 Skrevet av Håken Lid 2011
@@ -6,11 +6,11 @@ Skrevet av Håken Lid 2011
 
 /* jshint ignore:start */
 #targetengine "session";
-#include "config.jsxinc"; // diverse konfigurasjonsverdier
-#include "dokTools.jsxinc"; // diverse nyttige verktøyfunksjoner
-#include "prodsys.jsxinc"; // kommunikasjon med prodsys
-#include "artikkeltyper.jsxinc"; // tilpasset konfigurasjon for hver enkelt artikkeltype og bylineboks
-#include "importpanel.jsxinc"; // brukergrensesnittet
+#include "../INCLUDES/config.jsxinc"; // diverse konfigurasjonsverdier
+#include "../INCLUDES/dokTools.jsxinc"; // diverse nyttige verktøyfunksjoner
+#include "../INCLUDES/prodsys.jsxinc"; // kommunikasjon med prodsys
+#include "../INCLUDES/artikkeltyper.jsxinc"; // tilpasset konfigurasjon for hver enkelt artikkeltype og bylineboks
+#include "../INCLUDES/importpanel.jsxinc"; // brukergrensesnittet
 /* jshint ignore:end */
 
 var DEBUG = false; // hvis true flyttes ikke saker til neste nivå i prodsys. Debug kan også være et prodsak_id - i såfall brukes ikke dialogboksen
