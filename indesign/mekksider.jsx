@@ -1,5 +1,5 @@
 /* jshint ignore:start */
-#include config.jsxinc
+#include ../config/config.jsxinc
 /* jshint ignore:end */
 
 var avismal = File(config.mal_avis); // malfil for avisa

@@ -1,9 +1,11 @@
-﻿#targetengine 'session'
+﻿/* jshint ignore:start */
+#targetengine 'session'
+/* jshint ignore:end */
 
 main();
 
 function main(){
-  var new_scripts_folder = 'SCRIPTS/INDESIGN_SCRIPTS/';
+  var new_scripts_folder = 'SCRIPTS/indesign/';
   var old_scripts_folder = 'UTTEGNER/SCRIPTS_CS55/';
   var server = '//kant.uio.no/div-universitas-desken/';
   var desktop;
@@ -25,13 +27,13 @@ function main(){
   }
 
   add_indesign_menu(
-    'Universitas', 
+    'Universitas',
     server + old_scripts_folder,
     menu_items
     );
-    
+
   add_indesign_menu(
-    'Universitas ny', 
+    'Universitas ny',
     server + new_scripts_folder,
     menu_items
     );
@@ -49,9 +51,9 @@ function add_indesign_menu(menu_name, script_path, menu_items){ // lager en meny
   var new_menu = app.menus.item('$ID/Main').submenus.add(menu_name);
 
   for (var n = 0; n < menu_items.length; n++){
-    var item_name = menu_items[n][0]
-    var item_script = File(script_path+menu_items[n][1])
-    var new_menu_item = app.scriptMenuActions.add(item_name);
+    var item_name = menu_items[n][0];
+    var item_script = File(script_path+menu_items[n][1]);
+    new_menu_item = app.scriptMenuActions.add(item_name);
     new_menu_item.addEventListener ('onInvoke', item_script);
     new_menu.menuItems.add(new_menu_item);
   }
@@ -69,23 +71,23 @@ function add_indesign_menu(menu_name, script_path, menu_items){ // lager en meny
       if (test_something()){
         new_menu.menuItems.add(new_menu_item);
       }
-    }
+    };
     return func;
-  };
-  
+  }
+
   function check_file_open(regex){
     return function() {
       var file_is_open = ( app.documents.length > 0 && app.activeDocument.name.match(regex ) );
       return file_is_open;
-    }
+    };
   }
 
   var aktiver_greia = show_item_when(
-    'Saksmaler -> Bibliotek og Mal', 
+    'Saksmaler -> Bibliotek og Mal',
     File(script_path+'legg_Saksmaler_i_Bibliotek.jsx'),
     new_menu,
     check_file_open(/saksmaler/i)
-    )
+    );
 
   var myDokListener = new_menu.addEventListener('beforeDisplay', aktiver_greia, false);
   aktiver_greia();

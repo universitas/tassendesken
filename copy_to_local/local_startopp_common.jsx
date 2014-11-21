@@ -8,7 +8,7 @@
 
 function main(){
   var SERVERNAME = '//kant.uio.no/div-universitas-desken/';
-  var SCRIPTFOLDER = 'SCRIPTS/STARTUP_SCRIPTS';
+  var SCRIPTFOLDER = 'SCRIPTS/startup_scripts/';
   var MAC_MOUNTED_DRIVE = '/univ-desken/';
 
   var scriptfile, appname;

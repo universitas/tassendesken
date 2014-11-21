@@ -50,10 +50,10 @@ config.overrideStyles = {
 }; // stiler som skal plukkes opp fra malen i stedet for artikkelstilen. (Sånn får en sjuspalter annen tittel enn en tospalter)
 
 
-config.trynemappe = config.rotMappe + "/BYLINEFOTO"; // mappa der trynebilder ligger
-config.epostCSV = config.rotMappe + "/UTTEGNER/SCRIPTS_CS55/epostbyline.csv" // liste over epostadresser i bruk i epostbyline
-config.importCSV = config.rotMappe + "/UTTEGNER/SCRIPTS_CS55/importstiler.csv" // tabell med artikkeltype-konfigurasjon
-config.eksportCSV = config.rotMappe + "/UTTEGNER/SCRIPTS_CS55/eksportstiler.csv" // tabell med hva de ulike paragraph styles skal oversettes til ved eksport
+config.trynemappe = config.rotMappe + "/FOTO/bylinebilder/"; // mappa der trynebilder ligger
+config.epostCSV = config.rotMappe + "/SCRIPTS/_resources/epostbyline.csv" // liste over epostadresser i bruk i epostbyline
+config.importCSV = config.rotMappe + "/SCRIPTS/_resources/importstiler.csv" // tabell med artikkeltype-konfigurasjon
+config.eksportCSV = config.rotMappe + "/SCRIPTS/_resources/eksportstiler.csv" // tabell med hva de ulike paragraph styles skal oversettes til ved eksport
 config.saksmaler = config.rotMappe + "/UTTEGNER/MALER/Saksmaler.indl" // bibliotek med saksmaler
 config.saksmalLibrary = config.rotMappe + "/UTTEGNER/MALER/Saksmaler.indl"; // Biblioteket som saksmalene skal legges til
 config.backupLibrary = config.rotMappe + "/UTTEGNER/MALER/BACKUP/Saksmaler.indl" // Backup tas før skriptet kjøres

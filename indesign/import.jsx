@@ -1,16 +1,16 @@
-﻿/* 
+﻿/*
 import.jsx
-Dette skriptet er ryggraden i import fra prodsys til InDesign. 
+Dette skriptet er ryggraden i import fra prodsys til InDesign.
 Skrevet av Håken Lid 2011
 */
 
 /* jshint ignore:start */
 #targetengine "session";
-#include "../INCLUDES/config.jsxinc"; // diverse konfigurasjonsverdier
-#include "../INCLUDES/dokTools.jsxinc"; // diverse nyttige verktøyfunksjoner
-#include "../INCLUDES/prodsys.jsxinc"; // kommunikasjon med prodsys
-#include "../INCLUDES/artikkeltyper.jsxinc"; // tilpasset konfigurasjon for hver enkelt artikkeltype og bylineboks
-#include "../INCLUDES/importpanel.jsxinc"; // brukergrensesnittet
+#include "../_includes/config.jsxinc"; // diverse konfigurasjonsverdier
+#include "../_includes/dokTools.jsxinc"; // diverse nyttige verktøyfunksjoner
+#include "../_includes/prodsys.jsxinc"; // kommunikasjon med prodsys
+#include "../_includes/artikkeltyper.jsxinc"; // tilpasset konfigurasjon for hver enkelt artikkeltype og bylineboks
+#include "../_includes/importpanel.jsxinc"; // brukergrensesnittet
 /* jshint ignore:end */
 
 var DEBUG = false; // hvis true flyttes ikke saker til neste nivå i prodsys. Debug kan også være et prodsak_id - i såfall brukes ikke dialogboksen
@@ -100,7 +100,7 @@ var bildemax = [80, 80] ;// max størrelse på bilder som legges i pasteboard
       }
       for (var n = 0; n < this.bilder.length; n++) { // går gjennom bildene som er kobla til saken
         if ("" === this.bilder[n].bildetekst) { // hvis bildet ikke har bildetekst
-          this.bilder[n].bildetekst = this.bildetekster.pop() || ""; // legger til bildetekst 
+          this.bilder[n].bildetekst = this.bildetekster.pop() || ""; // legger til bildetekst
         }
       }
       for (n = 0; n < this.bildetekster.length; n++) { // hvis det er flere bildetekster enn bilder
@@ -599,7 +599,7 @@ var bildemax = [80, 80] ;// max størrelse på bilder som legges i pasteboard
           minBildeFrame.contentType = ContentType.graphicType;
           try {
             minBildeFrame.place(mittBilde);
-            if (minBildeFrame.appliedObjectStyle.name === config.objektstiler.faksimile) { // faksimiler som anmeldelsesbildet står litt på skrå og skal ha et fast flateareal 
+            if (minBildeFrame.appliedObjectStyle.name === config.objektstiler.faksimile) { // faksimiler som anmeldelsesbildet står litt på skrå og skal ha et fast flateareal
               var myRotation = minBildeFrame.rotationAngle; // vinkelen som faksimilen står på skrå
               minBildeFrame.rotationAngle = 0;
               var myBounds = [minBildeFrame.geometricBounds[0], minBildeFrame.geometricBounds[1], minBildeFrame.geometricBounds[2], minBildeFrame.geometricBounds[3]];
@@ -687,7 +687,7 @@ var bildemax = [80, 80] ;// max størrelse på bilder som legges i pasteboard
       };
       var mittBilde, minStory, minTextframe, minCelle;
 
-      app.select(null); // tømmer selection	
+      app.select(null); // tømmer selection
       dokTools.clearSearch();
 
       for (var n = 0; n < this.pageItems.textFrames.length; n++) {
@@ -756,7 +756,7 @@ var bildemax = [80, 80] ;// max størrelse på bilder som legges i pasteboard
   function applyItalic(myStory) { // applies Italics may take a story, else does it for the entire document (slower);
     var mySelection = app.selection;
     var myDocument = app.activeDocument;
-    var myRanges; 
+    var myRanges;
     if (myStory) {
       myRanges = myStory.textStyleRanges.everyItem().getElements();
     } else {

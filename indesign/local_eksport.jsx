@@ -1,5 +1,5 @@
-﻿var scriptFile = "import.jsx";
-var scriptFolder = "/Volumes/univ-desken/UTTEGNER/SCRIPTS_CS55/";
+﻿var scriptFile = "eksportSider.jsx";
+var scriptFolder = "//platon/univ-desken/SCRIPTS/indesign/";
 
 var myRunScript = function (scriptFile, scriptFolder){
 	var myScript = File(scriptFolder+scriptFile);
