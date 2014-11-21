@@ -31,15 +31,16 @@ read last_pid < lock
 echo $$ > lock
 
 # Symlink jpg and png files.
-image_files=$(find "$DESKEN/$avisnr" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" )
-pdf_files=$(find "$DESKEN/$avisnr" -name "UNI11*.pdf")
 
-rm $IMAGE_FOLDER/*
+find $IMAGE_FOLDER -type l -delete
+image_files=$(find "$DESKEN/$avisnr" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" )
 for image in $image_files; do
-  # fix_filnavn.py $image
+  fix_filnavn.py $image
   ln -s $image $IMAGE_FOLDER
 done
 
+find $PDF_FOLDER -type l -delete
+pdf_files=$(find "$DESKEN/$avisnr" -name "UNI11*.pdf")
 rm $PDF_FOLDER/*
 for pdf_file in $pdf_files; do
   ln -s $pdf_file $PDF_FOLDER

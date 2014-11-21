@@ -2,7 +2,7 @@
 
 aar=`date "+%Y"`
 bilder_local="/uio/caesar/no.uio.universitas_80/htdocs/bilder/$aar/"
-bilder_remote="universitas@login.domeneshop.no:static/bilder/$aar/"
+bilder_remote="haakenlid@linode:/srv/fotoarkiv_universitas/STAGING"
 key="/uio/kant/div-universitas-u1/haakenl/.ssh/id_rsa"
 logg="/uio/caesar/no.uio.universitas_80/htdocs/tmp/rsync.logg"
 
