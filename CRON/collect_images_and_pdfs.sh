@@ -36,19 +36,18 @@ mkdir -p $IMAGE_FOLDER $PDF_FOLDER
 
 ERROR='_ERROR'
 
-image_files=$(find "$DESKEN/$ISSUE" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" -and -not -name "$ERROR*"')
+image_files=$(find "$DESKEN/$ISSUE" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" -and -not -name "$ERROR*")
 for original in $image_files; do
   original=$(fix_filnavn.py $original)
   # ln -s $image $IMAGE_FOLDER
   compressed="$IMAGE_FOLDER/$(basename $original)"
   if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
-    convert "$original" -geometry 1024x1600  -quality 60 -compress JPEG -strip "$compressed"
+    convert "$original" -resize 1500x -quality 60 "$compressed"
     echo "compressed  $original"
     echo "        ->  $compressed"
     if [[ ! -e "$compressed" ]]; then
-      folder=dirname "$original"
-      filename="$ERROR_$(basename "$original")"
-
+      filename=$(dirname "$original")/$ERROR_$(basename "$original")
+      echo "ERROR" $filename
 
     fi
   else
