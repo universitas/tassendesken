@@ -42,7 +42,7 @@ for original in $image_files; do
   original=$(fix_filnavn.py $original)
   # ln -s $image $IMAGE_FOLDER
   compressed="$IMAGE_FOLDER/$(basename $original)"
-  if [[ -e "$compressed" || "$original" -nt "$compressed" ]]; then
+  if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
     convert "$original" -geometry 1024x1600  -quality 60 -compress JPEG -strip "$compressed"
     echo "compressed  $original"
     echo "        ->  $compressed"
@@ -53,9 +53,13 @@ done
 # remove stale files
 for compressed in $(ls $IMAGE_FOLDER); do
   echo $compressed
-  # if ! $(find $DESKEN/ISSUE -name $compressed); then
-    # echo $compressed "does not exist!"
-  # fi
+  if [[ "" == $(find "$DESKEN/$ISSUE" -name "$compressed") ]]; then
+    echo "does not exist!"
+    rm "$IMAGE_FOLDER/$compressed"
+  else
+    echo "exists!"
+  fi
+
 done
 
 find $PDF_FOLDER -type l -delete
