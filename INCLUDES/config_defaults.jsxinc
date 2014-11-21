@@ -4,13 +4,15 @@
 var config = {}; // config-objektet
 
 if ($.os.match("Macintosh")) {
-    config.rotMappe = "/div-univ-desken/"; // Rotmappe for macOS
+    config.rotMappe = "/univ-desken/"; // Rotmappe for macOS
 } else {
-    config.rotMappe = "//kant.uio.no/div-univ-desken/"; // Rotmappe for Windows
+    config.rotMappe = "//kant.uio.no/div-universitas-desken/"; // Rotmappe for Windows
 }
 
 config.api = {}; // legg inn riktig api-innlogging i config_local.jsxinc
-config.api.URL = "HEMMELIG"; // url til webapi
+config.api.HOST = "HEMMELIG"; // url til webapi
+config.api.TEXT = "HEMMELIG"; // url til webapi
+config.api.PHOTO = "HEMMELIG"; // url til webapi
 config.api.USER = "HEMMELIG"; // brukernavn til webapi
 config.api.PASSWORD = "HEMMELIG"; // passord til webapi
 
