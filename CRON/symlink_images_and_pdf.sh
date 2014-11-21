@@ -4,6 +4,8 @@ DESKEN="/uio/kant/div-universitas-desken"
 IMAGE_FOLDER="$DESKEN/SCRIPTS/CRON/STAGING/IMAGES"
 PDF_FOLDER="$DESKEN/SCRIPTS/CRON/STAGING/PDF"
 
+mkdir -p $IMAGE_FOLDER $PDF_FOLDER
+
 cd $DESKEN
 
 if [ "$2" ]; then
@@ -11,7 +13,7 @@ if [ "$2" ]; then
   avisnr=$2
 else
   aar=$(date +%Y)
-  avisnr=$(ls $PLATON/ | grep -e '^[0-9]\{1,3\}$' | sort -nr | head -n 1)
+  avisnr=$(ls $DESKEN/ | grep -e '^[0-9]\{1,3\}$' | sort -nr | head -n 1)
 fi
 echo "$avisnr ($aar)"
 
@@ -29,15 +31,17 @@ read last_pid < lock
 echo $$ > lock
 
 # Symlink jpg and png files.
-image_files = $(find "$DESKEN/$avisnr" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" )
-pdf_files = $(find "$DESKEN/$avisnr" -iname "UNIV*.pdf")
+image_files=$(find "$DESKEN/$avisnr" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" )
+pdf_files=$(find "$DESKEN/$avisnr" -name "UNI11*.pdf")
 
-for image in $image_files do;
+rm $IMAGE_FOLDER/*
+for image in $image_files; do
   # fix_filnavn.py $image
   ln -s $image $IMAGE_FOLDER
 done
 
-for pdf_file in $pdf_files do;
+rm $PDF_FOLDER/*
+for pdf_file in $pdf_files; do
   ln -s $pdf_file $PDF_FOLDER
 done
 
