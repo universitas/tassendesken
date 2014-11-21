@@ -1,4 +1,5 @@
 #! /bin/bash
+# Compile pdf files into multipage document.
 /usr/bin/gs \
   -sDefaultCMYKProfile=ISOnewspaper26v4.icc  \
   -dFastWebView=true \

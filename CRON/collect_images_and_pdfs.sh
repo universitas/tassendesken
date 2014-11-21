@@ -34,24 +34,21 @@ mkdir -p $IMAGE_FOLDER $PDF_FOLDER
 # [ ! -z "$last_pid" -a -d /proc/$last_pid ] && echo "Already running" && exit
 # echo $$ > lock
 
-ERROR='_ERROR'
-
-image_files=$(find "$DESKEN/$ISSUE" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" -and -not -name "$ERROR*")
+ERROR='_ERROR_'
+image_files=$(find "$DESKEN/$ISSUE" -iregex '.*\.\(jpg\|jpeg\|png\)' ! -name '._*' ! -name "$ERROR*")
 for original in $image_files; do
-  original=$(fix_filnavn.py $original)
+  original=$($SCRIPT_FOLDER/fix_filnavn.py $original)
   # ln -s $image $IMAGE_FOLDER
   compressed="$IMAGE_FOLDER/$(basename $original)"
   if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
     convert "$original" -resize 1500x -quality 60 "$compressed"
-    echo "compressed  $original"
-    echo "        ->  $compressed"
-    if [[ ! -e "$compressed" ]]; then
-      filename=$(dirname "$original")/$ERROR_$(basename "$original")
-      echo "ERROR" $filename
-
+    #echo "compressed  $original"
+    #echo "        ->  $compressed"
+    if [[ ! -f "$compressed" ]]; then
+      broken_file=$(dirname "$original")"/$ERROR"$(basename "$original")
+      echo "ERROR:   " $broken_file
+      mv $original $broken_file
     fi
-  else
-    echo "no change   $original"
   fi
 done
 
@@ -68,21 +65,4 @@ for pdf_file in $pdf_files; do
   ln -s $pdf_file $PDF_FOLDER
 done
 
-# Compress changed files.
 
-# Komprimer biletet
-# convert "$orgfil" -geometry 1024x1600  -quality 60 -compress JPEG -strip "$nyfil"
-# chmod a+r-x "$nyfil"
-
-# if [ ! -e "$nyfil" ]; then
-#   if [ -n "$(grep $orgfil error2)" ]; then
-#     #rm "$orgfil"
-#     echo "Tydelegvis problem m $orgfil..." >&2
-#     echo $orgfil >> persistent_error
-#     continue
-#   fi
-
-#   echo "E: convert \"$orgfil\" -geometry 1024x1600  -quality 60 -compress JPEG -strip  \"$nyfil\"" >&2
-#   echo "AVSLUTTA MED FEIL, konvertering mislukkast :("
-# echo "$orgfil" >> error
-# fi
