@@ -2,7 +2,7 @@
 
 function log {
     while IFS= read -r line; do
-        echo "$(date +"[%Y-%m-%d %H:%m:%S]") $line" >> $1
+        echo "$(date +"[%Y-%m-%d %H:%M:%S]") $line" >> $1
     done
 }
 
