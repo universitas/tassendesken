@@ -17,4 +17,4 @@ for myfile in sys.argv[1:]:
     new_path = '/'.join(path)
     if new_path != myfile:
         shutil.move(myfile, new_path)
-    print new_path
+    print path[-1]

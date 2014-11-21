@@ -1,28 +1,14 @@
 #!/bin/bash
 
-aar=`date "+%Y"`
-bilder_local="/uio/caesar/no.uio.universitas_80/htdocs/bilder/$aar/"
-bilder_remote="haakenlid@linode:/srv/fotoarkiv_universitas/STAGING"
-key="/uio/kant/div-universitas-u1/haakenl/.ssh/id_rsa"
-logg="/uio/caesar/no.uio.universitas_80/htdocs/tmp/rsync.logg"
+YEAR=$(date "+%Y")
+remote_linode="haakenlid@linode:/srv/fotoarkiv_universitas/STAGING/"
+remote_domeneshop="universitas@login.domeneshop.no:static/bilder/$YEAR/$ISSUE"
+logg="rsync.log"
 
-mkdir -p "$bilder_local"
-cd "$bilder_local"
+# key="/uio/kant/div-universitas-u1/haakenl/.ssh/id_rsa"
 
-m=0
+# uploading to domeneshop
+/usr/bin/rsync -rthzv $IMAGE_FOLDER $remote_domeneshop > "$logg"
 
-for i in $(ls|grep "^[0-9]\{1,3\}$"); do
-	if [ "$i" -gt "$m" ]; then
-		m=$i
-	fi
-done
+# uploading to linode
 
-if [ m = 0 ]; then
-	exit
-fi
-
-echo "Laster opp fra $aar $m"
-date --rfc-3339=seconds
-sleep 1
-
-/usr/bin/rsync -rthzv $m $bilder_remote > "$logg"

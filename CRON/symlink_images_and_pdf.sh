@@ -1,29 +1,31 @@
 #!/bin/bash
 
+PATH="/usr/bin:/bin:$SCRIPT_FOLDER"
+IFS=$'\n'
 DESKEN="/uio/kant/div-universitas-desken"
 SCRIPT_FOLDER="$DESKEN/SCRIPTS/CRON"
 IMAGE_FOLDER="$DESKEN/SCRIPTS/CRON/STAGING/IMAGES"
 PDF_FOLDER="$DESKEN/SCRIPTS/CRON/STAGING/PDF"
 
-mkdir -p $IMAGE_FOLDER $PDF_FOLDER
+remote_linode="haakenlid@linode:/srv/fotoarkiv_universitas/STAGING/"
+remote_domeneshop="universitas@login.domeneshop.no:static/bilder/"
 
-cd $DESKEN
+logfile="rsync.log"
 
 if [ "$2" ]; then
-  aar=$1
-  avisnr=$2
+  YEAR=$1
+  ISSUE=$2
 else
-  aar=$(date +%Y)
-  avisnr=$(ls $DESKEN/ | grep -e '^[0-9]\{1,3\}$' | sort -nr | head -n 1)
+  ISSUE=$(ls $DESKEN/ | grep -e '^[0-9]\{1,3\}$' | sort -nr | head -n 1)
 fi
-echo "$avisnr ($aar)"
 
-if [ "$avisnr" = "" ]; then
+echo "$ISSUE ($YEAR)"
+
+if [ "$ISSUE" = "" ]; then
   exit
 fi
 
-PATH="/usr/bin:/bin:$SCRIPT_FOLDER"
-IFS=$'\n'
+mkdir -p $IMAGE_FOLDER $PDF_FOLDER
 
 # Check that we are not already running
 touch lock
@@ -34,14 +36,23 @@ echo $$ > lock
 # Symlink jpg and png files.
 
 find $IMAGE_FOLDER -type l -delete
-image_files=$(find "$DESKEN/$avisnr" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" )
-for image in $image_files; do
-  image=$(fix_filnavn.py $image)
-  ln -s $image $IMAGE_FOLDER
+image_files=$(find "$DESKEN/$ISSUE" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" )
+for original in $image_files; do
+  original=$(fix_filnavn.py $original)
+  # ln -s $image $IMAGE_FOLDER
+  compressed="$IMAGE_FOLDER/$(basename $original)"
+  if [[ -e "$compressed" || "$original" -nt "$compressed" ]]; then
+    convert "$original" -geometry 1024x1600  -quality 60 -compress JPEG -strip "$compressed"
+    echo "compressed  $original"
+    echo "        ->  $compressed"
+  else
+    echo "no change   $original"
+  fi
+  # TODO remove stale files
 done
 
 find $PDF_FOLDER -type l -delete
-pdf_files=$(find "$DESKEN/$avisnr" -name "UNI11*.pdf")
+pdf_files=$(find "$DESKEN/$ISSUE" -name "UNI11*.pdf")
 for pdf_file in $pdf_files; do
   ln -s $pdf_file $PDF_FOLDER
 done
