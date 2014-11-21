@@ -16,6 +16,7 @@ if [ "$2" ]; then
   YEAR=$1
   ISSUE=$2
 else
+  YEAR=$(date +%Y)
   ISSUE=$(ls $DESKEN/ | grep -e '^[0-9]\{1,3\}$' | sort -nr | head -n 1)
 fi
 
@@ -28,10 +29,10 @@ fi
 mkdir -p $IMAGE_FOLDER $PDF_FOLDER
 
 # Check that we are not already running
-touch lock
-read last_pid < lock
-[ ! -z "$last_pid" -a -d /proc/$last_pid ] && echo "Already running" && exit
-echo $$ > lock
+# touch lock
+# read last_pid < lock
+# [ ! -z "$last_pid" -a -d /proc/$last_pid ] && echo "Already running" && exit
+# echo $$ > lock
 
 # Symlink jpg and png files.
 
