@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DESKEN="/uio/kant/div-universitas-desken"
+SCRIPT_FOLDER="$DESKEN/SCRIPTS/CRON"
 IMAGE_FOLDER="$DESKEN/SCRIPTS/CRON/STAGING/IMAGES"
 PDF_FOLDER="$DESKEN/SCRIPTS/CRON/STAGING/PDF"
 
@@ -21,7 +22,7 @@ if [ "$avisnr" = "" ]; then
   exit
 fi
 
-PATH="/usr/bin:/bin"
+PATH="/usr/bin:/bin:$SCRIPT_FOLDER"
 IFS=$'\n'
 
 # Check that we are not already running
@@ -35,13 +36,12 @@ echo $$ > lock
 find $IMAGE_FOLDER -type l -delete
 image_files=$(find "$DESKEN/$avisnr" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" )
 for image in $image_files; do
-  fix_filnavn.py $image
+  image=$(fix_filnavn.py $image)
   ln -s $image $IMAGE_FOLDER
 done
 
 find $PDF_FOLDER -type l -delete
 pdf_files=$(find "$DESKEN/$avisnr" -name "UNI11*.pdf")
-rm $PDF_FOLDER/*
 for pdf_file in $pdf_files; do
   ln -s $pdf_file $PDF_FOLDER
 done

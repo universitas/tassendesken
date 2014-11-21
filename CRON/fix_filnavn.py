@@ -11,8 +11,10 @@ from unidecode import unidecode
 
 
 for myfile in sys.argv[1:]:
-    myfile = unicode(myfile)
-    nytt_navn = unidecode(myfile)
-    nytt_navn = re.sub('[_\-\s]+', '-', nytt_navn)
-    # shutil.move(myfile, nytt_navn)
-    print nytt_navn
+    path = myfile.split('/')
+    new_name = unidecode(path[-1].decode('utf-8'))
+    path[-1] = re.sub('[^\w.]+', '-', new_name)
+    new_path = '/'.join(path)
+    if new_path != myfile:
+        shutil.move(myfile, new_path)
+    print new_path
