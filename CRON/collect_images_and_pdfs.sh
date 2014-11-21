@@ -1,11 +1,13 @@
 #!/bin/bash
 
-PATH="/usr/bin:/bin:$SCRIPT_FOLDER"
-IFS=$'\n'
+# IFS=$'\n'
+# PATH="/usr/bin:/bin:$SCRIPT_FOLDER"
 DESKEN="/uio/kant/div-universitas-desken"
+
 SCRIPT_FOLDER="$DESKEN/SCRIPTS/CRON"
-IMAGE_FOLDER="$DESKEN/SCRIPTS/CRON/STAGING/IMAGES"
-PDF_FOLDER="$DESKEN/SCRIPTS/CRON/STAGING/PDF"
+STAGING="$DESKEN/STAGING"
+IMAGE_FOLDER="$STAGING/IMAGES"
+PDF_FOLDER="$STAGING/PDF"
 
 remote_linode="haakenlid@linode:/srv/fotoarkiv_universitas/STAGING/"
 remote_domeneshop="universitas@login.domeneshop.no:static/bilder/"
@@ -65,4 +67,14 @@ for pdf_file in $pdf_files; do
   ln -s $pdf_file $PDF_FOLDER
 done
 
+# key="/uio/kant/div-universitas-u1/haakenl/.ssh/id_rsa"
 
+# uploading to domeneshop
+logg="$STAGING/domeneshop-rsync.log"
+remote="$remote_domeneshop/$YEAR/$ISSUE"
+/usr/bin/rsync -rthzv $IMAGE_FOLDER $remote > "$STAGING/$logg"
+
+# uploading to linode
+logg="$STAGING/linode-rsync.log"
+remote="$remote_linode"
+/usr/bin/rsync -rthzv $STAGING_FOLDER $remote > "$STAGING/$logg"
