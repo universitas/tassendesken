@@ -34,10 +34,9 @@ mkdir -p $IMAGE_FOLDER $PDF_FOLDER
 # [ ! -z "$last_pid" -a -d /proc/$last_pid ] && echo "Already running" && exit
 # echo $$ > lock
 
-# Symlink jpg and png files.
+ERROR='_ERROR'
 
-find $IMAGE_FOLDER -type l -delete
-image_files=$(find "$DESKEN/$ISSUE" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" )
+image_files=$(find "$DESKEN/$ISSUE" -iname "*.jpg" -and -not -path "*/._*" -or -iname "*.png" -and -not -path "*/._*" -and -not -name "$ERROR*"')
 for original in $image_files; do
   original=$(fix_filnavn.py $original)
   # ln -s $image $IMAGE_FOLDER
@@ -46,20 +45,22 @@ for original in $image_files; do
     convert "$original" -geometry 1024x1600  -quality 60 -compress JPEG -strip "$compressed"
     echo "compressed  $original"
     echo "        ->  $compressed"
+    if [[ ! -e "$compressed" ]]; then
+      folder=dirname "$original"
+      filename="$ERROR_$(basename "$original")"
+
+
+    fi
   else
     echo "no change   $original"
   fi
 done
+
 # remove stale files
 for compressed in $(ls $IMAGE_FOLDER); do
-  echo $compressed
   if [[ "" == $(find "$DESKEN/$ISSUE" -name "$compressed") ]]; then
-    echo "does not exist!"
     rm "$IMAGE_FOLDER/$compressed"
-  else
-    echo "exists!"
   fi
-
 done
 
 find $PDF_FOLDER -type l -delete
