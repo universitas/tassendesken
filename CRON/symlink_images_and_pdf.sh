@@ -48,7 +48,13 @@ for original in $image_files; do
   else
     echo "no change   $original"
   fi
-  # TODO remove stale files
+done
+# remove stale files
+for compressed in $(ls $IMAGE_FOLDER); do
+  echo $compressed
+  # if ! $(find $DESKEN/ISSUE -name $compressed); then
+    # echo $compressed "does not exist!"
+  # fi
 done
 
 find $PDF_FOLDER -type l -delete
