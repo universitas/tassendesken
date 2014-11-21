@@ -13,7 +13,10 @@ from unidecode import unidecode
 for myfile in sys.argv[1:]:
     path = myfile.split('/')
     new_name = unidecode(path[-1].decode('utf-8'))
-    path[-1] = re.sub('[^\w.]+', '-', new_name)
+    new_name = re.sub('[^\w.]+', '-', new_name)
+    new_name = re.sub('\.(jpeg, jpg)$', '.jpg', new_name, re.IGNORECASE)
+    new_name = re.sub('\.(png)$', '.png', new_name, re.IGNORECASE)
+    path[-1] = new_name
     new_path = '/'.join(path)
     if new_path != myfile:
         shutil.move(myfile, new_path)
