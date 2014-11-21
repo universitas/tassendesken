@@ -9,7 +9,7 @@ function log {
 IFS=$'\n'
 # PATH="/usr/bin:/bin:$SCRIPT_FOLDER"
 DESKEN="/uio/kant/div-universitas-desken"
-
+PRODSYS="/uio/caesar/no.uio.universitas_80/htdocs/bilder"
 SCRIPT_FOLDER="$DESKEN/SCRIPTS/CRON"
 STAGING="$DESKEN/STAGING"
 IMAGE_FOLDER="$STAGING/IMAGES"
@@ -72,10 +72,16 @@ for pdf_file in $pdf_files; do
   ln -s $pdf_file $PDF_FOLDER
 done
 
+# uploading to prodsys
+logfile="$STAGING/prodsys-rsync.log"
+remote="$PRODSYS/$YEAR/$ISSUE"
+# mkdir -p $remote
+/usr/bin/rsync -thvr "$IMAGE_FOLDER/" $remote | log $logfile
+
 # uploading to domeneshop
 logfile="$STAGING/domeneshop-rsync.log"
 remote="$remote_domeneshop/$YEAR/$ISSUE"
-/usr/bin/rsync -rthzv $IMAGE_FOLDER $remote | log $logfile
+/usr/bin/rsync -thzv $IMAGE_FOLDER $remote | log $logfile
 
 # uploading to linode
 logfile="$STAGING/linode-rsync.log"
