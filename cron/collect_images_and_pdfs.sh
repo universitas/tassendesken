@@ -32,11 +32,13 @@ fi
 
 mkdir -p $IMAGE_FOLDER $PDF_FOLDER
 
-# Check that we are not already running
-# touch lock
-# read last_pid < lock
-# [ ! -z "$last_pid" -a -d /proc/$last_pid ] && echo "Already running" && exit
-# echo $$ > lock
+# remove stale files
+for compressed in $(ls $IMAGE_FOLDER); do
+  if [[ "" == $(find "$DESKEN/$ISSUE" -name "$compressed") ]]; then
+    rm "$IMAGE_FOLDER/$compressed"
+    echo "removed $compressed" | log $logfile
+  fi
+done
 
 ERROR='_ERROR_'
 image_files=$(find "$DESKEN/$ISSUE" -iregex '.*\.\(jpg\|jpeg\|png\)' ! -name '._*' ! -name "$ERROR*")
@@ -44,7 +46,8 @@ for original in $image_files; do
   original=$($SCRIPT_FOLDER/fix_filnavn.py $original)
   compressed="$IMAGE_FOLDER/$(basename $original)"
   if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
-    echo 
+    updated_image_files=true
+    echo
     convert "$original" -resize 1500x -quality 60 "$compressed"
     echo "compressed  $original" | log $logfile
     if [[ ! -f "$compressed" ]]; then
@@ -55,17 +58,6 @@ for original in $image_files; do
   fi
 done
 
-chmod 664 -R $IMAGE_FOLDER
-chmod 775 $IMAGE_FOLDER
-
-# remove stale files
-for compressed in $(ls $IMAGE_FOLDER); do
-  if [[ "" == $(find "$DESKEN/$ISSUE" -name "$compressed") ]]; then
-    rm "$IMAGE_FOLDER/$compressed"
-    echo "removed $compressed" | log $logfile
-  fi
-done
-
 # Symlink pdf files.
 find $PDF_FOLDER -type l -delete
 pdf_files=$(find "$DESKEN/$ISSUE" -name "UNI11*.pdf")
@@ -73,20 +65,26 @@ for pdf_file in $pdf_files; do
   ln -s $pdf_file $PDF_FOLDER
 done
 
-# upload to prodsys
-logfile="$STAGING/prodsys-rsync.log"
-remote="$PRODSYS/$YEAR/$ISSUE"
-mkdir -p remote 
-/usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | log $logfile
-chmod 777 $remote
+if $updated_image_files; then
+  # chmod 664 -R $IMAGE_FOLDER
+  # chmod 775 $IMAGE_FOLDER
 
-# upload to domeneshop
-logfile="$STAGING/domeneshop-rsync.log"
-remote="$remote_domeneshop/$YEAR/$ISSUE"
-/usr/bin/rsync /dev/null $remote_domeneshop/$YEAR/
-/usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | log $logfile
+  # upload to prodsys
+  logfile="$STAGING/prodsys-rsync.log"
+  remote="$PRODSYS/$YEAR/$ISSUE"
+  mkdir -p remote
+  /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | log $logfile
+  chmod 777 $remote
 
-# upload to linode
-logfile="$STAGING/linode-rsync.log"
-remote="$remote_linode"
-/usr/bin/rsync -rthzvLp $STAGING $remote --delete --exclude=*.log | log $logfile
+  # upload to domeneshop
+  logfile="$STAGING/domeneshop-rsync.log"
+  remote="$remote_domeneshop/$YEAR/$ISSUE"
+  /usr/bin/rsync /dev/null $remote_domeneshop/$YEAR/
+  /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | log $logfile
+
+  # upload to linode
+  logfile="$STAGING/linode-rsync.log"
+  remote="$remote_linode"
+  /usr/bin/rsync -rthzvLp $STAGING $remote --delete --exclude=*.log | log $logfile
+
+fi
