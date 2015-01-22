@@ -79,7 +79,7 @@ if $updated_image_files; then
   # upload to domeneshop
   logfile="$STAGING/domeneshop-rsync.log"
   remote="$remote_domeneshop/$YEAR/$ISSUE"
-  /usr/bin/rsync /dev/null $remote_domeneshop/$YEAR/
+  /usr/bin/rsync -q /dev/null $remote_domeneshop/$YEAR/ # Make sure folder for year exists.
   /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | log $logfile
 
   # upload to linode
