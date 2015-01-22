@@ -72,7 +72,7 @@ if $updated_image_files; then
   # upload to prodsys
   logfile="$STAGING/prodsys-rsync.log"
   remote="$PRODSYS/$YEAR/$ISSUE"
-  mkdir -p remote
+  mkdir -p $remote
   /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | log $logfile
   chmod 777 $remote
 
