@@ -54,7 +54,8 @@ for original in $image_files; do
     fi
   fi
 done
-chmod 664 $IMAGE_FOLDER/*
+
+chmod 664 -R $IMAGE_FOLDER
 chmod 775 $IMAGE_FOLDER
 
 # remove stale files
