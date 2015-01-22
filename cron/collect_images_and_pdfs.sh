@@ -81,11 +81,10 @@ if $updated_image_files; then
   remote="$remote_domeneshop/$YEAR/$ISSUE"
   # Make sure folder for year exists.
   /usr/bin/rsync -q /dev/null "$remote_domeneshop/$YEAR/"
-  /usr/bin/rsync -thzvrp --delete "$IMAGE_FOLDER/" "$remote" | log $logfile
+  /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" "$remote" | log $logfile
 
   # upload to linode
   logfile="$STAGING/linode-rsync.log"
   remote="$remote_linode"
-  /usr/bin/rsync -rthzvLp $STAGING $remote --delete --exclude=*.log | log $logfile
-
+  /usr/bin/rsync -rthzvLp $STAGING $remote --exclude=*.log | log $logfile
 fi
