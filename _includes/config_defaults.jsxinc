@@ -5,8 +5,10 @@ var config = {}; // config-objektet
 
 if ($.os.match("Macintosh")) {
     config.rotMappe = "/univ-desken/"; // Rotmappe for macOS
+    config.smallFont = ScriptUI.newFont("Lucida Grande", "bold", 9) // litt mindre font enn standardstørrelsen
 } else {
     config.rotMappe = "//kant.uio.no/div-universitas-desken/"; // Rotmappe for Windows
+    config.smallFont = ScriptUI.newFont("Arial", "bold", 9) // litt mindre font enn standardstørrelsen
 }
 
 config.api = {}; // legg inn riktig api-innlogging i config_local.jsxinc

@@ -4,20 +4,31 @@
 #include json2.jsxinc
 /* jshint ignore:end */
 
+function log(message) {
+    // log message
+    $.writeln(message);
+}
+
 function importerSak(sak, artikkeltype) { // placeholder som skal erstattes med en annen funksjon i skriptet import.jsx
   try {
     var nysak = prodsys.get(sak.prodsak_id); // henter sak i prodsys
-    $.writeln(sak.arbeidstittel + " " + artikkeltype.type); // skriver info til konsollen i EST
+    log(sak.arbeidstittel + " " + artikkeltype.type); // skriver info til konsollen i EST
     prodsys.post(sak.prodsak_id, '{"produsert":'+prodsys.gammelDeskStatus+'}'); // flytter saken til neste status i prodsys
   } catch (e) {
-    $.writeln(e); // skriver feilmelding til konsollen
+    log(e); // skriver feilmelding til konsollen
   }
 }
 
 function main(){
+//~     try {
+//~       var sak = prodsys.get(897);
+//~     } catch(e) {
+//~       log(e); // skriver feilmelding til konsollen
+//~       throw e
+//~     }
     var sak = prodsys.get(897);
     a = 1+1;
-    $.write(sak);
+    log(sak);
 }
 
 var prodsys = { // Objekt om representerer produksjonssystemet på webserveren
@@ -41,13 +52,14 @@ prodsys.request = function(url, method, data){
   var response;
   var httpRequest = "";
 
-  data = "json=" + toUnicode(data); // Odins skript krever en sånn json= før json-objectet.
+  
 
   // Setter sammen en httpRequest. Serveren er veldig streng på at det må være riktig formulert
-  httpRequest += httpMethod + " " + url + " HTTP/1.0";
+  httpRequest += httpMethod + " " + api_url + " HTTP/1.0";
   httpRequest += "\rHost:" + this.host;
 
   if (data) {
+    data = "json=" + toUnicode(data); // Odins skript krever en sånn json= før json-objectet.
     httpRequest += "\rContent-Type: application/x-www-form-urlencoded; charset=UTF-8";
     httpRequest += "\rContent-Length: " + data.length;
   }
@@ -61,17 +73,19 @@ prodsys.request = function(url, method, data){
     httpRequest += "\r\r";
   }
 
+  log(api_url + "\n" + method + "\n" + data + "\n" + httpRequest)
+
   if (connection.open(this.host+':'+this.port)) { // koble til produksjonssystemet
     connection.write(httpRequest);
     reply = connection.read(999999); // Maks antall tegn som jeg forventer at JSON-objektet skal være.
     connection.close();
-    if (!/200 OK/.test(svar)) { // "200 OK" er http-kode for vellykket request
+    if (!/200 OK/.test(reply)) { // "200 OK" er http-kode for vellykket request
       throw ("HTTP error!\n" + reply + "\n\n---------------------\n\n" + httpRequest);
     }
     if (!/{.*}/.test(reply)) { // Hvis det ikke sendes noen JSON-objekt
       throw ("Request error\n" + reply + "\n\n---------------------\n\n" + httpRequest);
     }
-    reply = reply.replace(/[^@]*text\/html/, ""); // fjerner http-header
+    reply = reply.replace(/^[^{[]*/, ""); // fjerner http-header
     return reply;
   }
 };
@@ -81,12 +95,18 @@ prodsys.get = function(prodsak_id) { // hvis det finnes en prodsak_id henter skr
 
   url = prodsak_id ? prodsak_id+"/json/" : "json/";
 
-  reply = this.request(url, method, null);
+  reply = this.request(url, method, "");
   reply = fixEncoding(reply); // fikser windows encoding i prodsys-databasen.
   reply = fixHTMLentities(reply); // fikser gjenstridige HTML-entiteter;
 
-  resultat = eval("(" + reply + ")"); // eval regnes som trygt når avsenderen er snill. Men det _kan_ være en potensiell bakdør for slemme hackere.
-    // TODO: bytt ut med skikkelig JSON parser.
+  try{
+    //resultat = JSON.parse(reply); 
+    resultat = eval('(' + reply + ')');
+  } catch(e) {
+    log(e + "\n" + reply)
+    resultat = {}
+  }
+      
   return resultat;
 };
 
@@ -156,4 +176,4 @@ function fixHTMLentities(myString) { // Gjør om HTML-entiteter av typen &#261; 
   return myString;
 }
 
-main();
+//main();

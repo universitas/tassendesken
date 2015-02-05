@@ -1,4 +1,5 @@
-﻿try {
+﻿
+try {
     app.colorSettings = "universitas";
 } catch (myError) {}
 
@@ -16,87 +17,43 @@ function copyFiles(localFolder, serverFolder, fileName) {
         var target = new File(localFolder + "/" + myFile.name);
         if ((!target.exists || (target.exists && target.length != myFile.length)) && myFile.name.substr(0, 2) != "._") {
             var funker = myFile.copy(target);
+            if (!funker){
+                $.writeln(funker, target)
+            }
+
         }
     }
 }
 
-if (parseInt(app.version) == 10) {
-    // CS 3 på mac
-    try {
-        copyFiles(
-            Folder("~/Library/Preferences/Adobe%20Photoshop%20CS3%20Settings/"),
-            Folder("/univ-desken/UTTEGNER/SCRIPTS/OPPDATER/STARTUP_PHOTOSHOP/"), "*.psp");
-        //photoshop keyboard shortcuts  OBS: målmappa må være skrivbar!
-        copyFiles(
-            Folder("/Applications/Adobe%20Photoshop%20CS3/Presets/Scripts/"),
-            Folder("/univ-desken/UTTEGNER/SCRIPTS/OPPDATER/STARTUP_PHOTOSHOP/"), "*.jsx");
-        //scriptfiler til photoshop OBS: målmappa må være skrivbar!
-        copyFiles(
-            Folder("/Applications/Adobe%20Photoshop%20CS3/Presets/Scripts/"),
-            Folder("/univ-desken/UTTEGNER/SCRIPTS/"), "artikkeltyper.jsxinc");
-        // en include
-        copyFiles(
-            Folder("/Applications/Adobe%20Photoshop%20CS3/Presets/Scripts/"),
-            Folder("/univ-desken/UTTEGNER/SCRIPTS/"), "prodsys.jsxinc");
-        // en include
-    } catch (e) {
-        alert(e);
-    }
-} else if (app.version == "12.1.0" && $.os.match("Macintosh")) {
-    // CS 5 på mac
-    try {
-        copyFiles(
-            Folder("~/Library/Preferences/Adobe%20Photoshop%20CS5.1%20Settings/"),
-            Folder("/univ-desken/UTTEGNER/SCRIPTS/OPPDATER/STARTUP_PHOTOSHOP/"), "*.psp");
-        //photoshop keyboard shortcuts  OBS: målmappa må være skrivbar!
-        copyFiles(
-            Folder("/Applications/Adobe%20Photoshop%20CS5.1/Presets/Scripts/"),
-            Folder("/univ-desken/UTTEGNER/SCRIPTS/OPPDATER/STARTUP_PHOTOSHOP/"), "*.jsx");
-        //scriptfiler til photoshop OBS: målmappa må være skrivbar!
-        copyFiles(
-            Folder("/Applications/Adobe%20Photoshop%20CS5.1/Presets/Scripts/"),
-            Folder("/univ-desken/UTTEGNER/SCRIPTS/"), "artikkeltyper.jsxinc");
-        // en include
-        copyFiles(
-            Folder("/Applications/Adobe%20Photoshop%20CS5.1/Presets/Scripts/"),
-            Folder("/univ-desken/UTTEGNER/SCRIPTS/"), "prodsys.jsxinc");
-        // en include
-    } catch (e) {
-        alert(e);
-    }
-} else if ($.os.match("Windows")) {
-    // CS 5.5 eller senere på windows
+if ($.os.match("Windows")) {
     try {
         var localScriptfolder = Folder(app.path + "/Presets/Scripts");
         var localPreferencesfolder = app.preferencesFolder;
+        var SERVER = '//kant.uio.no/div-universitas-desken/';
+        
 
         copyFiles(
             //photoshop keyboard shortcuts  OBS: målmappa må være skrivbar!
             localPreferencesfolder,
-            Folder("//platon/univ-desken/UTTEGNER/SCRIPTS_CS55/OPPDATER/STARTUP_PHOTOSHOP/"),
+            Folder(SERVER+'SCRIPTS/copy_to_local/'),
             "*.psp"
         );
 
         copyFiles(
             //scriptfiler til photoshop OBS: målmappa må være skrivbar!
             localScriptfolder,
-            Folder("//platon/univ-desken/UTTEGNER/SCRIPTS_CS55/OPPDATER/STARTUP_PHOTOSHOP/"),
-            "*.jsx"
+            Folder(SERVER+'SCRIPTS/copy_to_local/'),
+            "lol"
+            //"local_save_image_for_universitas.jsx"
         );
 
         copyFiles(
             // en include
             localScriptfolder,
-            Folder("//platon/univ-desken/UTTEGNER/SCRIPTS_CS55/"),
-            "artikkeltyper.jsxinc"
+            Folder(SERVER+'SCRIPTS/_includes/'),
+            "*.jsxinc"
         );
 
-        copyFiles(
-            // en include
-            localScriptfolder,
-            Folder("//platon/univ-desken/UTTEGNER/SCRIPTS_CS55/"),
-            "prodsys.jsxinc"
-        );
     } catch (e) {
         alert(e);
     }

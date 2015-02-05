@@ -78,11 +78,11 @@ if $updated_image_files; then
   # chmod 775 $IMAGE_FOLDER
 
   # upload images to prodsys
-  logfile="$STAGING/prodsys-rsync.log"
-  remote="$PRODSYS/$YEAR/$ISSUE"
-  mkdir -p $remote
-  /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | logger $logfile
-  chmod 777 $remote
+  # logfile="$STAGING/prodsys-rsync.log"
+  # remote="$PRODSYS/$YEAR/$ISSUE"
+  # mkdir -p $remote
+  # /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | logger $logfile
+  # chmod 777 $remote
 
   # upload images to domeneshop
   logfile="$STAGING/domeneshop-rsync.log"
