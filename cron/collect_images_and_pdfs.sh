@@ -9,7 +9,8 @@ function logger() {
 
 # paths for local folders
 DESKEN="/uio/kant/div-universitas-desken"
-PRODSYS="/uio/caesar/no.uio.universitas_80/htdocs/bilder"
+# PRODSYS="/uio/caesar/no.uio.universitas_80/htdocs/bilder"
+PRODSYS="/net/app-evs/w3-vh/no.uio.universitas_80/htdocs/bilder"
 SCRIPT_FOLDER="$DESKEN/SCRIPTS/cron"
 STAGING="$DESKEN/STAGING"
 IMAGE_FOLDER="$STAGING/IMAGES"
@@ -78,11 +79,11 @@ if $updated_image_files; then
   # chmod 775 $IMAGE_FOLDER
 
   # upload images to prodsys
-  # logfile="$STAGING/prodsys-rsync.log"
-  # remote="$PRODSYS/$YEAR/$ISSUE"
-  # mkdir -p $remote
-  # /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | logger $logfile
-  # chmod 777 $remote
+  logfile="$STAGING/prodsys-rsync.log"
+  remote="$PRODSYS/$YEAR/$ISSUE"
+  mkdir -p $remote
+  /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | logger $logfile
+  chmod 777 $remote
 
   # upload images to domeneshop
   logfile="$STAGING/domeneshop-rsync.log"

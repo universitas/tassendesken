@@ -1,6 +1,5 @@
 ﻿/* jshint ignore:start */
-// #include config.jsxinc
-#include ../prodsys.jsxinc
+#include prodsys.jsxinc
 /* jshint ignore:end */
 
 var artikkeltyper = { // Hvilken mappe skal bildefilene lagres i? Dette objektet BØR oppdateres hvis det skjer endringer i prodsys.

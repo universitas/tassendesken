@@ -43,8 +43,7 @@ if ($.os.match("Windows")) {
             //scriptfiler til photoshop OBS: målmappa må være skrivbar!
             localScriptfolder,
             Folder(SERVER+'SCRIPTS/copy_to_local/'),
-            "lol"
-            //"local_save_image_for_universitas.jsx"
+            "local_save_image_for_universitas.jsx"
         );
 
         copyFiles(
