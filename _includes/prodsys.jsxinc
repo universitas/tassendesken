@@ -52,7 +52,7 @@ prodsys.request = function(url, method, data){
   var response;
   var httpRequest = "";
 
-  
+
 
   // Setter sammen en httpRequest. Serveren er veldig streng på at det må være riktig formulert
   httpRequest += httpMethod + " " + api_url + " HTTP/1.0";
@@ -73,7 +73,7 @@ prodsys.request = function(url, method, data){
     httpRequest += "\r\r";
   }
 
-  log(api_url + "\n" + method + "\n" + data + "\n" + httpRequest)
+  log(api_url + "\n" + method + "\n" + data + "\n" + httpRequest);
 
   if (connection.open(this.host+':'+this.port)) { // koble til produksjonssystemet
     connection.write(httpRequest);
@@ -100,13 +100,13 @@ prodsys.get = function(prodsak_id) { // hvis det finnes en prodsak_id henter skr
   reply = fixHTMLentities(reply); // fikser gjenstridige HTML-entiteter;
 
   try{
-    //resultat = JSON.parse(reply); 
+    //resultat = JSON.parse(reply);
     resultat = eval('(' + reply + ')');
   } catch(e) {
-    log(e + "\n" + reply)
-    resultat = {}
+    log(e + "\n" + reply);
+    resultat = {};
   }
-      
+
   return resultat;
 };
 

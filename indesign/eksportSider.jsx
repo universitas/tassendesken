@@ -1,7 +1,7 @@
 ﻿/* jshint ignore:start */
-#include ../_includes/dokTools.jsxinc 
-#include ../_includes/eksport.jsxinc  
-#include ../_includes/prodsys.jsxinc 
+#include ../_includes/dokTools.jsxinc
+#include ../_includes/eksport.jsxinc
+#include ../_includes/prodsys.jsxinc
 #targetengine "session"
 /* jshint ignore:end */
 
@@ -85,7 +85,7 @@ function lagPDF(dok) {
       .sectionPrefix = "";
     var myProgressBar = dokTools.progressBar("Lager PDF", "", dok.pages.length +
       1, false);
-    for (var i = 0; i < dialogbokser.length; i += 1) {
+    for (i = 0; i < dialogbokser.length; i += 1) {
       if (dialogbokser[i][0].checkedState) {
         fjern = true;
         minEksportSide = eksportliste[i];
@@ -164,7 +164,7 @@ function nestefredag() {
   var idag = new Date();
   var ukedag = idag.getDay();
   var fredag = new Date();
-  var resultat = ""; 
+  var resultat = "";
   fredag.setDate(idag.getDate() + (5 - ukedag));
   resultat = fredag.getFullYear()
     .toString()
