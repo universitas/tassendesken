@@ -25,19 +25,34 @@ function main(){
   } else { // Windows
       desktop = Folder(Folder.desktop);
   }
-
-  add_indesign_menu(
-    'Universitas (gammel versjon)',
-    server + old_scripts_folder,
-    menu_items
-    );
+  remove_indesign_menu("universitas")
+  remove_indesign_menu("tassen")
 
   add_indesign_menu(
     'Universitas',
     server + new_scripts_folder,
     menu_items
     );
+    
+  add_indesign_menu(
+    '(gammel Universitas)',
+    server + old_scripts_folder,
+    menu_items
+    );
+    
   open_indesign_libraries(desktop);
+}
+
+function remove_indesign_menu(delete_this_name){
+    var top_menu_items = app.menus.item('$ID/Main').submenus
+    var item_name
+    for (var n = 0; n < top_menu_items.length; n++){
+        menu_item = top_menu_items[n];
+        if (menu_item.name.match(delete_this_name, "i")){
+            menu_item.remove()
+        }
+    }
+    
 }
 
 function add_indesign_menu(menu_name, script_path, menu_items){ // lager en meny i Indesign for egne skripts

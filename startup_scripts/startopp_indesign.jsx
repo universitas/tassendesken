@@ -108,15 +108,18 @@ function copyFiles(localFolder, serverFolder, fileName) { // kopierer filer fra 
 	}
 }
 
-function deleteFiles(myFolder, fileName){
-	var myFile, myFiles;
-	if (myFolder.exists){
+function deleteFiles(folderName, fileName){
+    var myFile, myFiles;
+    var myFolder = Folder(folderName)
+    if (myFolder.exists){
 		myFiles = myFolder.getFiles(fileName);
 		for (var j=0; myFiles.length > j; j++){
 			myFile = myFiles[j];
 			try{
 				myFile.remove();
-			}catch(e){}
+			}catch(e){
+             alert('error')   
+             }
 		}
 	}
 }
