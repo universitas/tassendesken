@@ -1,7 +1,7 @@
 ﻿/* jshint ignore:start */
 #include ../_includes/dokTools.jsxinc
 #include ../_includes/config.jsxinc
-#targetengine "session"
+//#targetengine "session"
 /* jshint ignore:end */
 
 dokTools.clearSearch();
@@ -220,11 +220,13 @@ function tagReport(myTextFrames, sakstype) {
     var myTaggedText;
     var myRegExp;
     myReport += "Xtags:\u0008" + myXtags.length + " tegn\r";
-    var myXtagsArray = myXtags.split("\n@");
-    //myXtagsArray.splice(0,1);
-    for (var n = 0; n < myXtagsArray.length; n++) {
-      myTaggedText = myXtagsArray[n].match(/([^:]+):(.*)/);
-      myReport = myReport + "@" + myTaggedText[1] + "\u0008" + myTaggedText[2].length + " tegn\r";
+    if (myXtags) {
+        var myXtagsArray = myXtags.split("\n@");
+        //myXtagsArray.splice(0,1);
+        for (var n = 0; n < myXtagsArray.length; n++) {
+          myTaggedText = myXtagsArray[n].match(/([^:]+):(.*)/);
+          myReport = myReport + "@" + myTaggedText[1] + "\u0008" + myTaggedText[2].length + " tegn\r";
+        }
     }
     myReport += "\rtegn/spalte:\u0008" + Math.ceil(myXtags.length / spalter) + "\r";
 
