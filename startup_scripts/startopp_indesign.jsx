@@ -104,7 +104,7 @@ function copyFiles(localFolder, serverFolder, fileName) { // kopierer filer fra 
 		if (!target.exists || (target.exists && target.length != myFile.length)){
 			funker = myFile.copy(target);
 		} 
-    $.writeln(funker, target);
+    //$.writeln(funker, target);
 	}
 }
 

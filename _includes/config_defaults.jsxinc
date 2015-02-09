@@ -53,6 +53,7 @@ config.overrideStyles = {
 
 
 config.trynemappe = config.rotMappe + "/FOTO/bylinebilder/"; // mappa der trynebilder ligger
+config.resources = config.rotMappe + "/SCRIPTS/_resources/"
 config.epostCSV = config.rotMappe + "/SCRIPTS/_resources/epostbyline.csv" // liste over epostadresser i bruk i epostbyline
 config.importCSV = config.rotMappe + "/SCRIPTS/_resources/importstiler.csv" // tabell med artikkeltype-konfigurasjon
 config.eksportCSV = config.rotMappe + "/SCRIPTS/_resources/eksportstiler.csv" // tabell med hva de ulike paragraph styles skal oversettes til ved eksport

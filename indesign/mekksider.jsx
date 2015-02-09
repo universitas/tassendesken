@@ -1,5 +1,6 @@
-/* jshint ignore:start */
-#include ../config/config.jsxinc
+﻿/* jshint ignore:start */
+#include ../_includes/config.jsxinc
+#targetengine "session";
 /* jshint ignore:end */
 
 var avismal = File(config.mal_avis); // malfil for avisa
@@ -250,7 +251,6 @@ var mekkfilerPanel = {
       onsdag.setDate(idag.getDate() + (3 - ukedag));
       return onsdag;
     }
-
   }
 };
 

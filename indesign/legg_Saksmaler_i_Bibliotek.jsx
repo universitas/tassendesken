@@ -1,10 +1,10 @@
-// Lager saksmaler fra dokumentet saksmaler.indd
+﻿// Lager saksmaler fra dokumentet saksmaler.indd
 // Legger malgrupper til i et bibliotek og oppretter MAL_AVIS.indt
 // Skrevet av Håken Lid 2011
 
 /* jshint ignore:start */
-#include dokTools.jsxinc
-#include config.jsxinc
+#include ../_includes/dokTools.jsxinc
+#include ../_includes/config.jsxinc
 /* jshint ignore:end */
 dokTools.clearSearch();
 
@@ -98,7 +98,7 @@ if (!alleGrupper) {
       myProgressBar.update("side " + myPage.name + "  " + itemName);
       if (addToLibrary && myLibrary.assets.itemByName(itemName) === null) {
         var myAsset = myItem.store(myLibrary);
-        myAsset.assetType = AssetType.ATEXT_TYPE;
+        myAsset.assetType = AssetType.TEXT_TYPE;
         myAsset.name = itemName;
         myAsset.description = svar[1].split("\r").slice(0, 2).join(" ");
         myAsset.label = myReport;

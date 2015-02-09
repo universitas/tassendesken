@@ -1,6 +1,7 @@
-/* jshint ignore:start */
-#include dokTools.jsxinc
-#include config.jsxinc
+﻿/* jshint ignore:start */
+#include ../_includes/dokTools.jsxinc
+#include ../_includes/config.jsxinc
+#targetengine "session"
 /* jshint ignore:end */
 
 dokTools.clearSearch();
