@@ -27,13 +27,13 @@ function main(){
   }
 
   add_indesign_menu(
-    'Universitas',
+    'Gammel versjon av tassen-skript',
     server + old_scripts_folder,
     menu_items
     );
 
   add_indesign_menu(
-    'Universitas ny',
+    'Universitas',
     server + new_scripts_folder,
     menu_items
     );
