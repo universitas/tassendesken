@@ -27,7 +27,7 @@ function main(){
   }
 
   add_indesign_menu(
-    'Gammel versjon av tassen-skript',
+    'Universitas (gammel versjon)',
     server + old_scripts_folder,
     menu_items
     );

@@ -72,13 +72,13 @@ var files_to_copy = [
 ];
 
 function main() {
+	deleteFiles(folders.local.startup_scripts, '*.js*');
 	for (var n=0; files_to_copy.length > n; n++){
 		file = files_to_copy[n];
 
 		filename = file.filename;
 		source = Folder(file.remotefolder);
 		destination = Folder(file.localfolder);
-
 		copyFiles(destination, source, filename);
 
 	}
@@ -103,7 +103,7 @@ function copyFiles(localFolder, serverFolder, fileName) { // kopierer filer fra 
 		var target = new File(localFolder+"/"+myFile.name);
 		if (!target.exists || (target.exists && target.length != myFile.length)){
 			funker = myFile.copy(target);
-		} 
+		}
     //$.writeln(funker, target);
 	}
 }
