@@ -18,13 +18,13 @@ function copyFiles(localFolder, serverFolder, fileName) {
         if ((!target.exists || (target.exists && target.length != myFile.length)) && myFile.name.substr(0, 2) != "._") {
             var funker = myFile.copy(target);
             if (!funker){
-                $.writeln('Ble ikke kopiert' + funker + target)
+                //$.writeln('Ble ikke kopiert' + funker + target)
             } else {
-                $.writeln('Ble kopiert' + funker + target)
+                //$.writeln('Ble kopiert' + funker + target)
 
 }
         }else{
-		  $.writeln('' + target + ' unendret')	
+		  //$.writeln('' + target + ' unendret')	
 	   }
     }
 }
