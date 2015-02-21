@@ -333,7 +333,7 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
 
         var myRow;
         var myTextFrame;
-        var visButton = File(dokTools.getScriptFolder() + "/vis.png");
+        var visButton = config.resources + "/vis.png";
         var skalKobles = inkognitoStories.concat(inkognitoBilder);
         for ( i = 0; i < skalKobles.length; i += 1) {
             myRow = panel1.add("group"); // en rad i dialogen

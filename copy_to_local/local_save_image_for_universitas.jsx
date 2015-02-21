@@ -43,7 +43,7 @@ var artikkeltyper = { // Hvilken mappe skal bildefilene lagres i? Dette objektet
   };
 var seksjoner = ["Side2","Baksiden","Debatt","Forside","Kultur","Nyhet","Plakaten","Magasin"];// godkjente seksjoner
 var panelSize = 10; // antall prodsys-saker som skal vises.
-var dokumentPanelSize = 10; // antall Photoshop-dokumenter som skal vises.
+var dokumentPanelSize = 5; // antall Photoshop-dokumenter som skal vises.
 var startnummer = 0; // øverste sak i lista om man skroller
 var jpgsettings = JPEGSaveOptions;
 jpgsettings.embedColorProfile=true;
@@ -149,10 +149,10 @@ function main(){
     filnavn(1);
   };
   mappenavn.onChange = function(){
-    var myregexp = new regexp ("^"+mappenavn.text,"i");
+    var myRegExp = new RegExp ("^"+mappenavn.text,"i");
     folderexists=false;
     for(n=0;n<seksjoner.length;n+=1){ // går gjennom seksjonene for å se om de matcher med det som er skrevet i feltet
-      if (myregexp.test(seksjoner[n])&&mappenavn.text!==""){
+      if (myRegExp.test(seksjoner[n])&&mappenavn.text!==""){
         mappenavn.text=seksjoner[n]; // finner en match og bytter ut teksten med navnet på seksjonen
         folderexists=true;
       }
@@ -235,7 +235,7 @@ function main(){
     panel1.scrollbar.preferredSize.width = 15;
     panel1.scrollbar.preferredSize.height = 100;
     panel1.scrollbar.onChanging = function(){
-      sakslistefyll(math.floor(panel1.scrollbar.value));
+      sakslistefyll(Math.floor(panel1.scrollbar.value));
       myDialog.layout.layout(true);
     };
   }

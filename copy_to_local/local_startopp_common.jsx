@@ -3,6 +3,7 @@
 // på mac/CS5.5 Skal ligge i mappa /Library/Applicaton Support/Adobe/Startup Scripts CS5.5/Adobe Indesign/
 // på windows/CS5.5 Skal ligge i mappa C:\Program Files (x86)\Adobe\Adobe InDesign CS5.5\Scripts\startup scripts\
 // på windows/CS6 Skal ligge i mappa C:\Program Files (x86)\Common Files\Adobe\Startup Scripts CS6\Adobe InDesign\
+// på windows/CS6 Skal ligge i mappa C:\Program Files (x86)\Common Files\Adobe\Startup Scripts CS6\Adobe Photoshop\
 
 // Laget av Håken Lid februar 2010 for Adobe CS3 - må antageligvis oppdateres for nyere versjon av Adobepakka
 
@@ -20,8 +21,9 @@ function main(){
 
   appname = get_app_name();
   if (appname) {
-    scriptfile = SERVERNAME + SCRIPTFOLDER + '/startopp_' + appname + '.jsx';
-    eval_remote_script(scriptfile);
+    scriptfile = SERVERNAME + SCRIPTFOLDER + 'startopp_' + appname + '.jsx';
+    success = eval_remote_script(scriptfile);
+    // alert(scriptfile + " ran: " +success, "STARTUP SCRIPT");
   }
 }
 

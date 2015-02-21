@@ -1,7 +1,7 @@
 ﻿/* jshint ignore:start */
 #include config.jsxinc
 #include base64.jsxinc
-#include json2.jsxinc
+//#include json2.jsxinc
 /* jshint ignore:end */
 
 function log(message) {

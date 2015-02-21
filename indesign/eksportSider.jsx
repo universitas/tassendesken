@@ -108,8 +108,9 @@ function lagPDF(dok) {
     }
     myProgressBar.close();
     if (tilProdsys.checkedState) {
+       eksportTilProdsys(dok);
+
       try {
-        eksportTilProdsys(dok);
       } catch (e) {
         alert("Noe gikk feil med eksport til prodsys\r" + e);
       }
