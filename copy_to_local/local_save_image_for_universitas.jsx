@@ -43,7 +43,7 @@ var artikkeltyper = { // Hvilken mappe skal bildefilene lagres i? Dette objektet
   };
 var seksjoner = ["Side2","Baksiden","Debatt","Forside","Kultur","Nyhet","Plakaten","Magasin"];// godkjente seksjoner
 var panelSize = 10; // antall prodsys-saker som skal vises.
-var dokumentPanelSize = 5; // antall Photoshop-dokumenter som skal vises.
+var dokumentPanelSize = 8; // antall Photoshop-dokumenter som skal vises.
 var startnummer = 0; // øverste sak i lista om man skroller
 var jpgsettings = JPEGSaveOptions;
 jpgsettings.embedColorProfile=true;
@@ -99,7 +99,7 @@ function main(){
   label.graphics.font=smallfont;
 
   var fotoinit = panel2.add("edittext",undefined, ""); // felt til å skrive inn initaler for fotograf
-  fotoinit.characters = 3;
+  fotoinit.characters = 4;
   fotoinit.active = true;
 
   label = panel2.add("statictext",undefined,"nr:"); // felt tl å skrive inn utgavenummer
