@@ -77,9 +77,11 @@ function main(){
   var myDok;
   var myRow;
   var myDialog = new Window('dialog', 'Lagre til Universitas'); // brukergrensesnittet vises i denne dialogboksen
+  var prodsys_status;
 
   for (n=mineSaker.length-1;n>=0;n-=1){ // sorter ut hvilke saker som er aktuelle å koble bilder til
-    if (mineSaker[n].produsert!="0"&&mineSaker[n].produsert!="3"){ // fjerner ting som ikke har status = 0
+    prodstatus = mineSaker[n].produsert;
+    if (prodstatus > 4){
       mineSaker.splice(n,1);
     }
   }
