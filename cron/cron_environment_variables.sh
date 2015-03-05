@@ -36,4 +36,4 @@ LOGFILE="$STAGING/collect.log"
 
 # discover year and current issue number for Universitas.
 YEAR=$(date +%Y)
-ISSUE=$(ls $DESKEN/ | grep -e '^[0-9]\{1,3\}$' | sort -nr | head -n 1)
+ISSUE=$(ls -1 --color=never $DESKEN/ | grep -e '^[0-9]\{1,3\}$' | sort -nr | head -n 1)

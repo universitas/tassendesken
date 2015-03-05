@@ -5,7 +5,7 @@ source ${0%/*}/cron_environment_variables.sh
 
 cd "$PDF_FOLDER"
 mkdir -p "web"
-output_file=".\web\universitas-$YEAR-$ISSUE.pdf"
+output_file="universitas-$YEAR-$ISSUE.pdf"
 color_profile="$SCRIPT_FOLDER/ISOnewspaper26v4.icc"
 
 # Compile pdf files into multipage document.
@@ -25,5 +25,5 @@ color_profile="$SCRIPT_FOLDER/ISOnewspaper26v4.icc"
   -dMonoImageResolution=120 \
   -dProcessColorModel=/DeviceRGB \
   -dUseCIEColor=true \
-  -sOutputFile=$output_file \
+  -sOutputFile="$output_file" \
    UNI11VER*.pdf

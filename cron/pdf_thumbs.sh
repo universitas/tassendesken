@@ -20,13 +20,13 @@ for pdf_file in UNI11VER*000.pdf; do
   if [[ -e "$pgnL" || "$pdf_file" -nt "$pngL" ]]; then
   echo "$pdf_file" "$pngL"
     convert \
-      -colorspace CMYK \
       -density 160 \
       "$pdf_file"\
       -background white \
       -flatten \
       -resize "$L"x \
       -format png \
+      -colorspace sRGB \
       "$pngL"
 
     # convert "$pngL" -format jpg "$jpgL"
