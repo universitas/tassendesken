@@ -3,11 +3,12 @@
 # load environmental variables.
 source ${0%/*}/cron_environment_variables.sh
 
-L=1200
+# L=1200
+L=800
 M=500
 S=150
 
-cd "$pdf_folder"
+cd "$PDF_FOLDER"
 mkdir -p "png_$L" "jpg_$L" "jpg_$M" "jpg_$S"
 
 for pdf_file in UNI11VER*000.pdf; do
@@ -27,8 +28,8 @@ for pdf_file in UNI11VER*000.pdf; do
       -format png \
       "$pngL"
 
-    convert "$pngL" -format jpg "$jpgL"
-    convert "$pngL" -format jpg -resize "$M"x "$jpgM"
-    convert "$pngL" -format jpg -resize "$S"x "$jpgS"
+    # convert "$pngL" -format jpg "$jpgL"
+    # convert "$pngL" -format jpg -resize "$M"x "$jpgM"
+    # convert "$pngL" -format jpg -resize "$S"x "$jpgS"
   fi
 done
