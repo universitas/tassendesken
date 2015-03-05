@@ -1,32 +1,7 @@
 #!/bin/bash
 
-SCRIPTPATH=${0%/*}
-source $SCRIPTPATH/cron_environment_variables.sh
-
-# function logger() {
-#   # add a timestamp to each line from stdin and write to the file $1
-#   while IFS= read -r line; do
-#     echo "$(date +"[%Y-%m-%d %H:%M:%S]") $line" >> $1
-#   done
-# }
-
-# # paths for local folders
-# DESKEN="/uio/kant/div-universitas-desken"
-# PRODSYS="/net/app-evs/w3-vh/no.uio.universitas_80/htdocs/bilder"
-# SCRIPT_FOLDER="$DESKEN/SCRIPTS/cron"
-# STAGING="$DESKEN/STAGING"
-# IMAGE_FOLDER="$STAGING/IMAGES"
-# PDF_FOLDER="$STAGING/PDF"
-
-
-# # ssh for remote webservers
-# remote_linode="haakenlid@universitas.no:/srv/fotoarkiv_universitas"
-# remote_domeneshop="universitas@login.domeneshop.no:static/bilder"
-
-
-# IFS=$'\n'  # bash input field seperator
-# YEAR=$(date +%Y)
-# ISSUE=$(ls $DESKEN/ | grep -e '^[0-9]\{1,3\}$' | sort -nr | head -n 1)
+# load environmental variables.
+source ${0%/*}/cron_environment_variables.sh
 
 # logfile
 logfile="$STAGING/collect.log"

@@ -1,18 +1,21 @@
-#! /bin/bash
+#!/bin/bash
 
-pdf_folder="/home/haakenlid/Desktop/PDF"
-year=$(date +"%Y")
-issue=19
+# load environmental variables.
+source ${0%/*}/cron_environment_variables.sh
+
+L=1200
+M=500
+S=150
 
 cd "$pdf_folder"
-mkdir -p png1200 jpg1200 jpg500 jpg150
+mkdir -p "png_$L" "jpg_$L" "jpg_$M" "jpg_$S"
 
 for pdf_file in UNI11VER*000.pdf; do
-  pngL=png1200/$(echo "$pdf_file" | sed -r "s/UNI11VER.{6}(..)000.pdf/Universitas-$year-$issue-side-\1.png/")
-  jpgL=$(echo "$pngL" | sed -r "s/png/jpg/g")
-  jpgM=$(echo "$jpgL" | sed -r "s/1200/500/g")
-  jpgS=$(echo "$jpgL" | sed -r "s/1200/150/g")
-  # echo "$jpgL $jpgM $jpgS"
+  pngL=png_$L/$(echo "$pdf_file" | sed -r "s/UNI11VER.{6}(..)000.pdf/universitas-$YEAR-$ISSUE-page-\1.png/")
+  jpgL=$(echo "$pngL" | sed -r s/png/jpg/g)
+  jpgM=$(echo "$jpgL" | sed -r s/"$L"/"$M"/g)
+  jpgS=$(echo "$jpgL" | sed -r s/"$L"/"$S"/g)
+
   if [[ -e "$pgnL" || "$pdf_file" -nt "$pngL" ]]; then
   echo "$pdf_file" "$pngL"
     convert \
@@ -20,12 +23,12 @@ for pdf_file in UNI11VER*000.pdf; do
       "$pdf_file"\
       -background white \
       -flatten \
-      -resize 1200x \
+      -resize "$L"x \
       -format png \
       "$pngL"
 
     convert "$pngL" -format jpg "$jpgL"
-    convert "$pngL" -format jpg -resize 500x "$jpgM"
-    convert "$pngL" -format jpg -resize 150x "$jpgS"
+    convert "$pngL" -format jpg -resize "$M"x "$jpgM"
+    convert "$pngL" -format jpg -resize "$S"x "$jpgS"
   fi
 done
