@@ -9,7 +9,10 @@ M=500
 S=150
 
 cd "$PDF_FOLDER"
-mkdir -p "png_$L" "jpg_$L" "jpg_$M" "jpg_$S"
+mkdir -p "png_$L"
+# mkdir -p "jpg_$L"
+# mkdir -p "jpg_$M"
+# mkdir -p "jpg_$S"
 
 for pdf_file in UNI11VER*000.pdf; do
   pngL=png_$L/$(echo "$pdf_file" | sed -r "s/UNI11VER.{6}(..)000.pdf/universitas-$YEAR-$ISSUE-page-\1.png/")
@@ -18,9 +21,10 @@ for pdf_file in UNI11VER*000.pdf; do
   jpgS=$(echo "$jpgL" | sed -r s/"$L"/"$S"/g)
 
   if [[ -e "$pgnL" || "$pdf_file" -nt "$pngL" ]]; then
-  echo "$pdf_file" "$pngL"
+  # echo "$pdf_file" "$pngL"
     convert \
       -density 160 \
+      -colorspace CMYK \
       "$pdf_file"\
       -background white \
       -flatten \
