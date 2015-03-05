@@ -2,7 +2,6 @@
 # Set environmental variables for cron jobs.
 
 # bash input field seperator
-IFS=$'\n'
 
 function logger() {
   # add a timestamp to each line from stdin and write to the file $1
@@ -11,8 +10,9 @@ function logger() {
   done
 }
 
-# paths for local folders
+IFS=$'\n'
 
+# paths for local folders
 # Universitasdesken @uio
 DESKEN="/uio/kant/div-universitas-desken"
 
