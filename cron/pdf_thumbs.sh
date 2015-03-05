@@ -7,7 +7,7 @@ L=1200
 M=500
 S=150
 
-cd "$pdf_folder"
+cd "$PDF_FOLDER"
 mkdir -p "png_$L" "jpg_$L" "jpg_$M" "jpg_$S"
 
 for pdf_file in UNI11VER*000.pdf; do

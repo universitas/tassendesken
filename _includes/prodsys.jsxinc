@@ -126,7 +126,7 @@ prodsys.put = function(prodsak_id) {
 };
 
 prodsys.bildepost = function(prodsak_id, data){
-  return this.post(prodsys, data);
+  return this.post(prodsak_id, data);
 };
 
 

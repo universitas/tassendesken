@@ -555,14 +555,14 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
                             kommentar = ('Vellykket eksport fra InDesign!  Endring: ' + (minSak.xtags.length - minSak.json.tekst.length) + ' tegn\n' + idag.toLocaleString() + '\n' + minSak.json.kommentar);
                             prodsys.post(prodsak_id, '{"kommentar":"' + kommentar + '"}'); // legger til en kommentar i kommentarfeltet.
                         } catch (e) {
-                            $.writeln(e);
+                            $.writeln("558", e);
                         }
                     }
                     if (minSak.json.produsert == prodsys.gammelDeskStatus) { // flytter saker som har status "Gammeldesk"
                         try {
                             prodsys.post(prodsak_id, '{"produsert":"' + prodsys.tilWebStatus + '"}'); // flyttes til status "til web"
                         } catch (e) {
-                            $.writeln(e);
+                            $.writeln("565", e);
                         }
                     }
 
