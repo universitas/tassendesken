@@ -23,13 +23,13 @@ source $SCRIPTPATH/cron_environment_variables.sh
 # remote_linode="haakenlid@universitas.no:/srv/fotoarkiv_universitas"
 # remote_domeneshop="universitas@login.domeneshop.no:static/bilder"
 
-# # logfile
-# logfile="$STAGING/collect.log"
 
 # IFS=$'\n'  # bash input field seperator
 # YEAR=$(date +%Y)
 # ISSUE=$(ls $DESKEN/ | grep -e '^[0-9]\{1,3\}$' | sort -nr | head -n 1)
 
+# logfile
+logfile="$STAGING/collect.log"
 echo "Collecting images and pdfs for: $ISSUE ($YEAR)" | logger $logfile
 
 # Make sure local folders exist.
@@ -89,13 +89,13 @@ if $updated_image_files; then
 
   # upload images to domeneshop
   logfile="$STAGING/domeneshop-rsync.log"
-  remote="$remote_domeneshop/$YEAR/$ISSUE"
+  remote="$REMOTE_DOMENESHOP/$YEAR/$ISSUE"
   # Make sure folder for year exists.
-  /usr/bin/rsync -q /dev/null "$remote_domeneshop/$YEAR/"
+  /usr/bin/rsync -q /dev/null "$REMOTE_DOMENESHOP/$YEAR/"
   /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" "$remote" | logger $logfile
 
   # upload to linode
   logfile="$STAGING/linode-rsync.log"
-  remote="$remote_linode"
+  remote="$REMOTE_LINODE"
   /usr/bin/rsync -rthzvLp $STAGING $remote --exclude=*.log | logger $logfile
 fi
