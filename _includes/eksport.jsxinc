@@ -593,8 +593,8 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
                                     if (testing) {
                                         $.writeln(testRapport);
                                     } else if (oppdaterBilde) {
-                                        prodsys.bildepost(prodsysBilde.prodbilde_id, '{"bildetekst":"' + saksBilde.bildetekst + '"}');
-                                        prodsys.bildepost(prodsysBilde.prodbilde_id, '{"prioritet":"' + saksBilde.prioritet + '"}');
+                                        prodsys.bildepost(prodsak_id, prodsysBilde.prodbilde_id, '"bildetekst":"' + saksBilde.bildetekst + '"');
+                                        prodsys.bildepost(prodsak_id, prodsysBilde.prodbilde_id, '"prioritet":"' + saksBilde.prioritet + '"');
                                     }
                                     continue prodsysbilder;
                                 }
@@ -608,7 +608,11 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
                             if (testing) {
                                 $.writeln(testRapport);
                             } else if (oppdaterBilde) {
-                                prodsys.bildepost(prodsysBilde.prodbilde_id, '{"prioritet":"0"}');
+                                try {
+                                    prodsys.bildepost(prodsak_id, prodsysBilde.prodbilde_id, '"prioritet":"0"');
+                                } catch(e) {
+                                        
+                                }
                             }
                         }
                     }

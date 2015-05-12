@@ -125,8 +125,12 @@ prodsys.put = function(prodsak_id) {
   return reply;
 };
 
-prodsys.bildepost = function(prodsak_id, data){
-  return this.post(prodsak_id, data);
+prodsys.bildepost = function(prodsak_id, prodbilde_id, data){
+  data =  '{"bilete":[{"prodbilde_id":"'+prodbilde_id +'",' + data +'}]}';
+  //$.writeln(data);
+  reply = this.post(prodsak_id, data);
+  //$.writeln(reply);
+  return reply
 };
 
 
