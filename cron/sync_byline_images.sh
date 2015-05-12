@@ -7,6 +7,8 @@ source ${0%/*}/cron_environment_variables.sh
 logfile="$STAGING/collect.log"
 echo "Collecting images and pdfs for: $ISSUE ($YEAR)" | logger $logfile
 
+/usr/bin/rsync -rthzvL haakenlid@universitas.no:/srv/fotoarkiv_universitas/byline/ /uio/kant/div-universitas-desken/FOTO/bylinebilder/web/
+
 # Make sure local folders exist.
 mkdir -p $IMAGE_FOLDER $PDF_FOLDER
 
