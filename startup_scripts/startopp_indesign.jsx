@@ -27,7 +27,7 @@ function get_folders(){
     },
     server: {
       libraries: SERVER + 'UTTEGNER/MALER/',
-      repo: SERVER + 'SCRIPTS/COPY_TO_LOCAL/'
+      repo: SERVER + 'SCRIPTS/copy_to_local/'
     }
   };
 
