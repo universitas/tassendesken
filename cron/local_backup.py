@@ -33,7 +33,7 @@ def main():
 def desken_folder():
     """Walk up the path tree to find desken folder"""
     this_file = os.path.abspath(__file__)
-    up = os.path.dirname 
+    up = os.path.dirname
     desken = up(up(up(this_file)))
     # desken = "/uio/kant/div-universitas-desken/"
     return desken
@@ -55,7 +55,52 @@ def archive_files_over_sftp(local_folder, remote_folder):
     with pysftp.Connection(
             ARKIV_IP, username=ARKIV_LOGIN, password=ARKIV_LOGIN) as sftp:
         sftp.makedirs(remote_folder)
-        sftp.put_r(local_folder, remote_folder)
+        put_r(sftp, local_folder, remote_folder)
+
+
+def put_r(self, localpath, remotepath, confirm=True, preserve_mtime=False):
+    """Recursively copies a local directory's contents to a remotepath
+
+    :param str localpath: the local path to copy (source)
+    :param str remotepath:
+        the remote path to copy to (target)
+    :param bool confirm:
+        whether to do a stat() on the file afterwards to confirm the file
+        size
+    :param bool preserve_mtime:
+        *Default: False* - make the modification time(st_mtime) on the
+        remote file match the time on the local. (st_atime can differ
+        because stat'ing the localfile can/does update it's st_atime)
+
+    :returns: None
+
+    :raises IOError: if remotepath doesn't exist
+    :raises OSError: if localpath doesn't exist
+    """
+    self._sftp_connect()
+    wtcb = WTCallbacks()
+    cur_local_dir = os.getcwd()
+    os.chdir(localpath)
+    walktree('.', wtcb.file_cb, wtcb.dir_cb, wtcb.unk_cb)
+    # restore local directory
+    os.chdir(cur_local_dir)
+    for dname in wtcb.dlist:
+        if dname != '.':
+            pth = reparent(remotepath, dname)
+            if not self.isdir(pth):
+                self.mkdir(pth)
+
+    for fname in wtcb.flist:
+        head, _ = os.path.split(fname)
+        if head not in wtcb.dlist:
+            for subdir in path_advance(head):
+                if subdir not in wtcb.dlist and subdir != '.':
+                    self.mkdir(reparent(remotepath, subdir))
+                    wtcb.dlist = wtcb.dlist + [subdir, ]
+        src = os.path.join(localpath, fname)
+        dest = reparent(remotepath, fname)
+        # print('put', src, dest)
+        self.put(src, dest, confirm=confirm, preserve_mtime=preserve_mtime)
 
 if __name__ == '__main__':
     main()
