@@ -30,11 +30,12 @@ for compressed in $(ls $IMAGE_FOLDER); do
   fi
 done
 
-ERROR='_ERROR_' # used to rename image files that can't be converted.
+
+$SCRIPT_FOLDER/fix_filnavn.py "$DESKEN/$ISSUE"
+ERROR='ERROR-' # used to rename image files that can't be converted.
 image_files=$(find "$DESKEN/$ISSUE" -iregex '.*\.\(jpg\|jpeg\|png\)' ! -name '._*' ! -name "$ERROR*")
 
 for original in $image_files; do
-  original=$($SCRIPT_FOLDER/fix_filnavn.py $original)
   compressed="$IMAGE_FOLDER/$(basename $original)"
   if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
     updated_image_files=true

@@ -25,14 +25,17 @@ def walk(filename):
 def rename(root, old, new):
     old_path = os.path.join(root, old)
     new_path = os.path.join(root, new)
+    if old.startswith('~'):
+        return old_path
     if new_path != old_path:
         while os.path.exists(new_path):
             new = '0' + new
             new_path = os.path.join(root, new)
-        shutil.move(old_path, new_path)
+        try:
+            shutil.move(old_path, new_path)
+        except OSError as ex:
+            pass
 
-    print('{}\n{}\n'.format(old_path, new_path))
-    # return old_path
     return new_path
 
 
