@@ -8,8 +8,8 @@ Example:
     add this to crontab (crontab -e) to run every day at 05:00
     0 5 * * * /uio/kant/div-universitas-desken/SCRIPTS/cron/local_backup.py
 """
-
-import pysftp
+from __future__ import print_function
+from pysftp import Connection, WTCallbacks, reparent, path_advance, walktree
 import datetime
 import os
 
@@ -23,7 +23,7 @@ def main():
     year = datetime.datetime.now().year
     desken = desken_folder()
     issue = find_current_issue(desken)
-    print desken, year, issue
+    print(desken, year, issue)
     archive_files_over_sftp(
         local_folder='%s/%s/' % (desken, issue),
         remote_folder='%s/%s/%s' % (ARKIV_SHARE, year, issue)
@@ -52,37 +52,19 @@ def find_current_issue(desken):
 
 def archive_files_over_sftp(local_folder, remote_folder):
     """Connect to SFTP server and copy local folder recursively"""
-    with pysftp.Connection(
+    with Connection(
             ARKIV_IP, username=ARKIV_LOGIN, password=ARKIV_LOGIN) as sftp:
         sftp.makedirs(remote_folder)
         put_r(sftp, local_folder, remote_folder)
 
 
 def put_r(self, localpath, remotepath, confirm=True, preserve_mtime=False):
-    """Recursively copies a local directory's contents to a remotepath
 
-    :param str localpath: the local path to copy (source)
-    :param str remotepath:
-        the remote path to copy to (target)
-    :param bool confirm:
-        whether to do a stat() on the file afterwards to confirm the file
-        size
-    :param bool preserve_mtime:
-        *Default: False* - make the modification time(st_mtime) on the
-        remote file match the time on the local. (st_atime can differ
-        because stat'ing the localfile can/does update it's st_atime)
-
-    :returns: None
-
-    :raises IOError: if remotepath doesn't exist
-    :raises OSError: if localpath doesn't exist
-    """
     self._sftp_connect()
     wtcb = WTCallbacks()
     cur_local_dir = os.getcwd()
     os.chdir(localpath)
     walktree('.', wtcb.file_cb, wtcb.dir_cb, wtcb.unk_cb)
-    # restore local directory
     os.chdir(cur_local_dir)
     for dname in wtcb.dlist:
         if dname != '.':
@@ -99,7 +81,9 @@ def put_r(self, localpath, remotepath, confirm=True, preserve_mtime=False):
                     wtcb.dlist = wtcb.dlist + [subdir, ]
         src = os.path.join(localpath, fname)
         dest = reparent(remotepath, fname)
-        # print('put', src, dest)
+        if self.isfile(dest) and os.stat(src).st_mtime > self.stat(dest).st_mtime:
+            continue
+        print('put', src, dest, os.stat(src).st_mtime)
         self.put(src, dest, confirm=confirm, preserve_mtime=preserve_mtime)
 
 if __name__ == '__main__':
