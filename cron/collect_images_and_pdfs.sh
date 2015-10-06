@@ -10,10 +10,15 @@ echo "Collecting images and pdfs for: $ISSUE ($YEAR)" | logger $logfile
 # Make sure local folders exist.
 mkdir -p $IMAGE_FOLDER $PDF_FOLDER
 
-if [ "$ISSUE" = "" ]; then
+if [[ -z "$ISSUE" ]]; then
   # no valid folder name.
   echo "No valid folder for this week's issue" >&2
   exit 1
+fi
+
+if [[ -z "$(find "$DESKEN/$ISSUE" -mmin -10 -print -quit)" ]]; then
+  # no modified files
+  exit 0    
 fi
 
 # remove stale files in local image staging folder.
