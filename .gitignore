@@ -1,3 +1,7 @@
+# Pythobn
+*.pyc
+*.pyo
+
 # Mac
 .DS_Store
 ._*
