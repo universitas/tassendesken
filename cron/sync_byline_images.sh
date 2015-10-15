@@ -2,19 +2,34 @@
 
 # load environmental variables.
 source ${0%/*}/cron_environment_variables.sh
-echo scripts: $SCRIPT_FOLDER
+echo "scripts: $SCRIPT_FOLDER"
 
 # logfile
 logfile="$STAGING/bylines.log"
 
-LOCAL_BYLINES=/uio/kant/div-universitas-desken/FOTO/byline-web/
-REMOTE_BYLINES=haakenlid@universitas.no:/srv/fotoarkiv_universitas/byline/
+LARGE_BYLINES=/uio/kant/div-universitas-desken/FOTO/bylinebilder
+WEB_BYLINES=/uio/kant/div-universitas-desken/STAGING/BYLINE
+REMOTE_BYLINES=haakenlid@universitas.no:/srv/fotoarkiv_universitas/byline
 
-image_files=$(find "$LOCAL_BYLINES")
 
-# for image in $(ls $LOCAL_BYLINES); do
-for image in $image_files; do
-  $SCRIPT_FOLDER/fix_filnavn.py $image
+$SCRIPT_FOLDER/fix_filnavn.py $LARGE_BYLINES
+
+originals=$(find "$LARGE_BYLINES" -iname "*.jp*g")
+for original in $originals; do
+  compressed="$WEB_BYLINES/$(basename $original)"
+  echo $original
+  echo $compressed
+  if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
+    updated_image_files=true
+    convert "$original" -resize 1500x -quality 75 "$compressed"
+    echo "compressed  $original" | logger $logfile
+    if [[ ! -f "$compressed" ]]; then
+      # Unable to convert image file. Corrupt file or wrong filename.
+      broken_file=$(dirname "$original")"/$ERROR"$(basename "$original")
+      echo "ERROR: " $broken_file | logger $logfile
+      mv $original $broken_file # rename file.
+    fi
+  fi
 done
 
-/usr/bin/rsync -rthzvL $LOCAL_BYLINES $REMOTE_BYLINES
+/usr/bin/rsync -rthzvL "$WEB_BYLINES/" "$REMOTE_BYLINES/"

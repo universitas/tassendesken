@@ -19,7 +19,7 @@ def walk(filename):
             root, dirname = os.path.split(branch)
             branch = rename(root, dirname, unidecode_filename(dirname))
             for leaf in leaves:
-                rename(branch, leaf, unidecode_filename(leaf))
+                rename(branch, leaf, byline_format(leaf))
 
 
 def rename(root, old, new):
@@ -42,7 +42,7 @@ def rename(root, old, new):
 def unidecode_filename(filename):
     filename = filename.decode('utf-8')
     new_name = unidecode(filename)
-    new_name = re.sub(ur'[^A-Za-z0-9.]+', '-', new_name)
+    new_name = re.sub(ur'[^A-Za-z.]+', '-', new_name)
     new_name = new_name.strip('-')
     new_name = re.sub(ur'-?\.-?', '.', new_name)
     new_name = re.compile(ur'-*\.jpe?g', re.I).sub(u'.jpg', new_name)
@@ -51,8 +51,11 @@ def unidecode_filename(filename):
 
 def byline_format(full_path):
     folder, filename = os.path.split(full_path)
-    filename = filename.title()
     filename = unidecode_filename(filename)
+    filename = filename.title()
+    segments = filename.split('.')
+    segments[-1] = segments[-1].lower()
+    filename = '.'.join(segments)
     return os.path.join(folder, filename)
 
 if __name__ == '__main__':

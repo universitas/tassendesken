@@ -16,7 +16,7 @@ if [[ -z "$ISSUE" ]]; then
   exit 1
 fi
 
-if [[ -z "$(find "$DESKEN/$ISSUE" -mmin -10 -print -quit)" ]]; then
+if [[ -z "$(find "$DESKEN/$ISSUE" -mmin -5 -print -quit)" ]]; then
   # no modified files
   exit 0    
 fi
