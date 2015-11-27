@@ -17,17 +17,16 @@ $SCRIPT_FOLDER/fix_filnavn.py $LARGE_BYLINES
 originals=$(find "$LARGE_BYLINES" -iname "*.jp*g")
 for original in $originals; do
   compressed="$WEB_BYLINES/$(basename $original)"
-  echo $original
-  echo $compressed
   if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
     updated_image_files=true
     convert "$original" -resize 1500x -quality 75 "$compressed"
     echo "compressed  $original" | logger $logfile
     if [[ ! -f "$compressed" ]]; then
       # Unable to convert image file. Corrupt file or wrong filename.
-      broken_file=$(dirname "$original")"/$ERROR"$(basename "$original")
+      # broken_file=$(dirname "$original")"/$ERROR"$(basename "$original")
       echo "ERROR: " $broken_file | logger $logfile
-      mv $original $broken_file # rename file.
+      # mv $original $broken_file # rename file.
+      rm $original 
     fi
   fi
 done
