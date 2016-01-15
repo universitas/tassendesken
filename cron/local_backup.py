@@ -43,11 +43,10 @@ def find_current_issue(desken):
     """Find issue number based on which folder is the largest number"""
     folders = os.listdir(desken)
     try:
-        latest_issue = max(int(folder)
-                           for folder in folders if folder.isdigit())
+        latest_issue = max(folder for folder in folders if folder.isdigit())
     except ValueError:
         exit('No issue folder found in %s' % desken)
-    return str(latest_issue)
+    return latest_issue
 
 
 def archive_files_over_sftp(local_folder, remote_folder):
