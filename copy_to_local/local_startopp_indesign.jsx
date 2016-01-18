@@ -34,11 +34,11 @@ function main(){
     menu_items
     );
 
-  add_indesign_menu(
-    '(gammel Universitas)',
-    server + old_scripts_folder,
-    menu_items
-    );
+  // add_indesign_menu(
+  //   '(gammel Universitas)',
+  //   server + old_scripts_folder,
+  //   menu_items
+  //   );
 
   open_indesign_libraries(desktop);
 }
