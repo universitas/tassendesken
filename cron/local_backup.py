@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
 Run nightly to backup latest issue to local backup disk.
 
@@ -8,11 +9,13 @@ Example:
     add this to crontab (crontab -e) to run every day at 05:00
     0 5 * * * /uio/kant/div-universitas-desken/SCRIPTS/cron/local_backup.py
 """
+
 from __future__ import print_function
 from pysftp import Connection, WTCallbacks, reparent, path_advance, walktree
 import datetime
 import os
 
+# Dette er backupdisken i hylla på universitas-kontoret
 ARKIV_IP = '129.240.79.50'
 ARKIV_LOGIN = 'dennis'
 ARKIV_SHARE = 'arkiv'

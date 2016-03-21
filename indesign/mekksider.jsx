@@ -1,5 +1,7 @@
 ﻿/* jshint ignore:start */
 #include ../_includes/config.jsxinc
+#include ../_includes/dokTools.jsxinc
+
 #targetengine "session";
 /* jshint ignore:end */
 
@@ -280,6 +282,7 @@ mekkfilerPanel.mekkSider = function(sideArray, myFolder) {
 
   if (sideArray.length > 0) {
     myFile = File(myFolder + sideArray[0].filename);
+    $.writeln(myFile);
     myDoc.save(myFile);
     myDoc.close();
     app.documents.add();
