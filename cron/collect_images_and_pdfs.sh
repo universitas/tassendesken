@@ -53,8 +53,9 @@ done
 # Symlink pdf files.
 find $PDF_FOLDER -type l -delete  # delete symbolic links in pdf folder.
 pdf_files=$(find "$DESKEN/$ISSUE" -name "UNI1*.pdf")
+[[ -z $pdf_files ]] && pdf_files=$(ls -tr1 $pdf_files) # order by time
 for pdf_file in $pdf_files; do
-  ln -s $pdf_file $PDF_FOLDER # create symbolic links
+  ln -fs $pdf_file $PDF_FOLDER # create symbolic links
 done
 
 if $updated_image_files; then
