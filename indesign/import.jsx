@@ -22,18 +22,28 @@ var epostMatrix = dokTools.parseCSV(config.epostCSV); // tabell over navn og epo
 var feilmeldingsBoks = [5, 5, 40, 40]; // størrelsen på feilmeldingsboks når man ikke får limt inn bilder
 var bildemax = [80, 80] ;// max størrelse på bilder som legges i pasteboard
 
+function finnUtgaveMappe() {
+  // Returnerer mappe som matcher regex /^\d+$/ dvs. inneholder kun tall
+  // Leter helt til rota, eller returnerer mappa som dokumentet ligger i
+  docMappe = app.activeDocument.filePath
+  while (docMappe) {
+    if (/^\d+$/.test(docMappe.name)) {
+      return docMappe
+    }
+    docMappe = docMappe.parent
+  }
+  return app.activeDocument.filePath
+}
+
   function importerSak(JSONsak, somArtikkelType, importerbilder) { // JSONsak er et objekt basert på prodsys-json. somArtikkelType er et artikkeltypeobjekt
     BILDEDEBUG = importerbilder; // Skal bilder importeres. Kan skrus av for å teste eller spare litt tid
     try { // sørger for at det finnes et åpent dokument og avslutter skriptet hvis ikke
       myDocument = app.activeDocument;
-      mappaMi = myDocument.filePath.fullName + "/";
+      //mappaMi = myDocument.filePath.fullName + "/";
+      mappaMi = finnUtgaveMappe();
     } catch (myError) {
       alert("Kan ikke importere\ringen åpne dokumenter, eller aktivt dokument er ikke lagret\r\rfeilmelding: " + myError);
       exit();
-    }
-    utgavemappe = mappaMi.match(config.rotRegExp);
-    if (utgavemappe) {
-      mappaMi = utgavemappe[0]; // mappa for denne utgava av Universitas
     }
     var artikkelType = (somArtikkelType) ? somArtikkelType : artikkeltyper[-1]; // for testeformål kan importerSak kalles uten somArtikkelType - da blir artikkeltype automatisk den siste typen i lista ("annet")
     mySpread = app.activeWindow.activeSpread;
@@ -560,11 +570,11 @@ var bildemax = [80, 80] ;// max størrelse på bilder som legges i pasteboard
           myGB = [this.gb[0], this.gb[1], this.gb[0] + this.gb[5], this.gb[1] + this.gb[5]];
         }
       }
-
+      var minFolder = Folder(finnUtgaveMappe ()  + '/' + this.artikkeltype.seksjon);
       for (var q = 0; q < this.bilder.length; q += 1) {
         this.progressBar.update("bilde " + (q + 1) + " av " + this.bilder.length + "  :  " + this.bilder[q].bildefil);
         minBildeFrame = mineBilder[q].rectangle;
-        minFolder = Folder(mappaMi + this.artikkeltype.seksjon);
+      
         if (BILDEDEBUG && this.bilder[q].bildefil) { // BILDEDEBUG kan skrus av for DEBUG
           mittBilde = dokTools.finnFil(minFolder, this.bilder[q].bildefil);
           if (!mittBilde) {
