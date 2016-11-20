@@ -8,6 +8,7 @@ import sys
 import os
 from unidecode import unidecode
 
+
 def walk(filename):
     if not os.path.exists(filename):
         exit(u'File not found: %s' % filename)
@@ -42,12 +43,13 @@ def rename(root, old, new):
 def unidecode_filename(filename):
     filename = filename.decode('utf-8')
     new_name = unidecode(filename)
-    new_name = re.sub(ur'[^A-Za-z0-9.]+', '-', new_name)
+    new_name = re.sub(r'[^A-Za-z0-9.]+', '-', new_name)
     new_name = new_name.strip('-')
-    new_name = re.sub(ur'-?\.-?', '.', new_name)
-    new_name = re.compile(ur'-*\.jpe?g', re.I).sub(u'.jpg', new_name)
-    new_name = re.compile(ur'-*\.png', re.I).sub(u'.png', new_name)
+    new_name = re.sub(r'-?\.-?', '.', new_name)
+    new_name = re.compile(r'-*\.jpe?g', re.I).sub(u'.jpg', new_name)
+    new_name = re.compile(r'-*\.png', re.I).sub(u'.png', new_name)
     return new_name.encode('utf-8')
+
 
 def byline_format(full_path):
     folder, filename = os.path.split(full_path)
