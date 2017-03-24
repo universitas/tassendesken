@@ -34,7 +34,6 @@ if ($.os.match("Windows")) {
         var localScriptfolder = Folder(app.path + "/Presets/Scripts");
         var localPreferencesfolder = app.preferencesFolder;
         var SERVER = '//kant.uio.no/div-universitas-desken/';
-        
 
         copyFiles(
             //photoshop keyboard shortcuts  OBS: målmappa må være skrivbar!

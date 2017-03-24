@@ -6,18 +6,13 @@
 /* jshint ignore:end */
 
 var avismal = File(config.mal_avis); // malfil for avisa
-if ($.os.match("Macintosh")) {
-  var smallFont = ScriptUI.newFont("Arial", "bold", 9);// litt mindre font enn standardstørrelsen
-} else {
-  var smallFont = ScriptUI.newFont("Arial", "bold", 9);// litt mindre font enn standardstørrelsen
-}
+var smallFont = config.smallFont;
 
 var mekkfilerPanel = {
   visDialog: function() {
     var panelSize = 24; // max antall sider som vises i menyen
     var myPages = myDoc.pages.everyItem().getElements();
     var utgaveNr = utgave();
-    var myPageNumber = "";
     var myFolder = Folder(config.rotMappe + ("0" + utgaveNr).slice(-2) + "/INDESIGN/");
     if (false === myFolder.exists) {
       myFolder.create();
@@ -26,11 +21,14 @@ var mekkfilerPanel = {
     var filnavn = "UNI11VER" + nestefredag() + "XX000.indd"; // "XX" skal byttes ut med sidetall
     var pageArray = [];
     for (var n = 0; n < myPages.length; n++) {
-      myPageNumber = ("0" + parseInt(myDoc.pages[n].name)).slice(-2);
-      pageArray[n] = {};
-      pageArray[n].pageNumber = myPageNumber;
-      pageArray[n].filename = filnavn.replace(/XX/, myPageNumber);
-      pageArray[n].start = (n === 0 || n % 2 == 1);
+      var myPageNumber = ("0" + parseInt(myDoc.pages[n].name)).slice(-2);
+      var masterPage = myPages[n].appliedMaster.name;
+      var page = {};
+      page.pageNumber = myPageNumber;
+      page.filename = filnavn.replace(/XX/, myPageNumber);
+      page.master = masterPage;
+      page.start = (n === 0 || n % 2 == 1);
+      pageArray[n] = page;
     }
     var win = new Window("palette", "Opprett sider", undefined); // Selve vinduet som GUI vises i
     win.location = [60, 60]; // hvor på skjermen paletten skal dukke opp
@@ -44,6 +42,8 @@ var mekkfilerPanel = {
     win.header.sidetall.preferredSize = [68, 20];
     win.header.filename = win.header.add("statictext", undefined, "filnavn:");
     win.header.filename.preferredSize = [202, 20];
+    win.header.master = win.header.add("statictext", undefined, "master:");
+    win.header.master.preferredSize = [75, 20];
 
     win.panel1 = win.mainpanel.add("group");
     win.panel1.orientation = "row";
@@ -55,17 +55,25 @@ var mekkfilerPanel = {
     listePanel.alignChildren = "fill";
     listePanel.margins = [0, 0, 0, 0];
     listePanel.firstIndex = 0;
-
-    win.folderName = win.mainpanel.add("statictext", undefined, "mappe: " + myFolder);
-    win.folderName.preferredSize = [280, 15];
-    win.folderName.graphics.font = smallFont;
-
+    
+ 
     win.infoboks = win.mainpanel.add("statictext", undefined, "Del opp avisa i flere filer. Velg hvilke sider som skal være førsteside i de ulike indesign-filene og endre filnavnene hvis nødvendig.", {
       multiline: true
     });
-    win.infoboks.preferredSize = [280, 50];
+    win.infoboks.preferredSize = [355, 50];
     win.infoboks.graphics.font = smallFont;
+    
+    win.folderName = win.mainpanel.add("statictext", undefined, "utgave:  " + utgaveNr);
+    win.folderName.preferredSize = [355, 15];
+    win.folderName.graphics.font = smallFont;
+    
+    win.folderName = win.mainpanel.add("statictext", undefined, "dato:    onsdag " + dateToString (nesteonsdag ()));
+    win.folderName.preferredSize = [355, 15];
+    win.folderName.graphics.font = smallFont;
 
+    win.folderName = win.mainpanel.add("statictext", undefined, "mappe:  " + myFolder);
+    win.folderName.preferredSize = [355, 15];
+    win.folderName.graphics.font = smallFont;
 
 
     listePanel.refresh = function() { // fjerner innholdet i panelet og lager et nytt - i tilfelle antall saker i prodsys er endra eller noe sånt.
@@ -106,6 +114,8 @@ var mekkfilerPanel = {
         minRad.sidetall = minRad.add("statictext", undefined, "side 00");
         minRad.sidetall.preferredSize = [45, 20];
         //minRad.sidetall.graphics.font = smallFont;
+        
+
 
         minRad.startFil = minRad.add("checkbox");
         minRad.startFil.onClick = function(aktivRad) {
@@ -129,6 +139,9 @@ var mekkfilerPanel = {
             pageArray[aktivRad.pageArrayIndex].filename = aktivRad.filename.text;
           };
         }(minRad);
+        minRad.master = minRad.add("statictext", undefined, "master");
+        minRad.master.preferredSize = [75, 20];
+        minRad.master.graphics.font = smallFont;
       }
       listePanel.update();
     };
@@ -142,6 +155,7 @@ var mekkfilerPanel = {
         minSide = pageArray[minRad.pageArrayIndex];
 
         minRad.sidetall.text = "side " + (minSide.pageNumber);
+        minRad.master.text = (minSide.master);
 
         minRad.startFil.value = minSide.start;
         minRad.filename.text = minSide.filename;
@@ -181,11 +195,15 @@ var mekkfilerPanel = {
 
     win.show(); // viser vinduet i InDesign
 
+    function dateToString(date) {
+      var mnd = ["januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"];
+      return dateline = date.getDate() + ". " + mnd[date.getMonth()] + " " + (date.getYear() + 1900);
+    }
+
     function endredato() {
       //riktig dato
-      var mnd = new Array("januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember");
       var onsdag = nesteonsdag();
-      var dateline = onsdag.getDate() + ". " + mnd[onsdag.getMonth()] + " " + (onsdag.getYear() + 1900);
+      var dateline = dateToString(onsdag);
       var datelineFront = "årgang " + (onsdag.getYear() - 46) + ", utgave " + utgave();
       app.findGrepPreferences = NothingEnum.nothing;
       app.changeGrepPreferences = NothingEnum.nothing;

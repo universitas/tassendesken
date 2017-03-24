@@ -28,23 +28,19 @@ var myObjectStyle = dokTools.velgStil(myDok, "object", "beskjed");
 var parStyle1 = dokTools.velgStil(myDok, "paragraph", "A 5påplassen navn");
 var parStyle2 = dokTools.velgStil(myDok, "paragraph", "A 5påplassen");
 var myReportTextFrame;
-
+var myProgressBar = dokTools.progressBar("Mekker", "Mekker", 1, false)
 
 if (!alleGrupper) {
   mekkMalGeo(app.selection, promptforLabel);
 } else if (confirm("Saksmaler\nVil du legge alle saksmaler inn i bibiliteket Saksmaler.indl?", false)) {
-  if (addToLibrary) {
-    if (myLibrary.exists === false) {
-      addToLibrary = false;
-    } else {
+  if (addToLibrary && myLibrary.exists) {
       myWindow.zoom(ZoomOptions.fitSpread);
-      var myProgressBar = dokTools.progressBar("Legger maler til " + myLibrary.name, "Gjør klar", 120, false);
+      myProgressBar = dokTools.progressBar("Legger maler til " + myLibrary.name, "Gjør klar", 120, false);
       app.libraries.everyItem().close();
       myLibrary.copy(backupLibrary);
       myLibrary = app.open(myLibrary);
       app.panels.itemByName("Saksmaler").visible = false;
       myLibrary.assets.everyItem().remove();
-    }
   }
   clearReports(myDok, myObjectStyle);
   var myItem;
@@ -559,7 +555,7 @@ function lagNyAvisMal() {
   myWindow.activePage = myDok.pages[0];
   lagreSom.copy(backupMal);
   myProgressBar.update("Lagrer ny AVIS_MAL.indt");
-  myDok.save(lagreSom, true, undefined, true);
+  myDok.save(lagreSom, true, "", true);
   app.activeDocument.close();
   myProgressBar.update("Ferdig!");
   $.sleep(1000);

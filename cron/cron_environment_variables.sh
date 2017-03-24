@@ -28,8 +28,7 @@ IMAGE_FOLDER="$STAGING/IMAGES"
 PDF_FOLDER="$STAGING/PDF"
 
 # SSH login til webservere
-REMOTE_LINODE="haakenlid@universitas.no:/srv/fotoarkiv_universitas"
-REMOTE_DOMENESHOP="universitas@login.domeneshop.no:static/bilder"
+REMOTE_LINODE="haakenlid@universitas.no:/srv"
 
 # logfile
 LOGFILE="$STAGING/collect.log"

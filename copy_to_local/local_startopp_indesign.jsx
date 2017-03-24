@@ -38,11 +38,11 @@ function main(){
         ['Opprett ny avis', 'mekksider.jsx']
   ];
 
-  add_indesign_menu(
-    '(gammel)',
-    server + old_scripts_folder,
-    menu_items
-    );
+//~   add_indesign_menu(
+//~     '(gammel)',
+//~     server + old_scripts_folder,
+//~     menu_items
+//~     );
 
   open_indesign_libraries(desktop);
 }

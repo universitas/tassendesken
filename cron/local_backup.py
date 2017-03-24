@@ -54,6 +54,7 @@ def find_current_issue(desken):
 
 def archive_files_over_sftp(local_folder, remote_folder):
     """Connect to SFTP server and copy local folder recursively"""
+    import ipdb; ipdb.set_trace()
     with Connection(
             ARKIV_IP, username=ARKIV_LOGIN, password=ARKIV_LOGIN) as sftp:
         sftp.makedirs(remote_folder)
