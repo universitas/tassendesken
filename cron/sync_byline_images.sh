@@ -9,8 +9,8 @@ logfile="$STAGING/bylines.log"
 
 LARGE_BYLINES=/uio/kant/div-universitas-desken/FOTO/bylinebilder
 WEB_BYLINES=/uio/kant/div-universitas-desken/STAGING/BYLINE
-REMOTE_BYLINES=haakenlid@universitas.no:/srv/fotoarkiv_universitas/byline
 
+# REMOTE_BYLINES=haakenlid@universitas.no:/srv/fotoarkiv_universitas/byline
 
 $SCRIPT_FOLDER/fix_filnavn.py $LARGE_BYLINES
 
@@ -26,9 +26,10 @@ for original in $originals; do
       # broken_file=$(dirname "$original")"/$ERROR"$(basename "$original")
       echo "ERROR: " $broken_file | logger $logfile
       # mv $original $broken_file # rename file.
-      rm $original 
+      rm $original
     fi
   fi
 done
 
-/usr/bin/rsync -rthzvL "$WEB_BYLINES/" "$REMOTE_BYLINES/"
+# syncing is done by other script
+# /usr/bin/rsync -rthzvL "$WEB_BYLINES/" "$REMOTE_BYLINES/"
