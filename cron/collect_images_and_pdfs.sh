@@ -18,7 +18,7 @@ fi
 
 if [[ -z "$(find "$DESKEN/$ISSUE" -mmin -5 -print -quit)" ]]; then
   # no modified files
-  exit 0    
+  exit 0
 fi
 
 # remove stale files in local image staging folder.
@@ -62,12 +62,12 @@ if $updated_image_files; then
   # chmod 664 -R $IMAGE_FOLDER
   # chmod 775 $IMAGE_FOLDER
 
-  # upload images to prodsys
-  logfile="$STAGING/prodsys-rsync.log"
-  remote="$PRODSYS/$YEAR/$ISSUE"
-  mkdir -p $remote
-  /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | logger $logfile
-  chmod 777 $remote
+  # # upload images to prodsys
+  # logfile="$STAGING/prodsys-rsync.log"
+  # remote="$PRODSYS/$YEAR/$ISSUE"
+  # mkdir -p $remote
+  # /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | logger $logfile
+  # chmod 777 $remote
 
 #  # upload images to domeneshop
 #  logfile="$STAGING/domeneshop-rsync.log"

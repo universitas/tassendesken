@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
+
 """Recursively fix filenames to web friendly ascii instead of unicode"""
 from __future__ import print_function
 import re

@@ -1,8 +1,6 @@
 #!/bin/bash
-
 # load environmental variables.
 source ${0%/*}/cron_environment_variables.sh
-echo "scripts: $SCRIPT_FOLDER"
 
 # logfile
 logfile="$STAGING/bylines.log"
