@@ -24,18 +24,22 @@ FILETYPES = ['.jpg', '.png', '.ai', '.indd', '.pdf', '.jpeg', '.tif', '.png', '.
 
 def main():
     """Backup current issue over sftp to external backup device"""
-    year = datetime.datetime.now().year
+    current_year = datetime.datetime.now().year
     desken = desken_folder()
     if len(sys.argv) > 1:
         issues = sys.argv[1:]
     else:
         issues = [find_current_issue(desken)]
     for issue in issues:
-        print(desken, year, issue)
-        archive_files_over_sftp(
-            local_folder='%s/%s/' % (desken, issue),
-            remote_folder='%s/%s/%s' % (ROOTDIR, year, issue)
-        )
+        local_folder='%s/%s/' % (desken, issue)
+        if issue.startswith('_'):
+            year = current_year - 1
+            issue = issue[1:]
+        else:
+            year = current_year
+        print('backup of %s/%s' % (issue, year))
+        remote_folder='%s/%s/%s' % (ROOTDIR, year, issue)
+        archive_files_over_sftp(local_folder, remote_folder)
         print('\ndone\n')
 
 
@@ -116,6 +120,7 @@ def put_r(sftp, localpath, remotepath, confirm=True, preserve_mtime=True):
                 continue
             else:
                 print('changed %s < %s' % (dest_mtime, src_mtime), end=': ')
+                sftp.remove(dest)
         print('put           %s => %s' % (src, dest))
         sftp.put(src, dest, confirm=confirm, preserve_mtime=preserve_mtime)
 
