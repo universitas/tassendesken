@@ -1,4 +1,5 @@
-﻿/* jshint ignore:start */
+﻿// vim: set ft=javascript:
+/* jshint ignore:start */
 #targetengine "session"
 #include dokTools.jsxinc
 #include prodsys.jsxinc

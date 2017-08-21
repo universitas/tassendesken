@@ -1,4 +1,5 @@
-﻿// Diverse konstanter for å konfigurere skriptene. De fleste trivielle endringer skal kunne gjøres i denne fila.
+﻿// vim: set ft=javascript:
+// Diverse konstanter for å konfigurere skriptene. De fleste trivielle endringer skal kunne gjøres i denne fila.
 // Oppstartskriptene bruker ikke denne config-fila, så de må endres for seg.
 
 var config = {}; // config-objektet

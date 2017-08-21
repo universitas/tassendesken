@@ -54,7 +54,7 @@ function finnUtgaveMappe() {
     } else {
       try { // fanger opp eventuelle bugs
         minArtikkel = new artikkel(prodsys.get(JSONsak.prodsak_id), artikkelType, mySpread, app.selection); // henter sak fra prodsys og oppretter artikkelobjekt
-        prodsys.post(JSONsak.prodsak_id, '{"produsert":"4"}'); // flytter saken videre i prodsys;
+        config.DEBUG || prodsys.post(JSONsak.prodsak_id, '{"produsert":"4"}'); // flytter saken videre i prodsys;
       } catch (myError) { // produserer feilmelding
         if (minArtikkel.progressBar) {
           minArtikkel.progressBar.close(); // fjerner framdriftsvindu

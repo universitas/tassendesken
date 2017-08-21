@@ -2,11 +2,10 @@
 /* jshint ignore:start */
 #include config.jsxinc
 #include base64.jsxinc
-#include json2.jsxinc
+//#include json2.jsxinc
 /* jshint ignore:end */
 
 function log(message) {
-  // log to extendscript console
   if (!config.DEBUG) return
   $.writeln(typeof message === 'string'
     ? message
@@ -26,33 +25,28 @@ function importerSak(sak, artikkeltype) { // placeholder som skal erstattes med 
 }
 
 var prodsys = { // Objekt om representerer produksjonssystemet på webserveren
-  basicAuth: Base64.encode(config.api.USER+':'+config.api.PASSWORD),
-  host: 'universitas.no',
+  brukerogpassord: Base64.encode(config.api.USER+':'+config.api.PASSWORD),
+  host: config.api.HOST, // vertmaskin for prodsys
   port: 80,
-  apiPlassering: '/api/legacy/',
-  uferdigStatus: 0,
-  toJournalist: 3,
-  toSubEditor: 4,
-  toEditor: 5,
-  tilDeskStatus: 6,
-  gammelDeskStatus: 9,
-  tilWebStatus: 10,
-  slettStatus: 15,
+  apiPlassering: config.api.TEXT, // der API-skriptet ligger
+  apiPlasseringBilde: config.api.BILDE, // der API-skriptet for bilder ligger
+  uferdigStatus: 0, // status i prodsys på saker som er under arbeid. Feltet heter "produsert" i prodsys-databasen
+  tilDeskStatus: 3, // status i prodsys på saker som skal til desken
+  gammelDeskStatus: 4, // status i prodsys på saker som er limt inn - kan være hva som helst, men produksjonssystemet skjønner ikke alt 4 = gammel desk. 9 = slett
+  tilWebStatus: 6, // status på saker som er redigert til web
+  slettStatus: 9, // status på gamle saker som er "slettet" fra prodsys
 };
 
 
 prodsys.request = function(url, method, data){
+  var httpMethod = method; // GET spør om informasjon fra prodsys
   var connection = new Socket();
-  connection.encoding = 'UTF-8';
-  var api_url = url
-    ? this.apiPlassering + url + '/'
-    : this.apiPlassering
-
+  var api_url = this.apiPlassering + url + '/json/'
   var response;
   var httpRequest = "";
 
   // Setter sammen en httpRequest. Serveren er veldig streng på at det må være riktig formulert
-  httpRequest += method + " " + api_url + " HTTP/1.0";
+  httpRequest += httpMethod + " " + api_url + " HTTP/1.0";
   httpRequest += "\rHost:" + this.host;
 
   if (data) {
@@ -62,7 +56,7 @@ prodsys.request = function(url, method, data){
     httpRequest += "\rContent-Length: " + data.length;
   }
 
-  httpRequest += "\rAuthorization: Basic " + this.basicAuth;
+  httpRequest += "\rAuthorization: Basic " + this.brukerogpassord;
   httpRequest += "\rConnection: close";
   httpRequest += "\r\r";
 
@@ -138,3 +132,29 @@ function toUnicode(theString) { // lager unicode-entiteter av vanskelige bokstav
   result = result.replace(/\&/g, "\\u0026"); // fikser &
   return result; // String
 }
+
+function fixEncoding (text) {
+  text = text.replace(/\\u0085/gi, "..."); // gjør om ellipsis
+  text = text.replace(/\\u0092/gi, "\\u2019"); // fikser riktig unicode for apostrofer - vet ikke hvorfor databasen bruker 0092
+  text = text.replace(/\\u0095/gi, "\\u2022"); // fikser riktig unicode for bullet - vet ikke hvorfor databasen bruker 0095
+  text = text.replace(/\\u00(97|96)/gi, "\\u2013"); // fikser riktig unicode for tankestrek - vet ikke hvorfor databasen bruker 0097
+  text = text.replace(/\\u00(94|93)/gi, "\\u00AB"); // fikser riktig hermetegn venstre
+  text = text.replace(/\b\\u00AB/gi, "\\u00BB"); // fikser  riktig hermetegn venstre høyre
+  return text ;
+}
+
+function fixHTMLentities(myString) { // Gjør om HTML-entiteter av typen &#261; om til C-type unicode av typen \u0105
+  var myMatches = myString.match(/&#\d+;/g); //finner ut om stringen inneholder slike html-entiteter
+  if (myMatches) {
+    for (n = 0; n < myMatches.length; n += 1) {
+      var myHTML = myMatches[n];
+      var myUnicode = myHTML.match(/\d+/)[0];
+      myUnicode = parseInt(myUnicode, 10).toString(16); //decimal til hexadecimal
+      myUnicode = "\\u"+("0000"+myUnicode.toUpperCase().substr(-4));
+      myString = myString.replace(myHTML, myUnicode);
+    }
+  }
+  return myString;
+}
+
+//main();

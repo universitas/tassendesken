@@ -1,4 +1,5 @@
-﻿dokTools = {}
+﻿// vim: set ft=javascript:
+dokTools = {}
 
 dokTools.velgStil = function(myDocument, stiltype, stilnavn) { //velger en paragraph-, cell-, table-, eller characterStyle, og oppretter en ny hvis den ikke finnes
     var minStil;
