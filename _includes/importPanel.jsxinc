@@ -46,6 +46,7 @@ function statusToIndex(status) {
 
 function importPanel(onImportClick) {
   var panelSize = 10; // max antall saker som vises i menyen
+  var getStatus = [STATUS.toEditor, STATUS.toDesk, STATUS.atDesk, STATUS.fromDesk]
   var importButton = config.resources + "/import.png";
   var windowTitle = "Importer saker";
   var win = new Window("palette", windowTitle, undefined); // Selve vinduet som GUI vises i
@@ -71,16 +72,16 @@ function importPanel(onImportClick) {
 
   listePanel.sjekkProdsys = function() { // henter saker fra prodsys
     var prodsysSaker = [];
-    try {
-      var data = prodsys.get();
-      if (data.error) log(data.error.messages);
-      prodsysSaker = data.results;
-    } catch (e) {
-      var prodsysSaker = [];
-      alert("Får ikke kontakt med prodsys\n" + e);
-    }
-    prodsysSaker.sort(sortProdsys);
 
+    var response = prodsys.get(null, 
+      {
+        limit:200, 
+        publication_status__in: getStatus.join(',')
+      }
+    );
+    log(response.status);
+    prodsysSaker = response.json.results || [];
+    prodsysSaker.sort(sortProdsys);
     listePanel.firstIndex = 0;
     for (var i = 0; i < prodsysSaker.length; i++) {
       var minIndex = sakstyper.length - 1;
@@ -89,7 +90,7 @@ function importPanel(onImportClick) {
       minLoop: for (var n = 0; n < sakstyper.length; n += 1) {
         minSakstype = artikkeltyper[sakstyper[n].toLowerCase()];
         erType = minSakstype.erType(minSak);
-        if (minSak.produsert == prodsys.tilDeskStatus &&
+        if (minSak.produsert == STATUS.toDesk &&
           listePanel.firstIndex === 0 &&
           prodsysSaker.length > panelSize) {
           listePanel.firstIndex = Math.min(i, prodsysSaker.length - panelSize);
@@ -217,24 +218,21 @@ function importPanel(onImportClick) {
       minRad.produsert.onChange = function(aktivSak, aktivRad) {
         return function() {
           aktivSak.produsert = textToStatus(aktivRad.produsert.selection.text);
-          try {
-            config.DEBUG && prodsys.patch(aktivSak.prodsak_id, {produsert: aktivSak.produsert});
-          } catch (e) {
-            alert("Får ikke oppdatert saken i prodsys\n" + e);
-          }
+          response = prodsys.patch(aktivSak.prodsak_id, {produsert: aktivSak.produsert});
+          log(response);
           listePanel.update();
         };
       }(minSak, minRad);
 
       // minrad.button
-      minRad.button.enabled = minSak.produsert == prodsys.tilDeskStatus; // knappen er ikke enabled hvis saken ikke er lagt til desk
+      minRad.button.enabled = minSak.produsert == STATUS.toDesk; // knappen er ikke enabled hvis saken ikke er lagt til desk
       minRad.button.onClick = function(aktivSak, aktivRad) { // snedig innpakking av funksjonen for å oppnå "closure" hvis jeg har skjønt det riktig. Det funker i allefall.
         return function() { // dette er funksjonen som blir utført når importknappen trykkes.
           var artikkeltype = artikkeltyper[sakstyper[aktivRad.mappe.selection.index].toLowerCase()]; // henter verdien fra rullegardinmenyen
           var importImages = win.importerbilder.value;
           win.importerbilder.value = true;
           onImportClick(aktivSak, artikkeltype, importImages); // importerer saken og plasserer den på siden.
-          aktivSak.produsert = STATUS.fromDesk;
+          aktivSak.produsert = STATUS.atDesk;
           listePanel.update();
         };
       }(minSak, minRad); // kaller funksjonen som nettopp er laget - dette er så snedig at jeg ikke helt har skjønt hvordan det funker selv.

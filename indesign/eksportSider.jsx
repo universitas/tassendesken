@@ -1,4 +1,4 @@
-﻿/* jshint ignore:start */
+/* jshint ignore:start */
 #include ../_includes/dokTools.jsxinc
 #include ../_includes/eksport.jsxinc
 #include ../_includes/prodsys.jsxinc
@@ -108,11 +108,9 @@ function lagPDF(dok) {
     }
     myProgressBar.close();
     if (tilProdsys.checkedState) {
-      try {
+        config.DEBUG = true;
         eksportTilProdsys(dok);
-      } catch (e) {
-        alert("Noe gikk feil med eksport til prodsys\r" + e);
-      }
+     
     }
   }
 }

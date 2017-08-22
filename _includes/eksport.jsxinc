@@ -544,7 +544,7 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
                     minSak.xtags = webAvisHacks(minSak.xtags);
                     minSak.xtags = minSak.xtags.replace(/\[SNABELA\]/g, "@");
 
-                    if (testing) {
+                    if (config.DEBUG) {
                         $.writeln("\r\r------------- " + prodsak_id + "   " + minSak.json.arbeidstittel + " -----------\r");
                         $.writeln(minSak.xtags);
                     } else if (minSak.xtags != minSak.json.tekst && (minSak.json.tekst.length / minSak.xtags.length) < 3) {
@@ -635,6 +635,7 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
                             }
                             try {
                                 minSak.json = prodsys.get(prodsak_id);
+                                log(minSak.json);
                             } catch (e) {
                                 // alert(e, "Feil ved import");
                             }
