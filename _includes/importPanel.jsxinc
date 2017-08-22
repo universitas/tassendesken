@@ -26,6 +26,7 @@ var statusOptions = {
   '4 mellomleder': STATUS.toSubeditor,
   '5 redaktør': STATUS.toEditor,
   '6 til desk': STATUS.toDesk,
+  '7 på desk': STATUS.atDesk,
   '9 fra desk': STATUS.fromDesk,
 }
 
@@ -72,7 +73,7 @@ function importPanel(onImportClick) {
     var prodsysSaker = [];
     try {
       var data = prodsys.get();
-      if (data.error) log(data.error);
+      if (data.error) log(data.error.messages);
       prodsysSaker = data.results;
     } catch (e) {
       var prodsysSaker = [];

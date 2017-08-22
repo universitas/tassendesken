@@ -5,6 +5,18 @@
 #include json2.jsxinc
 /* jshint ignore:end */
 
+
+function logToFile(message, filename) {
+  if (!filename) filename='default.log';
+  var fp = File(config.logfiles + filename);
+  log('opening file ' + fp.fullName);
+  fp.open('w');
+  var successful = fp.write(message);
+  fp.close();
+  log('close file ' + successful);
+  return successful;
+}
+
 function log(message) {
   // log to extendscript console
   if (!config.DEBUG) return
@@ -46,7 +58,7 @@ prodsys.request = function(url, method, data){
   connection.encoding = 'UTF-8';
   var api_url = url
     ? this.apiPlassering + url + '/'
-    : this.apiPlassering + '?limit=50'
+    : this.apiPlassering + '?limit=40'
 
   var response;
   var httpRequest = "";
@@ -82,9 +94,12 @@ prodsys.request = function(url, method, data){
       return { error: 'wrong status', reply: reply };
     }
     try {
-      return JSON.parse(trim(parts[1]))
+      var json = toUnicode(trim(parts[1]))
+      return JSON.parse(json)
     } catch (error) {
-      return { error: error, tail: parts[1]};
+      log('json.length: '+json.length);
+      logToFile(json, 'fail.json');
+      return { results: [], error: error, tail: parts[1]};
     }
   }
 };

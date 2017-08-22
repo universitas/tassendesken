@@ -1,4 +1,4 @@
-﻿// vim: set ft=javascript:
+// vim: set ft=javascript:
 /* jshint ignore:start */
 #targetengine "session"
 #include dokTools.jsxinc
@@ -557,11 +557,12 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
                             prodsys.post(prodsak_id, '{"kommentar":"' + kommentar + '"}'); // legger til en kommentar i kommentarfeltet.
                         } catch (e) {
                             $.writeln("558", e);
+                          
                         }
                     }
-                    if (minSak.json.produsert == prodsys.gammelDeskStatus) { // flytter saker som har status "Gammeldesk"
+                    if (minSak.json.produsert == config.api.STATUS.fromDesk) { // flytter saker som har status "Gammeldesk"
                         try {
-                            prodsys.post(prodsak_id, '{"produsert":"' + prodsys.tilWebStatus + '"}'); // flyttes til status "til web"
+                            prodsys.post(prodsak_id, '{"produsert":"' + config.api.STATUS.fromDesk + '"}'); // flyttes til status "til web"
                         } catch (e) {
                             $.writeln("565", e);
                         }

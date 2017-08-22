@@ -24,6 +24,7 @@ config.api.STATUS = { // status enum in prodsys database
   toSubeditor: 4,
   toEditor: 5,
   toDesk: 6,
+  atDesk: 7,
   fromDesk: 9,
   published: 10,
   noindex: 11,
@@ -49,18 +50,19 @@ config.tegnPerSpalte = 1200; // brukes for å tippe hvor mange spalter en artikk
 config.storSak = 4000; // saker over denne legden regnes som store når importskriptet gjetter sakstype
 config.trynesize = {};
 // størrelse på bylinebilder i leserinnlegg i millimeter
-config.trynesize.innlegg = { height: 16, width: 14 }; 
+config.trynesize.innlegg = { height: 16, width: 14 };
 // størrelse på bylinebilder i kommentar i millimeter. "Toppen" stikker utenfor tabellen.
-config.trynesize.kommentar = { height: 30, width: 22, toppen: 10 }; 
+config.trynesize.kommentar = { height: 30, width: 22, toppen: 10 };
 config.italicStyle = "I"; // character style som representerer kursiv
 config.pdfSettings = "UNIVERSITAS"; // navnet på pdf-setting-fila
-config.overrideStyles = { stikktit: null, tit: null, ing: null }; 
+config.overrideStyles = { stikktit: null, tit: null, ing: null };
 // stiler som skal plukkes opp fra malen i stedet for artikkelstilen. (Sånn får
 // en sjuspalter annen tittel enn en tospalter)
 
 config.trynemappe = config.rotMappe + "/FOTO/bylinebilder/"; // mappa der trynebilder ligger
 config.resources = config.rotMappe + "/SCRIPTS/_resources/"
 config.epostCSV = config.rotMappe + "/SCRIPTS/_resources/epostbyline.csv" // liste over epostadresser i bruk i epostbyline
+config.logfiles = config.rotMappe + "/LOGS/" // logfiler
 config.importCSV = config.rotMappe + "/SCRIPTS/_resources/importstiler.csv" // tabell med artikkeltype-konfigurasjon
 config.eksportCSV = config.rotMappe + "/SCRIPTS/_resources/eksportstiler.csv" // tabell med hva de ulike paragraph styles skal oversettes til ved eksport
 config.saksmaler = config.rotMappe + "/UTTEGNER/MALER/Saksmaler.indl" // bibliotek med saksmaler
