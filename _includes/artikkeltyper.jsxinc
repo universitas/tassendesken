@@ -2,7 +2,7 @@
 // Denne fila inneholder instrukser for hvordan diverse artikkeltyper skal importeres fra prodsys til Indesign. 
 // Hvis det legges til nye seksjoner eller artikkeltyper må det opprettes nye objekter i dette skriptet.
 // brukes av import.jsx
-//#include dokTools.jsxinc
+#include dokTools.jsxinc
 //#include config.jsxinc
 
 var artikkelTypeArray = dokTools.parseCSV(config.importCSV); // lager en array fra importfila

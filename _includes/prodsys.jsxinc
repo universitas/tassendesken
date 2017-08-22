@@ -46,7 +46,7 @@ prodsys.request = function(url, method, data){
   connection.encoding = 'UTF-8';
   var api_url = url
     ? this.apiPlassering + url + '/'
-    : this.apiPlassering
+    : this.apiPlassering + '?limit=50'
 
   var response;
   var httpRequest = "";
@@ -57,7 +57,7 @@ prodsys.request = function(url, method, data){
 
   if (data) {
     data = typeof data === 'string' ? data : JSON.stringify(data)
-    data = "json=" + toUnicode(data); // Odins skript krever en sånn json= før json-objectet.
+    // data = toUnicode(data);
     httpRequest += "\rContent-Type: application/x-www-form-urlencoded; charset=UTF-8";
     httpRequest += "\rContent-Length: " + data.length;
   }
@@ -79,12 +79,12 @@ prodsys.request = function(url, method, data){
     connection.close();
     var parts = reply.split('\n\n', 2)
     if (!/200 OK/.test(parts[0])) { // "200 OK" er http-kode for vellykket request
-      return { error: reply }
+      return { error: 'wrong status', reply: reply };
     }
     try {
       return JSON.parse(trim(parts[1]))
     } catch (error) {
-      return { error: error }
+      return { error: error, tail: parts[1]};
     }
   }
 };
@@ -94,26 +94,15 @@ function trim(str) {
   return str.replace(/^\s*/, '').replace(/\s*$/, '')
 }
 
-prodsys.get = function(prodsak_id) {
-  // hvis det finnes en prodsak_id henter skriptet all data om saken fra
-  // databasen. Hvis ikke finner den en array med saker som er plassert til
-  // Desken.
-
-  return  this.request(prodsak_id, "GET" , null);
-};
-
-prodsys.post = function(prodsak_id, data) {
-  return this.request(prodsak_id, "POST", data);
-};
-
-prodsys.put = function(prodsak_id) {
-  return this.request(prodsak_id, "PUT", {});
-};
+prodsys.get = function(prodsak_id) { return  this.request(prodsak_id, "GET" , null); };
+prodsys.patch = function(prodsak_id, data) { return this.request(prodsak_id, "PATCH", data); };
+prodsys.post = function(prodsak_id, data) { return this.request(prodsak_id, "POST", data); };
+prodsys.put = function(prodsak_id) { return this.request(prodsak_id, "PUT", {}); };
 
 prodsys.bildepost = function(prodsak_id, prodbilde_id, data){
-  data =  '{"bilete":[{"prodbilde_id":"'+prodbilde_id +'",' + data +'}]}';
-  reply = this.post(prodsak_id, data);
-  return reply
+  data.prodbilde_id = prodbilde_id;
+  payload = {bilete: [data]};
+  return  this.post(prodsak_id, payload);
 };
 
 

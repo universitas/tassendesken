@@ -5,11 +5,11 @@
 var config = {}; // config-objektet
 
 if ($.os.match("Macintosh")) {
-    config.rotMappe = "/univ-desken/"; // Rotmappe for macOS
-    config.smallFont = ScriptUI.newFont("Lucida Grande", "bold", 9) // litt mindre font enn standardstørrelsen
+  config.rotMappe = "/univ-desken/"; // Rotmappe for macOS
+  config.smallFont = ScriptUI.newFont("Lucida Grande", "bold", 9) // litt mindre font enn standardstørrelsen
 } else {
-    config.rotMappe = "//kant.uio.no/div-universitas-desken/"; // Rotmappe for Windows
-    config.smallFont = ScriptUI.newFont("Arial", "regular", 9) // litt mindre font enn standardstørrelsen
+  config.rotMappe = "//kant.uio.no/div-universitas-desken/"; // Rotmappe for Windows
+  config.smallFont = ScriptUI.newFont("Arial", "regular", 9) // litt mindre font enn standardstørrelsen
 }
 
 config.api = {}; // legg inn riktig api-innlogging i config_local.jsxinc
@@ -18,6 +18,19 @@ config.api.TEXT = "HEMMELIG"; // url til webapi
 config.api.PHOTO = "HEMMELIG"; // url til webapi
 config.api.USER = "HEMMELIG"; // brukernavn til webapi
 config.api.PASSWORD = "HEMMELIG"; // passord til webapi
+config.api.STATUS = { // status enum in prodsys database
+  draft: 0,
+  toJournalist: 3,
+  toSubeditor: 4,
+  toEditor: 5,
+  toDesk: 6,
+  fromDesk: 9,
+  published: 10,
+  noindex: 11,
+  privat: 15,
+  template: 100,
+  error: 500
+}
 
 config.kriseGB = [42, -532, 300, -286, 5, 42, 4] // hvis man ikke finner noen gb, brukes denne i stedet. [topp, venstre, bunn, høyre, spalteantall, spaltebredde,spaltemellomrom] i mm
 config.billedtekststil = "A bt"; // paragraphstyle for bildetekst IKKE FJERN DENNE!
@@ -35,23 +48,15 @@ config.objektstiler.spaltestrek = "spaltestrek"; // objektstilen for vertikal st
 config.tegnPerSpalte = 1200; // brukes for å tippe hvor mange spalter en artikkel er
 config.storSak = 4000; // saker over denne legden regnes som store når importskriptet gjetter sakstype
 config.trynesize = {};
-config.trynesize.innlegg = {
-    height: 16,
-    width: 14
-}; // størrelse på bylinebilder i leserinnlegg i millimeter
-config.trynesize.kommentar = {
-    height: 30,
-    width: 22,
-    toppen: 10
-}; // størrelse på bylinebilder i kommentar i millimeter. "Toppen" stikker utenfor tabellen.
+// størrelse på bylinebilder i leserinnlegg i millimeter
+config.trynesize.innlegg = { height: 16, width: 14 }; 
+// størrelse på bylinebilder i kommentar i millimeter. "Toppen" stikker utenfor tabellen.
+config.trynesize.kommentar = { height: 30, width: 22, toppen: 10 }; 
 config.italicStyle = "I"; // character style som representerer kursiv
 config.pdfSettings = "UNIVERSITAS"; // navnet på pdf-setting-fila
-config.overrideStyles = {
-    stikktit: null,
-    tit: null,
-    ing: null
-}; // stiler som skal plukkes opp fra malen i stedet for artikkelstilen. (Sånn får en sjuspalter annen tittel enn en tospalter)
-
+config.overrideStyles = { stikktit: null, tit: null, ing: null }; 
+// stiler som skal plukkes opp fra malen i stedet for artikkelstilen. (Sånn får
+// en sjuspalter annen tittel enn en tospalter)
 
 config.trynemappe = config.rotMappe + "/FOTO/bylinebilder/"; // mappa der trynebilder ligger
 config.resources = config.rotMappe + "/SCRIPTS/_resources/"
@@ -66,59 +71,22 @@ config.backupMal = config.rotMappe + "/UTTEGNER/MALER/BACKUP/MAL_AVIS.indt" // B
 
 config.rotRegExp = new RegExp(config.rotMappe + "../"); // brukes for å finne bildefiler
 
+// sider som skal være i MAL_AVIS.indt  master: Navn på masterpage for
+// oppslaget (Må staves HELT korrekt), tomside: om oppslaget skal være tomt
+// eller inneholde alt som finnes på
+// første oppslag av typen i SAKSMALER-dokumentet.
 config.avismal = [
-    // sider som skal være i MAL_AVIS.indt  master: Navn på masterpage for oppslaget (Må staves HELT korrekt),
-    //tomside: om oppslaget skal være tomt eller inneholde alt som finnes på første oppslag av typen i SAKSMALER-dokumentet.
-    {
-        master: "F-Front",
-        tomside: false
-    }, // forside 1
-    {
-        master: "2-Side 2-3",
-        tomside: false
-    }, // side 2-3
-    {
-        master: "N-Nyhet Intro",
-        tomside: false
-    }, //nyhetsintro 4-5
-    {
-        master: "N-Nyhet",
-        tomside: true
-    }, //nyhetsoppslag 6-7
-    {
-        master: "N-Nyhet",
-        tomside: true
-    }, //nyhetsoppslag 8-9
-    {
-        master: "N-Nyhet",
-        tomside: true
-    }, //nyhetsoppslag 10-11
-    {
-        master: "D-Debatt Intro",
-        tomside: false
-    }, //debattsider12-13
-    {
-        master: "K-Kultur Intro",
-        tomside: true
-    }, //kulturintro14-15
-    {
-        master: "K-Kultur",
-        tomside: true
-    }, //kulturoppslag16-17
-    {
-        master: "K-Kultur",
-        tomside: true
-    }, //kulturoppslag18-19
-    {
-        master: "R-Reportasje",
-        tomside: true
-    }, // reportasjen 20-21
-    {
-        master: "A-Anmeldelser",
-        tomside: false
-    }, //anmeldelser og kulturplakat 22-23
-    {
-        master: "B-Baksida",
-        tomside: false
-    } //baksida 24
+  { master: "F-Front", tomside: false }, // forside 1
+  { master: "2-Side 2-3", tomside: false }, // side 2-3
+  { master: "N-Nyhet Intro", tomside: false }, //nyhetsintro 4-5
+  { master: "N-Nyhet", tomside: true }, //nyhetsoppslag 6-7
+  { master: "N-Nyhet", tomside: true }, //nyhetsoppslag 8-9
+  { master: "N-Nyhet", tomside: true }, //nyhetsoppslag 10-11
+  { master: "D-Debatt Intro", tomside: false }, //debattsider12-13
+  { master: "K-Kultur Intro", tomside: true }, //kulturintro14-15
+  { master: "K-Kultur", tomside: true }, //kulturoppslag16-17
+  { master: "K-Kultur", tomside: true }, //kulturoppslag18-19
+  { master: "R-Reportasje", tomside: true }, // reportasjen 20-21
+  { master: "A-Anmeldelser", tomside: false }, //anmeldelser og kulturplakat 22-23
+  { master: "B-Baksida", tomside: false } //baksida 24
 ];
