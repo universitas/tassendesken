@@ -1,4 +1,4 @@
-﻿// vim: set ft=javascript:
+// vim: set ft=javascript:
 /* jshint ignore:start */
 #include config.jsxinc
 #include base64.jsxinc
@@ -6,30 +6,66 @@
 /* jshint ignore:end */
 
 
+
+
+function serializeObject(obj) {
+  // make object serializable
+  var pt = Object.prototype.toString.call(obj);
+  switch(pt) {
+    case '[object String]':
+    case '[object Number]':
+      return obj
+    case '[object Object]':
+      var obj2 = {};
+      for (var key in obj)
+        obj2[key] = serializeObject(obj[key]);
+      return obj2
+    case '[object Array]':
+      var newarr = [];
+      for (var i = 0; i < obj.length; i++)
+        newarr[i] = serializeObject(obj[i]);
+      return newarr;
+    case '[object Story]':
+      return '[Story id:' + obj.id + ' ' + obj.contents.substr(0,100) + ']'
+    case '[object Image]':
+      return '[Image id:' + obj.id + ' ' + obj.itemLink.name + ']'
+    default:
+      return pt
+  }
+}
+
+function jsonify(obj) {
+  return JSON.stringify(
+    serializeObject(obj),
+    null,
+    config.DEBUG ? 2 : 0
+  )
+}
+
 function logToFile(message, filename) {
+  if (!config.DEBUG) return
   if (!filename) filename='default.log';
   var fp = File(config.logfiles + filename);
-  log('opening file ' + fp.fullName);
   fp.open('w');
+  fp.encoding='UTF-8';
+  fp.lineFeed='Unix';
+  if (typeof message !== 'string') {
+    message = jsonify(message);
+  }
   var successful = fp.write(message);
   fp.close();
-  log('close file ' + successful);
   return successful;
 }
 
 function log(message) {
   // log to extendscript console
   if (!config.DEBUG) return
-  $.writeln(typeof message === 'string'
-    ? message
-    : JSON.stringify(message, null, 2)
-  )
+  $.writeln(typeof message === 'string' ? message : jsonify(message))
 }
 
 function importerSak(sak, artikkeltype) { // placeholder som skal erstattes med en annen funksjon i skriptet import.jsx
   try {
     var nysak = prodsys.get(sak.prodsak_id); // henter sak i prodsys
-    log(sak.arbeidstittel + " " + artikkeltype.type); // skriver info til konsollen i EST
     var payload = {produsert: prodsys.gammelDeskStatus}
     prodsys.post(sak.prodsak_id, payload); // flytter saken til neste status i prodsys
   } catch (e) {
@@ -53,29 +89,39 @@ var prodsys = { // Objekt om representerer produksjonssystemet på webserveren
 };
 
 
-prodsys.request = function(url, method, data){
+prodsys.request = function(pk, method, data, attrs){
   var connection = new Socket();
-  connection.encoding = 'UTF-8';
-  var api_url = url
-    ? this.apiPlassering + url + '/'
-    : this.apiPlassering + '?limit=40'
+  connection.encoding = 'utf8';
+  var api_url = pk
+    ? this.apiPlassering + pk + '/'
+    : this.apiPlassering
+
+  if (attrs) {
+    var queryString = [];
+    for (var key in attrs) {
+      queryString.push(key + '=' + attrs[key]);
+    }
+    api_url += '?' + queryString.join('&');
+  }
 
   var response;
   var httpRequest = "";
 
   // Setter sammen en httpRequest. Serveren er veldig streng på at det må være riktig formulert
-  httpRequest += method + " " + api_url + " HTTP/1.0";
-  httpRequest += "\rHost:" + this.host;
+  httpRequest += method + " " + api_url + " HTTP/1.1";
+  httpRequest += "\rHost: " + this.host;
 
   if (data) {
-    data = typeof data === 'string' ? data : JSON.stringify(data)
-    // data = toUnicode(data);
+    data = typeof data === 'string' ? data : jsonify(data);
+    connection.encoding = 'utf-8';
     httpRequest += "\rContent-Type: application/x-www-form-urlencoded; charset=UTF-8";
     httpRequest += "\rContent-Length: " + data.length;
   }
 
   httpRequest += "\rAuthorization: Basic " + this.basicAuth;
+  httpRequest += "\rAccept: application/json; indent=2";
   httpRequest += "\rConnection: close";
+
   httpRequest += "\r\r";
 
   if (data) {
@@ -83,24 +129,39 @@ prodsys.request = function(url, method, data){
     httpRequest += "\r\r";
   }
 
-  log(api_url + "\n" + method + "\n" + data + "\n" + httpRequest);
+  log(httpRequest);
+
+  if (config.DEBUG && method !== "GET") {
+    log('debug cancel ' + method);
+    return {}
+  }
 
   if (connection.open(this.host+':'+this.port)) { // koble til produksjonssystemet
     connection.write(httpRequest);
-    var reply = connection.read(9999999); // Maks antall tegn som jeg forventer at JSON-objektet skal være.
+    var data = connection.read(99999999);
     connection.close();
-    var parts = reply.split('\n\n', 2)
-    if (!/200 OK/.test(parts[0])) { // "200 OK" er http-kode for vellykket request
-      return { error: 'wrong status', reply: reply };
+    var parts = data.split('\n\n', 2)
+
+    var reply = {
+      json: {},
+      head: trim(parts[0]),
+      body: parts[1] ? trim(parts[1]) : null
     }
-    try {
-      var json = toUnicode(trim(parts[1]))
-      return JSON.parse(json)
-    } catch (error) {
-      log('json.length: '+json.length);
-      logToFile(json, 'fail.json');
-      return { results: [], error: error, tail: parts[1]};
+    reply.status = parseInt(reply.head.match(/^HTTP\/... (\d+)/)[1]);
+    log(reply.head);
+
+    if (reply.body) {
+      try {
+        reply.json = JSON.parse(reply.body);
+        // logToFile(reply.body, 'prodsysdata.json');
+      } catch (error) {
+        log('error: ' + error.message)
+        // return this.request(pk, method, data, attrs);
+        logToFile(reply.body, 'fail.json');
+        reply.error = error;
+      }
     }
+    return reply
   }
 };
 
@@ -109,30 +170,19 @@ function trim(str) {
   return str.replace(/^\s*/, '').replace(/\s*$/, '')
 }
 
-prodsys.get = function(prodsak_id) { return  this.request(prodsak_id, "GET" , null); };
+prodsys.get = function(prodsak_id, attrs) { return  this.request(prodsak_id, "GET" , null, attrs); }
 prodsys.patch = function(prodsak_id, data) { return this.request(prodsak_id, "PATCH", data); };
 prodsys.post = function(prodsak_id, data) { return this.request(prodsak_id, "POST", data); };
 prodsys.put = function(prodsak_id) { return this.request(prodsak_id, "PUT", {}); };
 
-prodsys.bildepost = function(prodsak_id, prodbilde_id, data){
-  data.prodbilde_id = prodbilde_id;
-  payload = {bilete: [data]};
-  return  this.post(prodsak_id, payload);
-};
-
 
 function toUnicode(theString) { // lager unicode-entiteter av vanskelige bokstaver, tar en string og returnerer en string
-  var result = ''; // skal returneres
-  for (var cha = 0; cha < theString.length; cha++) {
-    var theUnicode = theString.charCodeAt(cha);
-    if (theUnicode === 8211) { // tankestrek
-      result += '--'; // prodsys regner to bindestreker som tankestrek - lettere for brukerne å skrive inn
-    } else if (theUnicode < 32 || theUnicode > 127) { // tegn og bokstover som skal være så jævla spesielle som "æøå", norske hermetegn o.s.v
-      result += "\\u" + ("0000" + theUnicode.toString(16).toUpperCase()).substr(-4, 4); // legger til den nye unicoden til strengen vår
-    } else { // de vanligste tegnene (a-z, A-Z, tall og en del skilletegn)
-      result += theString.charAt(cha); // legges bare til uten konvertering
-    }
+  function charToUnicode(letter) {
+    var charCode = ('0000' + letter.charCodeAt(0).toString(16).toUpperCase()).substr(-4, 4);
+    return '\\u' + charCode;
   }
+  var result = theString;
+  result = result.replace(/[\u0080-\uFFFF]/g , charToUnicode);
   result = result.replace(/\\u(201C|201D)/g, "\\u0022"); // fikser feil unicode for fancy hermetegn
   result = result.replace(/\\u(2019|2018)/g, "\\u0092"); // fikser feil unicode for apostrofer
   result = result.replace(/\\u2022/g, "\\u0095"); // fikser feil unicode for bullet
