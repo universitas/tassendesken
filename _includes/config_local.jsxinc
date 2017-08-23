@@ -4,8 +4,8 @@
 
 config.DEBUG = false;
 config.api.HOST = "universitas.no"; // url til webapi
-config.api.TEXT = "/api/legacy/"; // url til webapi tekst
-config.api.PHOTO = "/api/"; // url til webapi bilde
+config.api.PORT = 80;
+config.api.ENDPOINT = "/api/legacy/"; // url til webapi tekst
 config.api.USER = "api"; // brukernavn til webapi
 config.api.PASSWORD = "Avier1gi"; // passord til webapi
 
