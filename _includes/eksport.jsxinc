@@ -93,9 +93,14 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
           prodsak_id = prodsak_id ? prodsak_id[1] : 0;
           prodbilde_id = prodbilde_id ? parseInt(prodbilde_id[1]) : 0;
           if (prodsak_id) {
-            if (eksportSaker[prodsak_id] === undefined) { // finnes denne saken i objektet eksportSaker ?
+            if (eksportSaker[prodsak_id] === undefined) { 
+              // finnes denne saken i objektet eksportSaker ?
+              var json = { arbeidstittel: 'artikkel ID ' + prodsak_id }
+              var data = prodsys.get(prodsak_id)
+              if (data.status === 200) 
+                json = data.json;
               eksportSaker[prodsak_id] = {
-                json: prodsys.get(prodsak_id),
+                json: json,
                 stories: [],
                 bounds: {},
                 images: []
@@ -279,15 +284,13 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
     return;
   };
 
-  var mekkSaksliste = function() { // lager en liste til rullegardinmenyen over saker som kan være aktuelle å koble seg på
-    var prodsysAlle = prodsys.get(); // alle sakene i prodsys med status
-    var prodsysGammelDesk = []; // json-saker i prodsys med status == gammeldesk.
-    for (var n = 0; n < prodsysAlle.length; n++) {
-      if (prodsysAlle[n].produsert === prodsys.gammelDeskStatus) {
-        prodsysGammelDesk.push(prodsysAlle[n]);
-      }
-    }
-    return prodsysGammelDesk;
+  var mekkSaksliste = function() { 
+    // lager en liste til rullegardinmenyen over saker som kan være aktuelle å koble seg på
+    var response = prodsys.list({status: config.api.STATUS.atDesk});
+    // log(response.request);
+    // log(response.head);
+    // log(response.json);
+    return response.json.results;
   };
 
   var sorterSaksliste = function(prodsysGammelDesk, eksportSaker, inkognitoStories) { // sorterer lista slik at rullegardinmenyen inneholder alle relevante saker og er sortert slik at de mest aktuelle sakene ligger samlet øverst.
@@ -296,7 +299,7 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
       arbeidstittel: "[skal ikke i prodsys]",
       prodsak_id: null
     };
-    for ( prodsak_id in eksportSaker) {
+    for (prodsak_id in eksportSaker) {
       if (eksportSaker.hasOwnProperty(prodsak_id)) {
         myLoop: for ( n = 0; n < prodsysGammelDesk.length; n++) {
           if (prodsysGammelDesk[n].prodsak_id == eksportSaker[prodsak_id].json.prodsak_id) { // saken finnes i lista
@@ -331,7 +334,10 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
     var dropdownOptions = []; // valg i dropdownmenyen;
     myDialog.frameLocation = [100, 100];
     for ( i = 0; i < prodsysGammelDesk.length; i += 1) {
-      dropdownOptions.push(prodsysGammelDesk[i].arbeidstittel.substr(0, 25)); // putter tittelen inn i dropdownmenyen
+      var sak = prodsysGammelDesk[i];
+      log(sak);
+      var tittel = sak.arbeidstittel ? sak.arbeidstittel.substr(0, 25) : 'sak ' + i;
+      dropdownOptions.push(tittel); // putter tittelen inn i dropdownmenyen
     }
 
     var myRow;
@@ -558,7 +564,7 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
         }
         var data = {
           tekst: minSak.xtags,
-          produsert: STATUS.fromDesk
+          produsert: config.api.STATUS.fromDesk
         }
         if (minSak.bilete) data.bilete = minSak.bilete;
         var response = prodsys.patch(prodsak_id, data);

@@ -98,18 +98,19 @@ function importerSak(sak, artikkeltype) { // placeholder som skal erstattes med 
 var prodsys = {};
 
 var http = {};
-http.dummy = false;
+http.use_mock = function() { return false };
 http.dummy_connect = function(request) {
+  log('DUMMY REQUEST');
   log(request);
   return {
     status: 100,
     head: 'dummy header',
     body: '{"dummy": true}',
+    request: request
   }
 }
 http.connect = function(request, encoding, host, port) {
-  log(request);
-  if (this.dummy)
+  if (this.use_mock(request))
     return this.dummy_connect(request);
   var hostString = host + ':' + port;
   var socket = new Socket();
@@ -126,7 +127,8 @@ http.connect = function(request, encoding, host, port) {
   return {
     status: parseInt(status) || 0,
     head: parts[0] || '',
-    body: parts[1] || ''
+    body: parts[1] || '',
+    request: request
   }
 }
 
@@ -137,6 +139,18 @@ prodsys.put    = function(pk, payload) { return this.request("PUT", pk, payload 
 prodsys.patch  = function(pk, payload) { return this.request("PATCH", pk, payload);};
 prodsys.delete = function(pk)          { return this.request("DELETE", pk);};
 prodsys.post   = function(payload)     { return this.request("POST", null, payload);};
+
+prodsys.list   = function(attrs)     {
+  if (attrs && attrs.status != undefined) {
+    try {
+      attrs.publication_status__in = attrs.status.join(',');
+    } catch (e) {
+      attrs.publication_status = attrs.status;
+    }
+    delete attrs.status;
+  }
+  return this.request("GET", null, null, attrs);
+}
 
 prodsys.request = function(method, pk, payload, attrs){
   var url = (pk === null || pk === undefined)
@@ -161,7 +175,6 @@ prodsys.request = function(method, pk, payload, attrs){
 
   if (payload) {
     var body = typeof payload === 'string' ? payload : jsonify(payload)
-    log(payload);
     request = request.concat([
       "Content-Type: application/json; charset=UTF-8",
       "Content-Length: " + body.length,

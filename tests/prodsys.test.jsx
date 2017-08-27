@@ -9,7 +9,8 @@ main();
 function main() {
   config.DEBUG=true;
   try {
-    test_http_methods();
+    test_prodsys_list();
+    // test_http_methods();
   } catch (e) {
     log(e);
   }
@@ -18,6 +19,17 @@ function main() {
 function assert(bool, msg) {
   if (! bool) 
     throw new Error('ASSERTION ERROR: ' + (msg || 'no message'));
+}
+
+function test_prodsys_list() {
+  var status = config.api.STATUS;
+  var response = prodsys.list({status: status.fromDesk})
+  assert(response.status === 200, 'OK')
+  log('results: ' +response.json.results.length + '\n');
+
+  response = prodsys.list({status: [status.toDesk, status.atDesk]})
+  assert(response.status === 200, 'OK')
+  log('results: ' +response.json.results.length + '\n');
 }
 
 function test_get_all_stories() {

@@ -34,7 +34,7 @@ def rename(root, old, new):
             new_path = os.path.join(root, new)
         try:
             shutil.move(old_path, new_path)
-        except OSError as ex:
+        except (IOError, OSError) as ex:
             # somthing went wrong
             if os.path.isdir(new_path):
                 shutil.rmtree(new_path)
