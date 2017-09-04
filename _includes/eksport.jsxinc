@@ -1,834 +1,757 @@
-﻿/* jshint ignore:start */
-#targetengine "session"
-#include dokTools.jsxinc
-#include prodsys.jsxinc
-#include config.jsxinc
-/* jshint ignore:end */
+// vim: set ft=javascript:
 
-var testing = false; // hvis testing blir ikke sakene sendt til prodys, men xtags-sendt til javascript console
+// Story | TextFrame -> Boolean
+var isCaption = function(item) {
+  var paragraph = item.paragraphs[0];
+  if (paragraph) {
+    var style = paragraph.appliedParagraphStyle.name;
+    return style.match(/. bt/i) ? true : false;
+  }
+  return false;
+}
+
 
 var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prodsys MAIN
-    var eksportSaker = {}; // et objekt som inneholder de ulike sakene på siden.
-    var inkognitoStories = []; // en array av stories som ikke har noen prodsak_id
-    var inkognitoBilder = []; // en array av stories som ikke har noen prodsak_id
-    var minimumStoryLength = 5; // stories med færre tegn blir ikke plassert i inkognitostories
-    var patternLength = 20; // standard lengde på regexp for å gjette prodsak_id
-    var patternNumber = 5; // hvor mange regexp man skal prøve
-    var btRegexp = config.billedtekststil; // en regexp som matcher paragraph style for å finne ut om en tekst er bildetekst.
-    var prodsysGammelDesk = []; //liste over saker som det kan eksporteres til;
+  var eksportSaker = {}; // et objekt som inneholder de ulike sakene på siden.
+  var inkognitoStories = []; // en array av stories som ikke har noen prodsak_id
+  var inkognitoBilder = []; // en array av stories som ikke har noen prodsak_id
+  var minimumStoryLength = 5; // stories med færre tegn blir ikke plassert i inkognitostories
+  var patternLength = 20; // standard lengde på regexp for å gjette prodsak_id
+  var patternNumber = 5; // hvor mange regexp man skal prøve
+  var prodsysGammelDesk = []; //liste over saker som det kan eksporteres til;
 
-    var main = function(myDoc) {
-        finnEksportSaker(myDoc);
-        finnEksportBilder(myDoc);
-        if (inkognitoStories.length > 0 || inkognitoBilder.length > 0) { // det finnes tekster i dokumentet som trolig skal eksporteres til prodsys
-            prodsysGammelDesk = mekkSaksliste(); // lager en liste over kandidatsaker i prodsys som sakene kan kobles tl
-            inkognitoStories = finnIdFraRegExp(inkognitoStories); // gjetter hvilke saker tekstene tilhører ved å sammenligne stikkprøver fra teksten i saken med teksten som finnes i prodsys
-            finnGB(); // finner hvor på siden de ulike sakene er plassert
-            finnIdFraGeometri(); // gjetter hvilke saker tekstene tilhører ved å se om de ligger på siden i nærheten av tekster som allerede er koblet til en sak
-            prodsysGammelDesk = sorterSaksliste(prodsysGammelDesk, eksportSaker, inkognitoStories); // sorterer lista over saker
-            mysterierDialog(inkognitoStories, inkognitoBilder, prodsysGammelDesk); // viser en dialog der brukeren kan koble tekster til saker i prodsys
+  var main = function(myDoc) {
+    finnEksportSaker(myDoc);
+    finnEksportBilder(myDoc);
+    if (inkognitoStories.length > 0 || inkognitoBilder.length > 0) { // det finnes tekster i dokumentet som trolig skal eksporteres til prodsys
+      prodsysGammelDesk = mekkSaksliste(); // lager en liste over kandidatsaker i prodsys som sakene kan kobles tl
+      inkognitoStories = finnIdFraRegExp(inkognitoStories); // gjetter hvilke saker tekstene tilhører ved å sammenligne stikkprøver fra teksten i saken med teksten som finnes i prodsys
+      finnGB(); // finner hvor på siden de ulike sakene er plassert
+      finnIdFraGeometri(); // gjetter hvilke saker tekstene tilhører ved å se om de ligger på siden i nærheten av tekster som allerede er koblet til en sak
+      prodsysGammelDesk = sorterSaksliste(prodsysGammelDesk, eksportSaker, inkognitoStories); // sorterer lista over saker
+      mysterierDialog(inkognitoStories, inkognitoBilder, prodsysGammelDesk); // viser en dialog der brukeren kan koble tekster til saker i prodsys
+    } else {
+      eksporter(eksportSaker);
+    }
+  };
+  var finnEksportSaker = function(myDoc) {
+    for (var n = 0; n < myDoc.stories.length; n++) {
+      var myStory = myDoc.stories[n];
+      if ( myStory.paragraphs.length == 0 ) { continue; }
+      if ( dokTools.onPage(myStory) === false ) { continue; }
+      if ( getLabel(myStory) == 'ignore' ) { continue; }
+      if ( isCaption(myStory) ) { continue; }
+
+      prodsak_id = getLabel(myStory, 'prodsak_id'); // scripting label til første textFrame i storien
+      if (prodsak_id) {
+        if (eksportSaker[prodsak_id] === undefined) { // finnes denne saken i objektet eksportSaker ?
+          eksportSaker[prodsak_id] = {
+            json: prodsys.get(prodsak_id).json,
+            stories: [],
+            bounds: {},
+            images: []
+          }; // oppretter et nytt objekt i eksportSaker
+        }
+        eksportSaker[prodsak_id].stories.push(myStory);
+      } else if (myStory.length > minimumStoryLength || myStory.tables.length > 0) {
+        var myText = myStory.contents;
+        if (myStory.tables.length > 0) { // legger til tabelltekst
+          myText += "\r" + myStory.tables.everyItem().cells.everyItem().contents.join("\t");
+        }
+        inkognitoStories.push({
+          prodsak_id: null,
+          story: myStory,
+          text: myText,
+          json: null
+        }); // her er en story som trolig skal være med på eksporten. Det gjelder bare å finne ut hvilken sak i prodsys den hører til.
+      }
+    }
+  };
+
+  var finnEksportBilder = function(myDoc) {
+    var myImage;
+    var myBT;
+    var prodsak_id;
+    var prodbilde_id;
+    for (var n = 0; n < myDoc.allGraphics.length; n++) {
+      myImage = myDoc.allGraphics[n];
+      if (false === dokTools.onPage(myImage))
+        continue;
+      if (null === myImage.itemLink.name.match(/jpg/))
+        continue;
+      if ('ignore' === getLabel(myImage))
+        continue;
+      myBT = finnbildetekst(myImage.parent) || "";
+      if (myBT)
+        myBT = xtagsGrep(myBT.contents);
+
+      prodsak_id = getLabel(myImage, 'prodsak_id')
+      prodbilde_id = getLabel(myImage, 'prodbilde_id') || 0
+      if (prodsak_id) {
+        var sak = eksportSaker[prodsak_id]
+        if (sak === undefined) {
+          setLabel(myImage, '');
         } else {
-            eksporter(eksportSaker);
+          sak.images.push({
+            image: myImage,
+            prodbilde_id: prodbilde_id,
+            bildetekst: myBT
+          });
+          continue;
         }
-    };
+      }
+      // her er et bilde som trolig skal være med på eksporten. Det gjelder
+      // bare å finne ut hvilken sak i prodsys den hører til.
+      inkognitoBilder.push({
+        prodsak_id: null,
+        image: myImage,
+        bildetekst: myBT
+      });
+    }
+  };
 
-    var finnEksportSaker = function(myDoc) {
-        for (var n = 0; n < myDoc.stories.length; n++) {
-            var myStory = myDoc.stories[n];
-            if (myStory.paragraphs.length > 0 && dokTools.onPage(myStory)) { // driter i stories som ligger i pasteboard eller på masterpages
-                if (null === myStory.paragraphs[0].appliedParagraphStyle.name.match(btRegexp)) { // bildetekster blir også ignorert i denne omgangen
-                    myLabel = myStory.textContainers[0].label; // scripting label til første textFrame i storien
-                    if (myLabel) {
-                        prodsak_id = myLabel.match(/prodsak_id: ?(\d+)/); // sjekker om labelen er av typen "prodsak_id: 99999" som henviser til en sak i prodsys
-                        if (prodsak_id) {
-                            prodsak_id = "" + prodsak_id[1];
-                            if (eksportSaker[prodsak_id] === undefined) { // finnes denne saken i objektet eksportSaker ?
-                                eksportSaker[prodsak_id] = {
-                                    json: prodsys.get(prodsak_id),
-                                    stories: [],
-                                    bounds: {},
-                                    images: []
-                                }; // oppretter et nytt objekt i eksportSaker
-                            }
-                            eksportSaker[prodsak_id].stories.push(myStory);
-                        } else {
-                            // textContainers som har label, men som ikke innholder prodsak_id: [TALL] blir bare ignorert.
-                        }
-                    } else if (myStory.length > minimumStoryLength || myStory.tables.length > 0) {
-                        var myText = myStory.contents;
-                        if (myStory.tables.length > 0) { // legger til tabelltekst
-                            myText += "\r" + myStory.tables.everyItem().cells.everyItem().contents.join("\t");
-                        }
-                        inkognitoStories.push({
-                            prodsak_id: null,
-                            story: myStory,
-                            text: myText,
-                            json: null
-                        }); // her er en story som trolig skal være med på eksporten. Det gjelder bare å finne ut hvilken sak i prodsys den hører til.
-                    }
-                }
+  var finnbildetekst = function(myRectangle) { // tar et rektangel og returnerer en story med paragraphstyle BT som ligger oppå eller rett under rektanglet.
+    var myPage = myRectangle.parent;
+    var btSone = [0, 0, 10, 0]; //  sonen man skal lete etter bildetekst i
+    var myTextFrames = myPage.textFrames;
+    var myTextFrame;
+    var bildeGB, btGB, btStory;
+    bildeGB = myRectangle.geometricBounds;
+    for (var i = 0; i < myTextFrames.length; i++) {
+      myTextFrame = myTextFrames[i];
+      btGB = myTextFrame.geometricBounds;
+      if (btGB[2] > bildeGB[0] - btSone[0] && btGB[3] > bildeGB[1] - btSone[1] && btGB[0] < bildeGB[2] + btSone[2] && btGB[1] < bildeGB[3] + btSone[3]) {
+        if (myTextFrame.paragraphs.length == 0)
+          continue;
+        if (isCaption(myTextFrame))
+          return myTextFrame.parentStory;
+      }
+    }
+    return null;
+  };
+
+  var finnGB = function() { // finner geometric bounds for eksportSaker med kjent prodsak_id:
+    var prodsak_id;
+    for (prodsak_id in eksportSaker) { // looper gjennom eksportsakene
+      if (eksportSaker.hasOwnProperty(prodsak_id)) {
+        var m;
+        var myStory = eksportSaker[prodsak_id];
+        var myGB = []; // en array som inneholder et bounds-objekt for hver spread saken omfatter
+        var myTextFrames = []; // alle textframes som hører til denne saken
+        for ( m = 0; m < myStory.stories.length; m++) {
+          myTextFrames = myTextFrames.concat(myStory.stories[m].textContainers);
+        }
+        for ( m = 0; m < myStory.images.length; m++) {
+          myTextFrames.push(myStory.images[m].image.parent);
+        }
+        for ( m = 0; m < inkognitoStories.length; m++) {
+          if (inkognitoStories[m].prodsak_id == myStory.json.prodsak_id) {
+            myTextFrames = myTextFrames.concat(inkognitoStories[m].story.textContainers); // legger til textFrames i inkognitoStories som antageligvis hører til denne saken
+          }
+        }
+        for (m = 0; m < myTextFrames.length; m++) {
+          myFrame = myTextFrames[m];
+          if (null !== myFrame.geometricBounds && myFrame.parent instanceof Spread) { // ignorerer andre textcontainers fordi de ikke har geometricBounds, samt textFrames i pasteboard
+            for (var i = 0; i < myGB.length; i++) {
+              if (myGB[i].spread == myFrame.parent) { //hvis tekstrammen er på en spread som allerede har et bounds-objekt
+                myGB[i].geometricBounds[0] = Math.min(myGB[i].geometricBounds[0], myFrame.geometricBounds[0]); //utvider myGB hvis denne tekstrammen er høyere opp
+                myGB[i].geometricBounds[1] = Math.min(myGB[i].geometricBounds[1], myFrame.geometricBounds[1]); //utvider myGB hvis denne tekstrammen er til venstre
+                myGB[i].geometricBounds[2] = Math.max(myGB[i].geometricBounds[2], myFrame.geometricBounds[2]); //utvider myGB hvis denne tekstrammen lavere ned
+                myGB[i].geometricBounds[3] = Math.max(myGB[i].geometricBounds[3], myFrame.geometricBounds[3]); //utvider myGB hvis denne tekstrammen er til høyre
+                break;
+              }
             }
-        }
-    };
-
-    var finnEksportBilder = function(myDoc) {
-        var myImage;
-        var myBT;
-        var prodsak_id;
-        var prodbilde_id;
-        for (var n = 0; n < myDoc.allGraphics.length; n++) {
-            myImage = myDoc.allGraphics[n];
-            if (dokTools.onPage(myImage) && myImage.itemLink.name.match(/jpg/)) { // driter i bilder som ligger i pasteboard eller på masterpages
-                myLabel = myImage.parent.label; // scripting label til bildets rectangle
-                myBT = finnbildetekst(myImage.parent) || "";
-                if (myBT) {
-                    myBT = xtagsGrep(myBT.contents);
-                }
-                if (myLabel) {
-                    prodsak_id = myLabel.match(/prodsak_id: ?(\d+)/); // sjekker om labelen er av typen "prodsak_id: 99999" som henviser til en sak i prodsys
-                    prodbilde_id = myLabel.match(/prodbilde_id: ?(\d+)/);
-                    prodsak_id = prodsak_id ? "" + prodsak_id[1] : null;
-                    prodbilde_id = prodbilde_id ? "" + prodbilde_id[1] : null;
-                    if (prodsak_id) {
-                        if (eksportSaker[prodsak_id] === undefined) { // finnes denne saken i objektet eksportSaker ?
-                            eksportSaker[prodsak_id] = {
-                                json: prodsys.get(prodsak_id),
-                                stories: [],
-                                bounds: {},
-                                images: []
-                            }; // oppretter et nytt objekt i eksportSaker
-                        }
-                        eksportSaker[prodsak_id].images.push({
-                            image: myImage,
-                            prodbilde_id: prodbilde_id,
-                            bildetekst: myBT
-                        });
-                    } else {
-                        // textContainers som har label, men som ikke innholder prodsak_id: [TALL] blir bare ignorert.
-                    }
-                } else {
-                    inkognitoBilder.push({
-                        prodsak_id: null,
-                        image: myImage,
-                        bildetekst: myBT
-                    }); // her er et bilde som trolig skal være med på eksporten. Det gjelder bare å finne ut hvilken sak i prodsys den hører til.
-                }
+            if (i == myGB.length) { // dette objektet finnes på en ny spread
+              myGB[i] = {
+                geometricBounds: myFrame.geometricBounds,
+                spread: myFrame.parent
+              }; // oppretter et nytt bounds-objekt i arrayen
             }
+          }
         }
-    };
+        myStory.bounds = myGB;
+      }
+    }
+    return;
+  };
 
-    var finnbildetekst = function(myRectangle) { // tar et rektangel og returnerer en story med paragraphstyle BT som ligger oppå eller rett under rektanglet.
-        var myPage = myRectangle.parent;
-        var btSone = [0, 0, 10, 0]; //  sonen man skal lete etter bildetekst i
-        var myTextFrames = myPage.textFrames;
-        var myTextFrame;
-        var bildeGB, btGB, btStory;
-        bildeGB = myRectangle.geometricBounds;
-        for (var i = 0; i < myTextFrames.length; i++) {
-            myTextFrame = myTextFrames[i];
-            btGB = myTextFrame.geometricBounds;
-            if (btGB[2] > bildeGB[0] - btSone[0] && btGB[3] > bildeGB[1] - btSone[1] && btGB[0] < bildeGB[2] + btSone[2] && btGB[1] < bildeGB[3] + btSone[3]) {
-                if (myTextFrame.paragraphs.length > 0 && myTextFrame.paragraphs[0].appliedParagraphStyle.name.match(btRegexp)) {
-                    return myTextFrame.parentStory;
-                }
-            }
+  var finnIdFraRegExp = function(inkognitoStories) { // gjetter prodsak_id for inkognitoStories ved å sammenligne stikkprøver fra teksten med sakene i prodsys
+    var i,n,m;
+    var myRegExpArray = []; // en samling med regulære uttrykk som er stikkprøver fra inkognitosaken
+    var funnetSak = 0; // antall korrekte regexp-søk
+    var minStoryTekst; // teksten i inkognitoStorien, brukes til å generere regexp
+    var newPattern; // en string skal omgjøres til regexp
+    var prodsak_tekst; // teksten til en sak i prodsys, som minStoryTekst skal sammenlignes med
+    for (n = inkognitoStories.length - 1; n >= 0; n--) { // går gjennom inkognitostories og ser om de tilhører saker med status gammelDesk
+      myRegExpArray = [];
+      minStoryTekst = inkognitoStories[n].text;
+      if (minStoryTekst.length < minimumStoryLength) {
+        // denne teksten er så kort at den ikke vil bli eksportert til prodsys
+      }
+      if (minStoryTekst.length < patternLength * 2) { // teksten er så kort at det ikke er noe poeng i å lage mer enn ett regexp.
+        newPattern = minStoryTekst.replace(/([\\\|\.\[\]\(\)\/])/g, "\\$1").replace(/[\n\r\t]/g, "\\s"); //putter inn escapetegn for ikke å føkke med regexp-syntaksen og gjør ulike mellomrom om til any space
+        myRegExpArray.push(new RegExp(newPattern));
+      } else { // lager en samling med regexp
+        for (m = 0; m < patternNumber; m++) {
+          newPattern = minStoryTekst.substr(Math.floor(Math.random() * (minStoryTekst.length - patternLength)), patternLength); // lager et tilfeldig utdrag av teksten
+          newPattern = newPattern.replace(/([\\\|\.\[\]\(\)\/])/g, "\\$1").replace(/[\n\r\t]/g, "\\s"); //putter inn escapetegn for ikke å føkke med regexp-syntaksen og gjør ulike mellomrom om til any space
+          myRegExpArray.push(new RegExp(newPattern));
         }
-        return null;
-    };
+      }
+      for (m = 0; m < prodsysGammelDesk.length; m++) {
+        funnetSak = 0;
+        testSak = prodsysGammelDesk[m]; // saken m prodsys som vi skal sammenligne med inkognitosaken
+        prodsak_id = testSak.prodsak_id;
+        prodsak_tekst = testSak.tekst.replace(/<.+?>/g, "").replace(/@.+?:/g, ""); // fjerner xtags
+        for (i = 0; i < myRegExpArray.length; i++) {
+          if (prodsak_tekst.match(myRegExpArray[i])) {
+            funnetSak++; // et positivt treff m sammenligninga
+          }
+        }
+        if (funnetSak > myRegExpArray.length / 3) { // minst 33% av sammenligningene ga postivt treff
+          inkognitoStories[n].prodsak_id = prodsak_id; // denne inkognitosaken får en tentativ prodsak_id
+        }
+      }
+    }
+    return inkognitoStories; // returnerer arrayen med endringer
+  };
 
-    var finnGB = function() { // finner geometric bounds for eksportSaker med kjent prodsak_id:
-        var prodsak_id;
-        for (prodsak_id in eksportSaker) { // looper gjennom eksportsakene
+  var finnIdFraGeometri = function() { // gjetter prodsak_id for inkognitoStories ved å se om tekstens plassering på sida overlapper geometrisk med andre tekster som allerede er koblet til prodsys
+    var prodsak_id, i, n;
+    var myTextFrame; // tekstrammen som innholder starten på en story som ikke er koblet til noen prodsak_id
+    var mySpread; // spread-objektet der storyen starter
+    var minGB;
+    var marg = [0, 0, 0, 0]; // over, venstre, under, høyre. margen legges til tekstrammen når man sjekker overlapp med eksisterende eksportsaker
+    for ( n = 0; n < inkognitoStories.length; n++) {
+      if (inkognitoStories[n].prodsak_id === null) { // gidder bare å sjekke for inkognitoStories som ikke allerede har blitt identifisert ved hjelp av regexp
+        myTextFrame = inkognitoStories[n].story.textContainers[0]; // den første tekstFrame i storyen
+        mySpread = myTextFrame.parent;
+        if (myTextFrame instanceof TextFrame && mySpread instanceof Spread) { // ignorerer andre textcontainers fordi de ikke har geometricBounds
+          for (prodsak_id in eksportSaker) {
             if (eksportSaker.hasOwnProperty(prodsak_id)) {
-                var m;
-                var minSak = eksportSaker[prodsak_id];
-                var myGB = []; // en array som inneholder et bounds-objekt for hver spread saken omfatter
-                var myTextFrames = []; // alle textframes som hører til denne saken
-                for ( m = 0; m < minSak.stories.length; m++) {
-                    myTextFrames = myTextFrames.concat(minSak.stories[m].textContainers);
+              minGB = eksportSaker[prodsak_id].bounds;
+              for ( i = 0; i < minGB.length; i++) {
+                if (minGB[i].spread == mySpread && // samme spread
+                  myTextFrame.geometricBounds[0] - marg[0] < minGB[i].geometricBounds[2] && //øvre kant av TextFrame er høyere enn nedre kant av minGB
+                  myTextFrame.geometricBounds[1] - marg[1] < minGB[i].geometricBounds[3] && //venstre kant av TextFrame er til venstre for høyre kant av minGB
+                  myTextFrame.geometricBounds[2] + marg[2] > minGB[i].geometricBounds[0] && //nedre kant av TextFrame er lavere enn øvre kant av minGB
+                  myTextFrame.geometricBounds[3] + marg[3] > minGB[i].geometricBounds[1]) { //høyre kant av TextFrame er til høyre for venstre kant av minGB
+                  inkognitoStories[n].prodsak_id = prodsak_id; // hører trolig til samme sak
                 }
-                for ( m = 0; m < minSak.images.length; m++) {
-                    myTextFrames.push(minSak.images[m].image.parent);
-                }
-                for ( m = 0; m < inkognitoStories.length; m++) {
-                    if (inkognitoStories[m].prodsak_id == minSak.json.prodsak_id) {
-                        myTextFrames = myTextFrames.concat(inkognitoStories[m].story.textContainers); // legger til textFrames i inkognitoStories som antageligvis hører til denne saken
-                    }
-                }
-                for (m = 0; m < myTextFrames.length; m++) {
-                    myFrame = myTextFrames[m];
-                    if (null !== myFrame.geometricBounds && myFrame.parent instanceof Spread) { // ignorerer andre textcontainers fordi de ikke har geometricBounds, samt textFrames i pasteboard
-                        for (var i = 0; i < myGB.length; i++) {
-                            if (myGB[i].spread == myFrame.parent) { //hvis tekstrammen er på en spread som allerede har et bounds-objekt
-                                myGB[i].geometricBounds[0] = Math.min(myGB[i].geometricBounds[0], myFrame.geometricBounds[0]); //utvider myGB hvis denne tekstrammen er høyere opp
-                                myGB[i].geometricBounds[1] = Math.min(myGB[i].geometricBounds[1], myFrame.geometricBounds[1]); //utvider myGB hvis denne tekstrammen er til venstre
-                                myGB[i].geometricBounds[2] = Math.max(myGB[i].geometricBounds[2], myFrame.geometricBounds[2]); //utvider myGB hvis denne tekstrammen lavere ned
-                                myGB[i].geometricBounds[3] = Math.max(myGB[i].geometricBounds[3], myFrame.geometricBounds[3]); //utvider myGB hvis denne tekstrammen er til høyre
-                                break;
-                            }
-                        }
-                        if (i == myGB.length) { // dette objektet finnes på en ny spread
-                            myGB[i] = {
-                                geometricBounds: myFrame.geometricBounds,
-                                spread: myFrame.parent
-                            }; // oppretter et nytt bounds-objekt i arrayen
-                        }
-                    }
-                }
-                minSak.bounds = myGB;
+              }
             }
+          }
         }
-        return;
-    };
-
-    var finnIdFraRegExp = function(inkognitoStories) { // gjetter prodsak_id for inkognitoStories ved å sammenligne stikkprøver fra teksten med sakene i prodsys
-        var i,n,m;
-        var myRegExpArray = []; // en samling med regulære uttrykk som er stikkprøver fra inkognitosaken
-        var funnetSak = 0; // antall korrekte regexp-søk
-        var minStoryTekst; // teksten i inkognitoStorien, brukes til å generere regexp
-        var newPattern; // en string skal omgjøres til regexp
-        var prodsak_tekst; // teksten til en sak i prodsys, som minStoryTekst skal sammenlignes med
-        for (n = inkognitoStories.length - 1; n >= 0; n--) { // går gjennom inkognitostories og ser om de tilhører saker med status gammelDesk
-            myRegExpArray = [];
-            minStoryTekst = inkognitoStories[n].text;
-            if (minStoryTekst.length < minimumStoryLength) {
-                // denne teksten er så kort at den ikke vil bli eksportert til prodsys
-            }
-            if (minStoryTekst.length < patternLength * 2) { // teksten er så kort at det ikke er noe poeng i å lage mer enn ett regexp.
-                newPattern = minStoryTekst.replace(/([\\\|\.\[\]\(\)\/])/g, "\\$1").replace(/[\n\r\t]/g, "\\s"); //putter inn escapetegn for ikke å føkke med regexp-syntaksen og gjør ulike mellomrom om til any space
-                myRegExpArray.push(new RegExp(newPattern));
-            } else { // lager en samling med regexp
-                for (m = 0; m < patternNumber; m++) {
-                    newPattern = minStoryTekst.substr(Math.floor(Math.random() * (minStoryTekst.length - patternLength)), patternLength); // lager et tilfeldig utdrag av teksten
-                    newPattern = newPattern.replace(/([\\\|\.\[\]\(\)\/])/g, "\\$1").replace(/[\n\r\t]/g, "\\s"); //putter inn escapetegn for ikke å føkke med regexp-syntaksen og gjør ulike mellomrom om til any space
-                    myRegExpArray.push(new RegExp(newPattern));
-                }
-            }
-            for (m = 0; m < prodsysGammelDesk.length; m++) {
-                funnetSak = 0;
-                testSak = prodsysGammelDesk[m]; // saken m prodsys som vi skal sammenligne med inkognitosaken
-                prodsak_id = testSak.prodsak_id;
-                prodsak_tekst = testSak.tekst.replace(/<.+?>/g, "").replace(/@.+?:/g, ""); // fjerner xtags
-                for (i = 0; i < myRegExpArray.length; i++) {
-                    if (prodsak_tekst.match(myRegExpArray[i])) {
-                        funnetSak++; // et positivt treff m sammenligninga
-                    }
-                }
-                if (funnetSak > myRegExpArray.length / 3) { // minst 33% av sammenligningene ga postivt treff
-                    inkognitoStories[n].prodsak_id = prodsak_id; // denne inkognitosaken får en tentativ prodsak_id
-                }
-            }
-        }
-        return inkognitoStories; // returnerer arrayen med endringer
-    };
-
-    var finnIdFraGeometri = function() { // gjetter prodsak_id for inkognitoStories ved å se om tekstens plassering på sida overlapper geometrisk med andre tekster som allerede er koblet til prodsys
-        var prodsak_id, i, n;
-        var myTextFrame; // tekstrammen som innholder starten på en story som ikke er koblet til noen prodsak_id
-        var mySpread; // spread-objektet der storyen starter
-        var minGB;
-        var marg = [0, 0, 0, 0]; // over, venstre, under, høyre. margen legges til tekstrammen når man sjekker overlapp med eksisterende eksportsaker
-        for ( n = 0; n < inkognitoStories.length; n++) {
-            if (inkognitoStories[n].prodsak_id === null) { // gidder bare å sjekke for inkognitoStories som ikke allerede har blitt identifisert ved hjelp av regexp
-                myTextFrame = inkognitoStories[n].story.textContainers[0]; // den første tekstFrame i storyen
-                mySpread = myTextFrame.parent;
-                if (myTextFrame instanceof TextFrame && mySpread instanceof Spread) { // ignorerer andre textcontainers fordi de ikke har geometricBounds
-                    for (prodsak_id in eksportSaker) {
-                        if (eksportSaker.hasOwnProperty(prodsak_id)) {
-                            minGB = eksportSaker[prodsak_id].bounds;
-                            for ( i = 0; i < minGB.length; i++) {
-                                if (minGB[i].spread == mySpread && // samme spread
-                                    myTextFrame.geometricBounds[0] - marg[0] < minGB[i].geometricBounds[2] && //øvre kant av TextFrame er høyere enn nedre kant av minGB
-                                    myTextFrame.geometricBounds[1] - marg[1] < minGB[i].geometricBounds[3] && //venstre kant av TextFrame er til venstre for høyre kant av minGB
-                                    myTextFrame.geometricBounds[2] + marg[2] > minGB[i].geometricBounds[0] && //nedre kant av TextFrame er lavere enn øvre kant av minGB
-                                    myTextFrame.geometricBounds[3] + marg[3] > minGB[i].geometricBounds[1]) { //høyre kant av TextFrame er til høyre for venstre kant av minGB
-                                    inkognitoStories[n].prodsak_id = prodsak_id; // hører trolig til samme sak
-                            }
-                        }
-                    }
-                }
-            }
-        }
+      }
     }
 
     for ( n = 0; n < inkognitoBilder.length; n++) {
-            if (inkognitoBilder[n].prodsak_id === null) { // gidder bare å sjekke for inkognitoStories som ikke allerede har blitt identifisert ved hjelp av regexp
-                myTextFrame = inkognitoBilder[n].image.parent; // den første tekstFrame i storyen
-                mySpread = myTextFrame.parent;
-                if (myTextFrame instanceof Rectangle && mySpread instanceof Spread) { // ignorerer andre textcontainers fordi de ikke har geometricBounds
-                    for (prodsak_id in eksportSaker) {
-                        if (eksportSaker.hasOwnProperty(prodsak_id)) {
-                            minGB = eksportSaker[prodsak_id].bounds;
-                            for (i = 0; i < minGB.length; i++) {
-                                if (minGB[i].spread === mySpread && // samme spread
-                                    myTextFrame.geometricBounds[0] - marg[0] < minGB[i].geometricBounds[2] && //øvre kant av TextFrame er høyere enn nedre kant av minGB
-                                    myTextFrame.geometricBounds[1] - marg[1] < minGB[i].geometricBounds[3] && //venstre kant av TextFrame er til venstre for høyre kant av minGB
-                                    myTextFrame.geometricBounds[2] + marg[2] > minGB[i].geometricBounds[0] && //nedre kant av TextFrame er lavere enn øvre kant av minGB
-                                    myTextFrame.geometricBounds[3] + marg[3] > minGB[i].geometricBounds[1]) { //høyre kant av TextFrame er til høyre for venstre kant av minGB
-                                    inkognitoBilder[n].prodsak_id = prodsak_id; // hører trolig til samme sak
-                            }
-                        }
-                    }
+      if (inkognitoBilder[n].prodsak_id === null) { // gidder bare å sjekke for inkognitoStories som ikke allerede har blitt identifisert ved hjelp av regexp
+        myTextFrame = inkognitoBilder[n].image.parent; // den første tekstFrame i storyen
+        mySpread = myTextFrame.parent;
+        if (myTextFrame instanceof Rectangle && mySpread instanceof Spread) { // ignorerer andre textcontainers fordi de ikke har geometricBounds
+          for (prodsak_id in eksportSaker) {
+            if (eksportSaker.hasOwnProperty(prodsak_id)) {
+              minGB = eksportSaker[prodsak_id].bounds;
+              for (i = 0; i < minGB.length; i++) {
+                if (minGB[i].spread === mySpread && // samme spread
+                  myTextFrame.geometricBounds[0] - marg[0] < minGB[i].geometricBounds[2] && //øvre kant av TextFrame er høyere enn nedre kant av minGB
+                  myTextFrame.geometricBounds[1] - marg[1] < minGB[i].geometricBounds[3] && //venstre kant av TextFrame er til venstre for høyre kant av minGB
+                  myTextFrame.geometricBounds[2] + marg[2] > minGB[i].geometricBounds[0] && //nedre kant av TextFrame er lavere enn øvre kant av minGB
+                  myTextFrame.geometricBounds[3] + marg[3] > minGB[i].geometricBounds[1]) { //høyre kant av TextFrame er til høyre for venstre kant av minGB
+                  inkognitoBilder[n].prodsak_id = prodsak_id; // hører trolig til samme sak
                 }
+              }
             }
+          }
         }
+      }
     }
     return;
-};
+  };
 
-    var mekkSaksliste = function() { // lager en liste til rullegardinmenyen over saker som kan være aktuelle å koble seg på
-        var prodsysAlle = prodsys.get(); // alle sakene i prodsys med status
-        var prodsysGammelDesk = []; // json-saker i prodsys med status == gammeldesk.
-        for (var n = 0; n < prodsysAlle.length; n++) {
-            if (prodsysAlle[n].produsert === prodsys.gammelDeskStatus) {
-                prodsysGammelDesk.push(prodsysAlle[n]);
-            }
-        }
-        return prodsysGammelDesk;
+  var mekkSaksliste = function() {
+    // lager en liste til rullegardinmenyen over saker som kan være aktuelle å koble seg på
+    var response = prodsys.list({status: config.api.STATUS.atDesk});
+    // log(response.request);
+    // log(response.head);
+    // log(response.json);
+    return response.json.results;
+  };
+
+  var sorterSaksliste = function(prodsysGammelDesk, eksportSaker, inkognitoStories) { // sorterer lista slik at rullegardinmenyen inneholder alle relevante saker og er sortert slik at de mest aktuelle sakene ligger samlet øverst.
+    var n, prodsak_id;
+    var nullsak = {
+      arbeidstittel: "[skal ikke i prodsys]",
+      prodsak_id: null
     };
-
-    var sorterSaksliste = function(prodsysGammelDesk, eksportSaker, inkognitoStories) { // sorterer lista slik at rullegardinmenyen inneholder alle relevante saker og er sortert slik at de mest aktuelle sakene ligger samlet øverst.
-        var n, prodsak_id;
-        var nullsak = {
-            arbeidstittel: "[skal ikke i prodsys]",
-            prodsak_id: null
-        };
-        for ( prodsak_id in eksportSaker) {
-            if (eksportSaker.hasOwnProperty(prodsak_id)) {
-                myLoop: for ( n = 0; n < prodsysGammelDesk.length; n++) {
-                    if (prodsysGammelDesk[n].prodsak_id == eksportSaker[prodsak_id].json.prodsak_id) { // saken finnes i lista
-                        prodsysGammelDesk = prodsysGammelDesk.splice(n, 1).concat(prodsysGammelDesk); // flyttes til starten av lista - så blir det lettere å finne i rullegardinmenyen
-                        break myLoop;
-                    }
-                }
-                if (n === prodsysGammelDesk.length) { // en eksportsak finnes ikke i lista - den må ha en annen status enn "gammelDesk"
-                    prodsysGammelDesk = [eksportSaker[prodsak_id].json].concat(prodsysGammelDesk); // legges til i starten av lista - så blir det lettere å finne i rullegardinmenyen
-            }
+    for (prodsak_id in eksportSaker) {
+      if (eksportSaker.hasOwnProperty(prodsak_id)) {
+        myLoop: for ( n = 0; n < prodsysGammelDesk.length; n++) {
+          if (prodsysGammelDesk[n].prodsak_id == eksportSaker[prodsak_id].json.prodsak_id) { // saken finnes i lista
+            prodsysGammelDesk = prodsysGammelDesk.splice(n, 1).concat(prodsysGammelDesk); // flyttes til starten av lista - så blir det lettere å finne i rullegardinmenyen
+            break myLoop;
+          }
         }
+        if (n === prodsysGammelDesk.length) { // en eksportsak finnes ikke i lista - den må ha en annen status enn "gammelDesk"
+          prodsysGammelDesk = [eksportSaker[prodsak_id].json].concat(prodsysGammelDesk); // legges til i starten av lista - så blir det lettere å finne i rullegardinmenyen
+        }
+      }
     }
 
     for ( n = 0; n < prodsysGammelDesk.length; n++) {
-        myLoop2: for (var i = 0; i < inkognitoStories.length; i++) {
-            if (prodsysGammelDesk[n].prodsak_id == inkognitoStories[i].prodsak_id) {
-                    prodsysGammelDesk = prodsysGammelDesk.splice(n, 1).concat(prodsysGammelDesk); // flyttes til starten av lista - så blir det lettere å finne i rullegardinmenyen
-                    break myLoop2;
-                }
-            }
+      myLoop2: for (var i = 0; i < inkognitoStories.length; i++) {
+        if (prodsysGammelDesk[n].prodsak_id == inkognitoStories[i].prodsak_id) {
+          prodsysGammelDesk = prodsysGammelDesk.splice(n, 1).concat(prodsysGammelDesk); // flyttes til starten av lista - så blir det lettere å finne i rullegardinmenyen
+          break myLoop2;
         }
-        prodsysGammelDesk = [nullsak].concat(prodsysGammelDesk);
-        return prodsysGammelDesk;
-    };
+      }
+    }
+    prodsysGammelDesk = [nullsak].concat(prodsysGammelDesk);
+    return prodsysGammelDesk;
+  };
 
-    var mysterierDialog = function(inkognitoStories, inkognitoBilder, prodsysGammelDesk) { // viser en dialog for å koble inkognitoStories til riktig eksportSak / prodsak_id
-        var i;
-        var myDialog = new Window('palette', 'Mystiske tekster');
-        var smallFont = ScriptUI.newFont("Arial", "bold", 9); // litt mindre font enn standardstørrelsen
-        var panel1 = myDialog.add("panel", undefined, "Koble tekster til prodsys");
-        panel1.maximumSize = [500, 1000];
-        var dropdownOptions = []; // valg i dropdownmenyen;
-        myDialog.frameLocation = [100, 100];
-        for ( i = 0; i < prodsysGammelDesk.length; i += 1) {
-            dropdownOptions.push(prodsysGammelDesk[i].arbeidstittel.substr(0, 25)); // putter tittelen inn i dropdownmenyen
+  var mysterierDialog = function(inkognitoStories, inkognitoBilder, prodsysGammelDesk) { // viser en dialog for å koble inkognitoStories til riktig eksportSak / prodsak_id
+    var i;
+    var myDialog = new Window('palette', 'Mystiske tekster');
+    var smallFont = ScriptUI.newFont("Arial", "bold", 9); // litt mindre font enn standardstørrelsen
+    var panel1 = myDialog.add("panel", undefined, "Koble tekster til prodsys");
+    panel1.maximumSize = [500, 1000];
+    var dropdownOptions = []; // valg i dropdownmenyen;
+    myDialog.frameLocation = [100, 100];
+    for ( i = 0; i < prodsysGammelDesk.length; i += 1) {
+      var sak = prodsysGammelDesk[i];
+      var tittel = sak.arbeidstittel ? sak.arbeidstittel.substr(0, 25) : 'sak ' + i;
+      dropdownOptions.push(tittel); // putter tittelen inn i dropdownmenyen
+    }
+
+    var myRow;
+    var myTextFrame;
+    var visButton = config.resources + "/vis.png";
+    var skalKobles = inkognitoStories.concat(inkognitoBilder);
+    for ( i = 0; i < skalKobles.length; i += 1) {
+      myRow = panel1.add("group"); // en rad i dialogen
+      if (i >= inkognitoStories.length) {
+        myRow.bilde = true;
+      } else {
+        myRow.bilde = false;
+      }
+      myRow.story = skalKobles[i];
+      if (myRow.bilde) {
+        myRow.textFrame = myRow.story.image.parent;
+      } else {
+        myRow.textFrame = myRow.story.story.textContainers[0];
+        while (!(myRow.textFrame instanceof TextFrame || myRow.textFrame === null)) { // hvis myTextFrame er en annen type textContainer
+          myRow.textFrame = myRow.textFrame.nextTextFrame;
         }
+      }
 
-        var myRow;
-        var myTextFrame;
-        var visButton = config.resources + "/vis.png";
-        var skalKobles = inkognitoStories.concat(inkognitoBilder);
-        for ( i = 0; i < skalKobles.length; i += 1) {
-            myRow = panel1.add("group"); // en rad i dialogen
-            if (i >= inkognitoStories.length) {
-                myRow.bilde = true;
-            } else {
-                myRow.bilde = false;
-            }
-            myRow.story = skalKobles[i];
-            if (myRow.bilde) {
-                myRow.textFrame = myRow.story.image.parent;
-            } else {
-                myRow.textFrame = myRow.story.story.textContainers[0];
-                while (!(myRow.textFrame instanceof TextFrame || myRow.textFrame === null)) { // hvis myTextFrame er en annen type textContainer
-                    myRow.textFrame = myRow.textFrame.nextTextFrame;
-                }
-            }
+      // kosmetiske parametre
+      myRow.spacing = 5;
+      myRow.margins = [0, 0, 0, -10];
+      myRow.maximumSize = [500, 25];
+      myRow.alignment = ["fill", "top"];
 
-            // kosmetiske parametre
-            myRow.spacing = 5;
-            myRow.margins = [0, 0, 0, -10];
-            myRow.maximumSize = [500, 25];
-            myRow.alignment = ["fill", "top"];
+      myRow.visTekstButton = myRow.add("iconbutton", undefined, visButton, {
+        name: "vis story",
+        style: "toolbutton"
+      });
+      if (!myRow.bilde) {
+        myText = myRow.story.text.replace(/^\W+/, "").substr(0, 30).replace(/\r.*/g, "");
+      } else {
+        myText = (myRow.story.bildetekst || myRow.story.image.itemLink.name).replace(/^\W+/, "").substr(0, 30).replace(/\r.*/g, "");
+      }
+      myRow.text = myRow.add("statictext", undefined, myText, undefined);
+      myRow.dropdown = myRow.add("dropdownlist", undefined, dropdownOptions);
+      myRow.visArtikkelButton = myRow.add("iconbutton", undefined, visButton, {
+        name: "vis sak",
+        style: "toolbutton"
+      });
 
-            myRow.visTekstButton = myRow.add("iconbutton", undefined, visButton, {
-                name: "vis story",
-                style: "toolbutton"
-            });
-            if (!myRow.bilde) {
-                myText = myRow.story.text.replace(/^\W+/, "").substr(0, 30).replace(/\r.*/g, "");
-            } else {
-                myText = (myRow.story.bildetekst || myRow.story.image.itemLink.name).replace(/^\W+/, "").substr(0, 30).replace(/\r.*/g, "");
-            }
-            myRow.text = myRow.add("statictext", undefined, myText, undefined);
-            myRow.dropdown = myRow.add("dropdownlist", undefined, dropdownOptions);
-            myRow.visArtikkelButton = myRow.add("iconbutton", undefined, visButton, {
-                name: "vis sak",
-                style: "toolbutton"
-            });
+      // kosmetiske parametre
+      myRow.visTekstButton.alignment = ["left", "top"];
+      myRow.text.alignment = ["left", "top"];
+      myRow.dropdown.alignment = ["right", "top"];
+      myRow.visArtikkelButton.alignment = ["right", "top"];
+      myRow.text.graphics.font = smallFont;
+      myRow.dropdown.graphics.font = smallFont;
+      myRow.visTekstButton.size = [23, 15];
+      myRow.visArtikkelButton.size = [23, 15];
 
-            // kosmetiske parametre
-            myRow.visTekstButton.alignment = ["left", "top"];
-            myRow.text.alignment = ["left", "top"];
-            myRow.dropdown.alignment = ["right", "top"];
-            myRow.visArtikkelButton.alignment = ["right", "top"];
-            myRow.text.graphics.font = smallFont;
-            myRow.dropdown.graphics.font = smallFont;
-            myRow.visTekstButton.size = [23, 15];
-            myRow.visArtikkelButton.size = [23, 15];
+      // tooltips for UI-elementene
+      myRow.text.helpTip = "Denne teksten er ikke koblet til noen sak i produksjonssystemet";
+      myRow.dropdown.helpTip = "Velg en av sakene i dokumentet som denne teksten hører til";
+      myRow.visTekstButton.helpTip = "Zoom til tekstramme";
+      myRow.visArtikkelButton.helpTip = "Zoom til valgt artikkel";
+      myRow.dropdown.selection = 0; // default = skal ikke kobles til prodsys
+      myRow.visArtikkelButton.enabled = false;
 
-            // tooltips for UI-elementene
-            myRow.text.helpTip = "Denne teksten er ikke koblet til noen sak i produksjonssystemet";
-            myRow.dropdown.helpTip = "Velg en av sakene i dokumentet som denne teksten hører til";
-            myRow.visTekstButton.helpTip = "Zoom til tekstramme";
-            myRow.visArtikkelButton.helpTip = "Zoom til valgt artikkel";
-            myRow.dropdown.selection = 0; // default = skal ikke kobles til prodsys
+      for (var n = 0; n < prodsysGammelDesk.length; n++) {
+        if (prodsysGammelDesk[n].prodsak_id == myRow.story.prodsak_id) {
+          myRow.dropdown.selection = n;
+          if (eksportSaker[myRow.story.prodsak_id]) { // er dette en eksportStory? Det vil si: finnes det noen objekter på siden som vi allerede vet tilhører saken?
+            myRow.visArtikkelButton.enabled = true;
+          } else {
             myRow.visArtikkelButton.enabled = false;
-
-            for (var n = 0; n < prodsysGammelDesk.length; n++) {
-                if (prodsysGammelDesk[n].prodsak_id == myRow.story.prodsak_id) {
-                    myRow.dropdown.selection = n;
-                    if (eksportSaker[myRow.story.prodsak_id]) { // er dette en eksportStory? Det vil si: finnes det noen objekter på siden som vi allerede vet tilhører saken?
-                        myRow.visArtikkelButton.enabled = true;
-                    } else {
-                        myRow.visArtikkelButton.enabled = false;
-                    }
-                    break;
-                }
-            }
-
-
-            myRow.dropdown.onChange = function(row) {
-                return function() { // kan bare zoome til valgt artikkel hvis man har valgt en artikkel.
-                    row.story.prodsak_id = prodsysGammelDesk[row.dropdown.selection.index].prodsak_id; // endrer inkognitosakens prodsak_id
-                    if (eksportSaker[row.story.prodsak_id]) { // er dette en eksportStory? Det vil si: finnes det noen objekter på siden som vi allerede vet tilhører saken?
-                        row.visArtikkelButton.enabled = true;
-                    } else {
-                        row.visArtikkelButton.enabled = false;
-                    }
-                };
-            }(myRow);
-
-            myRow.visArtikkelButton.onClick = function(row) {
-                return function() { // zoom til valgt artikkel
-                    var myGB = eksportSaker[row.story.prodsak_id].bounds[0];
-                    var myBox = myGB.spread.rectangles.add(); // lager et midlertidig rektangel i InDesign
-                    myBox.geometricBounds = myGB.geometricBounds;
-                    myBox.fillColor = "Black";
-                    myBox.transparencySettings.blendingSettings.opacity = 25;
-                    dokTools.zoomTo(myBox); // zoomer til det midlertidige rektangelet
-                    app.scriptPreferences.enableRedraw = true;
-                    $.sleep(500);
-                    app.scriptPreferences.enableRedraw = false;
-                    myBox.remove(); // sletter rektangelet
-                };
-            }(myRow);
-
-            if (myRow.textFrame) { // hvis storyen er i en textframe
-                myRow.visTekstButton.onClick = function(myObject) {
-                    return function() {
-                        dokTools.zoomTo(myObject); // zoom til storyens første textframe
-                    };
-                }(myRow.textFrame);
-            } else {
-                myRow.visTekstButton.enabled = false; // kan ikke zoome til noe som ikke er textframe - har ikke geometric bounds
-            }
+          }
+          break;
         }
+      }
 
-        var panel2 = myDialog.add("group", undefined);
-        panel2.orientation = "row";
-        panel2.kobleButton = panel2.add("button", undefined, "koble saker");
-        panel2.avbrytButton = panel2.add("button", undefined, "avbryt");
-        panel2.kobleButton.helpTip = "Koble valgte tekster til saker og eksporter til prodsys";
-        panel2.avbrytButton.helpTip = "Ikke send saker til prodsys";
 
-        panel2.kobleButton.onClick = function() {
-            for (var i = 0; i < skalKobles.length; i++) {
-                innerloop: for (var n = 0; n < prodsysGammelDesk.length; n++) {
-                    if (skalKobles[i].prodsak_id == prodsysGammelDesk[n].prodsak_id) {
-                        skalKobles[i].json = prodsysGammelDesk[n];
-                        break innerloop;
-                    }
-                }
-            }
-            myDialog.close();
-            kobleInkognitoStories();
-            eksporter(eksportSaker);
+      myRow.dropdown.onChange = function(row) {
+        return function() { // kan bare zoome til valgt artikkel hvis man har valgt en artikkel.
+          row.story.prodsak_id = prodsysGammelDesk[row.dropdown.selection.index].prodsak_id; // endrer inkognitosakens prodsak_id
+          if (eksportSaker[row.story.prodsak_id]) { // er dette en eksportStory? Det vil si: finnes det noen objekter på siden som vi allerede vet tilhører saken?
+            row.visArtikkelButton.enabled = true;
+          } else {
+            row.visArtikkelButton.enabled = false;
+          }
         };
+      }(myRow);
 
-        panel2.avbrytButton.onClick = function() {
-            myDialog.close();
-            eksporter(eksportSaker);
+      myRow.visArtikkelButton.onClick = function(row) {
+        return function() { // zoom til valgt artikkel
+          var myGB = eksportSaker[row.story.prodsak_id].bounds[0];
+          var myBox = myGB.spread.rectangles.add(); // lager et midlertidig rektangel i InDesign
+          myBox.geometricBounds = myGB.geometricBounds;
+          myBox.fillColor = "Black";
+          myBox.transparencySettings.blendingSettings.opacity = 25;
+          dokTools.zoomTo(myBox); // zoomer til det midlertidige rektangelet
+          app.scriptPreferences.enableRedraw = true;
+          $.sleep(500);
+          app.scriptPreferences.enableRedraw = false;
+          myBox.remove(); // sletter rektangelet
         };
-        myDialog.show();
+      }(myRow);
+
+      if (myRow.textFrame) { // hvis storyen er i en textframe
+        myRow.visTekstButton.onClick = function(myObject) {
+          return function() {
+            dokTools.zoomTo(myObject); // zoom til storyens første textframe
+          };
+        }(myRow.textFrame);
+      } else {
+        myRow.visTekstButton.enabled = false; // kan ikke zoome til noe som ikke er textframe - har ikke geometric bounds
+      }
+    }
+
+    var panel2 = myDialog.add("group", undefined);
+    panel2.orientation = "row";
+    panel2.kobleButton = panel2.add("button", undefined, "koble saker");
+    panel2.avbrytButton = panel2.add("button", undefined, "avbryt");
+    panel2.kobleButton.helpTip = "Koble valgte tekster til saker og eksporter til prodsys";
+    panel2.avbrytButton.helpTip = "Ikke send saker til prodsys";
+
+    panel2.kobleButton.onClick = function() {
+      for (var i = 0; i < skalKobles.length; i++) {
+        innerloop: for (var n = 0; n < prodsysGammelDesk.length; n++) {
+          if (skalKobles[i].prodsak_id == prodsysGammelDesk[n].prodsak_id) {
+            skalKobles[i].json = prodsysGammelDesk[n];
+            break innerloop;
+          }
+        }
+      }
+      myDialog.close();
+      kobleInkognitoStories();
+      eksporter(eksportSaker);
     };
 
-    var kobleInkognitoStories = function() {
-        var n, minSak;
-        for ( n = 0; n < inkognitoStories.length; n++) {
-            minSak = inkognitoStories[n];
-            if (eksportSaker[minSak.prodsak_id] === undefined) {
-                eksportSaker[minSak.prodsak_id] = {
-                    json: minSak.json,
-                    stories: [],
-                    images: []
-                };
-            }
-            eksportSaker[minSak.prodsak_id].stories.push(minSak.story);
-            minSak.story.textContainers[0].label = "prodsak_id: " + minSak.prodsak_id;
-        }
-        for ( n = 0; n < inkognitoBilder.length; n++) {
-            minSak = inkognitoBilder[n];
-            if (eksportSaker[minSak.prodsak_id] === undefined) {
-                eksportSaker[minSak.prodsak_id] = {
-                    json: minSak.json,
-                    stories: [],
-                    images: []
-                };
-            }
-            eksportSaker[minSak.prodsak_id].images.push(minSak);
-        }
-        return;
+    panel2.avbrytButton.onClick = function() {
+      myDialog.close();
+      eksporter(eksportSaker);
     };
+    myDialog.show();
+  };
 
-    var eksporter = function(eksportSaker) { // eksporterer alle sakene i mineSaker til prodsys
-        var i,n;
-        var minSak, prodsak_id;
-        var mittBilde;
-        var kommentar;
-        var idag = new Date(); // tidspunktet da saken oppdateres i prodsys
-        var version_date = idag.getFullYear() + "-" + ((idag.getMonth() < 9) ? "0" : "") + (idag.getMonth() + 1) + "-" + ((idag.getDate() < 10) ? "0" : "") + idag.getDate() + " " + idag.toLocaleTimeString(); // dette er datoformatet som prodsys bruker til timestamp
-        var feilmelding;
-        var bildeArray;
-        var antallSaker = 0;
-        for ( prodsak_id in eksportSaker) {
-            antallSaker++;
+  var kobleInkognitoStories = function() {
+    var n, myStory;
+    for ( n = 0; n < inkognitoStories.length; n++) {
+      myStory = inkognitoStories[n];
+      if (eksportSaker[myStory.prodsak_id] === undefined) {
+        eksportSaker[myStory.prodsak_id] = {
+          json: myStory.json,
+          stories: [],
+          images: []
+        };
+      }
+      eksportSaker[myStory.prodsak_id].stories.push(myStory.story);
+      setLabel(myStory.story, {prodsak_id: myStory.prodsak_id});
+    }
+    for (n = 0; n < inkognitoBilder.length; n++) {
+      var myImage = inkognitoBilder[n];
+      if (myImage.prodsak_id) {
+        eksportSaker[myImage.prodsak_id].images.push(myImage);
+      } else {
+        setLabel(myImage.image,  'ignore');
+      }
+    }
+    return;
+  };
+
+  var eksporter = function(eksportSaker) { // eksporterer alle sakene i mineSaker til prodsys
+    var i,n;
+    var myStory, prodsak_id;
+    var mittBilde;
+    var kommentar;
+    var idag = new Date(); // tidspunktet da saken oppdateres i prodsys
+    var version_date = idag.getFullYear() + "-" + ((idag.getMonth() < 9) ? "0" : "") + (idag.getMonth() + 1) + "-" + ((idag.getDate() < 10) ? "0" : "") + idag.getDate() + " " + idag.toLocaleTimeString(); // dette er datoformatet som prodsys bruker til timestamp
+    var antallSaker = 0;
+    for ( prodsak_id in eksportSaker) {
+      antallSaker++;
+    }
+    var myProgressBar = dokTools.progressBar("Eksporterer til prodsys", "", antallSaker + 1, false);
+    for (prodsak_id in eksportSaker) {
+      if (eksportSaker.hasOwnProperty(prodsak_id)) {
+        myStory = eksportSaker[prodsak_id];
+        myProgressBar.update(myStory.json.arbeidstittel);
+        var myImage;
+        for ( i = 0; i < myStory.images.length; i++) {
+          myImage = myStory.images[i];
+          myImage.bildefil = myImage.image.itemLink.name;
+          myImage.size = getImageSize(myImage.image)
         }
-        var myProgressBar = dokTools.progressBar("Eksporterer til prodsys", "", antallSaker + 1, false);
-        for ( prodsak_id in eksportSaker) {
-            if (eksportSaker.hasOwnProperty(prodsak_id)) {
-                minSak = eksportSaker[prodsak_id];
-                bildeArray = minSak.json.bilete;
-                myProgressBar.update(minSak.json.arbeidstittel);
-                var myImage;
-                for ( i = 0; i < minSak.images.length; i++) {
-                    myImage = minSak.images[i];
-                    myImage.bildefil = myImage.image.itemLink.name;
-                    myImage.size = (myImage.image.parent.geometricBounds[2] - myImage.image.parent.geometricBounds[0]) * (myImage.image.parent.geometricBounds[3] - myImage.image.parent.geometricBounds[1]);
-                }
-                minSak.images.sort(function(a, b) {
-                    return a.size < b.size;
-                });
-                for ( i = 0; i < minSak.images.length; i++) {
-                    minSak.images[i].prioritet = i < 6 ? i + 1 : 5;
-                }
-                if (prodsak_id == "null") {
-                    for (n = 0; n < minSak.stories.length; n++) {
-                        minSak.stories[n].textContainers[0].label = "ignore";
-                    }
-                    for (n = 0; n < minSak.images.length; n++) {
-                        minSak.images[n].image.parent.label = "ignore";
-                    }
-                } else {
-                    // eksport av tekst
-                    minSak.xtags = getXtags(minSak.stories);
-                    minSak.xtags = xtagsGrep(minSak.xtags);
-                    minSak.xtags = webAvisHacks(minSak.xtags);
-                    minSak.xtags = minSak.xtags.replace(/\[SNABELA\]/g, "@");
-
-                    if (testing) {
-                        $.writeln("\r\r------------- " + prodsak_id + "   " + minSak.json.arbeidstittel + " -----------\r");
-                        $.writeln(minSak.xtags);
-                    } else if (minSak.xtags != minSak.json.tekst && (minSak.json.tekst.length / minSak.xtags.length) < 3) {
-                        try { // i kommunikasjonen med prodsys er det ting som kan gå gæli
-                            prodsys.post(prodsak_id, 'PUT'); // oppretter en ny revisjon av saken i prodsys. Man kan fremdeles gå inn på tidligere versjoner.
-                            prodsys.post(prodsak_id, '{"version_date":"' + version_date + '"}'); // datoen saken er eksportert
-                            prodsys.post(prodsak_id, '{"tekst":"' + minSak.xtags + '"}'); // teksten i saken
-
-                            kommentar = ('Vellykket eksport fra InDesign!  Endring: ' + (minSak.xtags.length - minSak.json.tekst.length) + ' tegn\n' + idag.toLocaleString() + '\n' + minSak.json.kommentar);
-                            prodsys.post(prodsak_id, '{"kommentar":"' + kommentar + '"}'); // legger til en kommentar i kommentarfeltet.
-                        } catch (e) {
-                            $.writeln("558", e);
-                        }
-                    }
-                    if (minSak.json.produsert == prodsys.gammelDeskStatus) { // flytter saker som har status "Gammeldesk"
-                        try {
-                            prodsys.post(prodsak_id, '{"produsert":"' + prodsys.tilWebStatus + '"}'); // flyttes til status "til web"
-                        } catch (e) {
-                            $.writeln("565", e);
-                        }
-                    }
-
-                    // eksport av bilder
-                    var prodsysBilde, saksBilde, testRapport, oppdaterBilde;
-                    if (minSak.json.bilete) {
-                        prodsysbilder: for ( i = 0; i < minSak.json.bilete.length; i++) {
-                            prodsysBilde = minSak.json.bilete[i];
-                            testRapport = "\n\nprodbilde_id: " + prodsysBilde.prodbilde_id + "  fil: " + prodsysBilde.bildefil;
-                            for ( n = 0; n < minSak.images.length; n++) {
-                                oppdaterBilde = false;
-                                saksBilde = minSak.images[n];
-                                if (prodsysBilde.prodbilde_id == saksBilde.prodbilde_id || prodsysBilde.bildefil == saksBilde.bildefil) {
-                                    saksBilde.image.parent.label = "prodsak_id: " + prodsak_id + ", prodbilde_id: " + prodsysBilde.prodbilde_id;
-                                    if (prodsysBilde.bildetekst != saksBilde.bildetekst) {
-                                        testRapport += "\nBT: " + prodsysBilde.bildetekst + "\n->  " + saksBilde.bildetekst;
-                                        oppdaterBilde = true;
-                                    } else {
-                                        testRapport += "\nBT: " + prodsysBilde.bildetekst + " == ";
-                                    }
-                                    if (prodsysBilde.prioritet != saksBilde.prioritet) {
-                                        testRapport += "\nPri: " + prodsysBilde.prioritet + " -> " + saksBilde.prioritet;
-                                        oppdaterBilde = true;
-                                    } else {
-                                        testRapport += "\nPri: " + prodsysBilde.prioritet + " == " + saksBilde.prioritet;
-                                    }
-                                    minSak.images.splice(n, 1);
-                                    if (testing) {
-                                        $.writeln(testRapport);
-                                    } else if (oppdaterBilde) {
-                                        prodsys.bildepost(prodsak_id, prodsysBilde.prodbilde_id, '"bildetekst":"' + saksBilde.bildetekst + '"');
-                                        prodsys.bildepost(prodsak_id, prodsysBilde.prodbilde_id, '"prioritet":"' + saksBilde.prioritet + '"');
-                                    }
-                                    continue prodsysbilder;
-                                }
-                            }
-                            if (prodsysBilde.prioritet !== 0) {
-                                testRapport += "\nPri: " + prodsysBilde.prioritet + " -> 0";
-                                oppdaterBilde = true;
-                            } else {
-                                testRapport += "\nPri: " + prodsysBilde.prioritet + " == 0";
-                            }
-                            if (testing) {
-                                $.writeln(testRapport);
-                            } else if (oppdaterBilde) {
-                                try {
-                                    prodsys.bildepost(prodsak_id, prodsysBilde.prodbilde_id, '"prioritet":"0"');
-                                } catch(e) {
-                                        
-                                }
-                            }
-                        }
-                    }
-                    if (minSak.images.length > 0) {
-                        var json = '{"bilete":[';
-                        for ( i = 0; i < minSak.images.length; i++) {
-                            saksBilde = minSak.images[i];
-                            json += '{"prodbilde_id":"0","bildefil":"' + saksBilde.bildefil + '","bildetekst":"' + saksBilde.bildetekst + '","prioritet":"' + saksBilde.prioritet + '"},';
-                        }
-                        json = json.replace(/,$/, "]}");
-                        if (testing) {
-                            $.writeln(json);
-                        } else {
-                            try {
-                                prodsys.post(prodsak_id, json);
-                            } catch (e) {
-                                // alert(e, "Feil ved eksport");
-                            }
-                            try {
-                                minSak.json = prodsys.get(prodsak_id);
-                            } catch (e) {
-                                // alert(e, "Feil ved import");
-                            }
-                            for ( n = 0; n < minSak.images.length; n++) {
-                                saksBilde = minSak.images[n];
-                                for ( i = 0; i < minSak.json.bilete.length; i++) {
-                                    prodsysBilde = minSak.json.bilete[i];
-                                    if (prodsysBilde.bildefil == saksBilde.bildefil) {
-                                        saksBilde.image.parent.label = "prodsak_id: " + prodsak_id + ", prodbilde_id: " + prodsysBilde.prodbilde_id;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        myProgressBar.close();
-    };
-
-    var getXtags = function(eksportStories) {
-        var myXtagsString = "";
-        var myStories = [];
-        var myPictures = [];
-        var eksportStiler = {};
-        var eksportStilerListe = dokTools.parseCSV(config.eksportCSV);
-        for (n = 0; n < eksportStilerListe.length; n++) {
-            eksportStiler[eksportStilerListe[n][0]] = eksportStilerListe[n][1];
-        }
-        for (n = 0; n < eksportStories.length; n++) {
-            findElements(eksportStories[n]); // sørger for at nested textFrames også blir med.
-        }
-        for (n = 0; n < myStories.length; n++) {
-            var myStory = {};
-            myStory.story = myStories[n];
-            myStory.position = dokTools.findPosition(myStory.story);
-            myStories[n] = myStory;
-        }
-
-        myStories.sort(function(a, b) {
-            return (a.position - b.position);
+        myStory.images.sort(function(a, b) {
+          return a.size < b.size;
         });
-
-        for ( n = myStories.length - 1; n > 0; n--) {
-            if (myStories[n].story == myStories[n - 1].story) {
-                myStories.splice(n, 1); // fjerner duplikater
+        for ( i = 0; i < myStory.images.length; i++) {
+          myStory.images[i].prioritet = i < 6 ? i + 1 : 5;
+        }
+        if (prodsak_id == "null") {
+          for (n = 0; n < myStory.stories.length; n++) {
+            setLabel(myStory.stories[n], 'ignore');
+          }
+          for (n = 0; n < myStory.images.length; n++) {
+            setLabel(myStory.images[n].image, 'ignore');
+          }
+          continue
+        } else {
+          myStory.xtags = getXtags(myStory.stories);
+          myStory.xtags = xtagsGrep(myStory.xtags);
+          myStory.xtags = webAvisHacks(myStory.xtags);
+          myStory.xtags = myStory.xtags.replace(/\[SNABELA\]/g, "@");
+        }
+        if (myStory.images.length > 0) {
+          myStory.bilete = [];
+          for (i = 0; i < myStory.images.length; i++) {
+            var storyImage = myStory.images[i];
+            var data = {
+              prodbilde_id: storyImage.prodbilde_id,
+              bildefil: storyImage.bildefil,
+              prioritet: storyImage.prioritet
+            };
+            if (storyImage.bildetekst)
+              data.bildetekst = storyImage.bildetekst;
+            myStory.bilete.push(data);
+          }
+        }
+        var data = {
+          tekst: myStory.xtags,
+          produsert: config.api.STATUS.fromDesk
+        }
+        if (myStory.bilete) data.bilete = myStory.bilete;
+        var response = prodsys.patch(prodsak_id, data);
+        logToFile(data, prodsak_id + '_patch.json');
+        logToFile(response, prodsak_id + '_response.json');
+        if (response.status === 200) {
+          var images = response.json.bilete;
+          log(response);
+          log(data.bilete);
+          log(images);
+          for ( n = 0; n < myStory.images.length; n++) {
+            storyImage = myStory.images[n];
+            for ( i = 0; i < images.length; i++) {
+              var prodsysBilde = images[i];
+              if (prodsysBilde.bildefil == storyImage.bildefil) {
+                setLabel(storyImage.image, {
+                  prodsak_id:  prodsak_id,
+                  prodbilde_id: prodsysBilde.prodbilde_id
+                })
+              }
             }
+          }
+        } else if (response.status) {
+          // Error status for patch
+          log(response)
         }
+      }
+    }
 
-        for ( n = 0; n < myStories.length; n++) {
-            myXtagsString = myXtagsString + getXtagStory(myStories[n].story) + "\r";
+    myProgressBar.close();
+    logToFile(eksportSaker, 'saker.json');
+  };
+
+  var getXtags = function(eksportStories) {
+    var myXtagsString = "";
+    var myStories = [];
+    var myPictures = [];
+    var eksportStiler = {};
+    var eksportStilerListe = dokTools.parseCSV(config.eksportCSV);
+    for (n = 0; n < eksportStilerListe.length; n++) {
+      eksportStiler[eksportStilerListe[n][0]] = eksportStilerListe[n][1];
+    }
+    for (n = 0; n < eksportStories.length; n++) {
+      findElements(eksportStories[n]); // sørger for at nested textFrames også blir med.
+    }
+    for (n = 0; n < myStories.length; n++) {
+      var myStory = {};
+      myStory.story = myStories[n];
+      myStory.position = dokTools.findPosition(myStory.story);
+      myStories[n] = myStory;
+    }
+
+    myStories.sort(function(a, b) {
+      return (a.position - b.position);
+    });
+
+    for ( n = myStories.length - 1; n > 0; n--) {
+      if (myStories[n].story == myStories[n - 1].story) {
+        myStories.splice(n, 1); // fjerner duplikater
+      }
+    }
+
+    for ( n = 0; n < myStories.length; n++) {
+      myXtagsString = myXtagsString + getXtagStory(myStories[n].story) + "\r";
+    }
+    return myXtagsString;
+
+    function findElements(myStory) {
+      var myItem;
+      var m;
+      var o;
+      myStories.push(myStory);
+      for (m = 0; m < myStory.tables.length; m++) {
+        for (o = 0; o < myStory.tables[m].cells.length; o++) {
+          findElements(myStory.tables[m].cells[o].texts[0]);
         }
-        return myXtagsString;
-
-        function findElements(myStory) {
-            var myItem;
-            var m;
-            var o;
-            myStories.push(myStory);
-            for (m = 0; m < myStory.tables.length; m++) {
-                for (o = 0; o < myStory.tables[m].cells.length; o++) {
-                    findElements(myStory.tables[m].cells[o].texts[0]);
-                }
-            }
-            for (m = 0; m < myStory.pageItems.length; m++) {
-                myItem = myStory.pageItems[m].getElements()[0];
-                if (myItem.constructor.name == "TextFrame") {
-                    findElements(myItem.parentStory);
-                } else if (myItem.constructor.name == "Rectangle") {
-                    myPictures.push(myItem);
-                } else {
-                    //$.bp();
-                }
-            }
+      }
+      for (m = 0; m < myStory.pageItems.length; m++) {
+        myItem = myStory.pageItems[m].getElements()[0];
+        if (myItem.constructor.name == "TextFrame") {
+          findElements(myItem.parentStory);
+        } else if (myItem.constructor.name == "Rectangle") {
+          myPictures.push(myItem);
+        } else {
+          //$.bp();
         }
+      }
+    }
 
-        function getXtagStory(minStory) { // denne er ganske treig :(
-            var xtagsStory = "";
-            var b;
-            var minTextStyleRange;
-            var charStyle = "";
-            var currentParagraphStyle = "";
-            var myParagraphStyle = "";
-            for (b = 0; b < minStory.textStyleRanges.length; b += 1) {
-                minTextStyleRange = minStory.textStyleRanges[b];
-                myParagraphStyle = eksportStiler[minTextStyleRange.appliedParagraphStyle.name] || "txt";
-                if (myParagraphStyle != currentParagraphStyle) {
-                    xtagsStory = xtagsStory + "@" + myParagraphStyle + ":";
-                    currentParagraphStyle = myParagraphStyle;
-                }
-                if (minTextStyleRange.appliedCharacterStyle.name.match(/I/)) {
-                    xtagsStory = xtagsStory + "<I>" + minTextStyleRange.contents.replace(/@/g, "[SNABELA]") + "</I>";
-                } else {
-                    xtagsStory = xtagsStory + minTextStyleRange.contents.replace(/@/g, "[SNABELA]");
-                }
-            }
-            return xtagsStory + "\r";
+    function getXtagStory(minStory) { // denne er ganske treig :(
+      var xtagsStory = "";
+      var b;
+      var minTextStyleRange;
+      var charStyle = "";
+      var currentParagraphStyle = "";
+      var myParagraphStyle = "";
+      for (b = 0; b < minStory.textStyleRanges.length; b += 1) {
+        minTextStyleRange = minStory.textStyleRanges[b];
+        myParagraphStyle = eksportStiler[minTextStyleRange.appliedParagraphStyle.name] || "txt";
+        if (myParagraphStyle != currentParagraphStyle) {
+          xtagsStory = xtagsStory + "@" + myParagraphStyle + ":";
+          currentParagraphStyle = myParagraphStyle;
         }
-
-    };
-
-    var xtagsGrep = function(xtagsTekst) { // gjør diverse utskiftinger før saken sendes til prodsys
-        xtagsTekst = xtagsTekst.replace(/(\u2002|\u2003|\u2007|\u2009|\u202F|\u00A0)/g, " "); // diverse space
-        xtagsTekst = xtagsTekst.replace(/(\u2013|\u2014)/gi, "--"); // gjør om tankestreker til to bindestreker
-        xtagsTekst = xtagsTekst.replace(/\u00AD/gi, ""); // conditional hyphen (myk bindestrek) fjernes
-        xtagsTekst = xtagsTekst.replace(/\uFFFC|\u0016/gi, ""); // anchored object tegn fjernes
-        xtagsTekst = xtagsTekst.replace(/@SLETT:[^\r]*/gi, ""); //fjerner avsnitt med koden SLETT
-        xtagsTekst = xtagsTekst.replace(/\n/g, " "); // linjeskift blir erstattet med mellomrom
-        xtagsTekst = xtagsTekst.replace(/^@[^:]+:\s*@/mg, "@"); // fjerne tomme avsnitt med xtag
-        xtagsTekst = xtagsTekst.replace(/(^@[^:]+:)\s+/mg, "$1"); // fjerne luft mellom xtag og første ord
-        xtagsTekst = xtagsTekst.replace(/  +/g, " "); // gjør multispace om til enkelspace.
-        xtagsTekst = xtagsTekst.replace(/\s*\r\s*/g, "\r"); // fjerner ekstra luft mellom avsnitt.
-        xtagsTekst = xtagsTekst.replace(/^\s+/g, "").replace(/\s+$/g, ""); // fjerner luft i slutten og starten av teksten.
-        return xtagsTekst;
-    };
-
-    var webAvisHacks = function(xtagsTekst) { // gjør endringer sånn at nettavisa skal godta saken, legger faktarammer og byline til slutten av saken
-
-        // Anmelderfakta etter temaord
-        myAnmfakta = xtagsTekst.match(/@fak\d:[^@]+/g) || [];
-        for (n = myAnmfakta.length - 1; n >= 0; n--) {
-            myFakta = myAnmfakta[n].replace(/\s*@$/, "");
-            xtagsTekst = xtagsTekst.replace(myFakta, "");
-            xtagsTekst = "\r" + myFakta + "\r" + xtagsTekst;
+        if (minTextStyleRange.appliedCharacterStyle.name.match(/I/)) {
+          xtagsStory = xtagsStory + "_" + minTextStyleRange.contents.replace(/@/g, "[SNABELA]") + "_";
+        } else {
+          xtagsStory = xtagsStory + minTextStyleRange.contents.replace(/@/g, "[SNABELA]");
         }
+      }
+      return xtagsStory + "\r";
+    }
 
-        // Temaord etter tittel og ingress
-        myTemaord = xtagsTekst.match(/@temaord:[^@]+/);
-        if (myTemaord) {
-            myTemaord = myTemaord[0];
-            xtagsTekst = xtagsTekst.replace(myTemaord, "\r");
-            xtagsTekst = "\r" + myTemaord + "\r" + xtagsTekst;
-        }
+  };
 
-        // Ingress nest først
-        myIngress = xtagsTekst.match(/@ing:[^@]+/);
-        if (myIngress) {
-            myIngress = myIngress[0];
-            xtagsTekst = xtagsTekst.replace(myIngress, "\r");
-            xtagsTekst = "\r" + myIngress + "\r" + xtagsTekst;
-        }
+  var xtagsGrep = function(xtagsTekst) { // gjør diverse utskiftinger før saken sendes til prodsys
+    xtagsTekst = xtagsTekst.replace(/(\u2002|\u2003|\u2007|\u2009|\u202F|\u00A0)/g, " "); // diverse space
+    xtagsTekst = xtagsTekst.replace(/(\u2013|\u2014)/gi, "--"); // gjør om tankestreker til to bindestreker
+    xtagsTekst = xtagsTekst.replace(/\u00AD/gi, ""); // conditional hyphen (myk bindestrek) fjernes
+    xtagsTekst = xtagsTekst.replace(/\uFFFC|\u0016/gi, ""); // anchored object tegn fjernes
+    xtagsTekst = xtagsTekst.replace(/@SLETT:[^\r]*/gi, ""); //fjerner avsnitt med koden SLETT
+    xtagsTekst = xtagsTekst.replace(/\n/g, " "); // linjeskift blir erstattet med mellomrom
+    xtagsTekst = xtagsTekst.replace(/^@[^:]+:\s*@/mg, "@"); // fjerne tomme avsnitt med xtag
+    xtagsTekst = xtagsTekst.replace(/(^@[^:]+:)\s+/mg, "$1"); // fjerne luft mellom xtag og første ord
+    xtagsTekst = xtagsTekst.replace(/  +/g, " "); // gjør multispace om til enkelspace.
+    xtagsTekst = xtagsTekst.replace(/\s*\r\s*/g, "\r"); // fjerner ekstra luft mellom avsnitt.
+    xtagsTekst = xtagsTekst.replace(/^\s+/g, "").replace(/\s+$/g, ""); // fjerner luft i slutten og starten av teksten.
+    return xtagsTekst;
+  };
 
-        // Tittel først
-        myTittel = xtagsTekst.match(/@tit:[^@]+/);
-        if (myTittel) {
-            myTittel = myTittel[0];
-            xtagsTekst = xtagsTekst.replace(myTittel, "\r");
-            xtagsTekst = "\r" + myTittel + "\r" + xtagsTekst;
-        }
+  var webAvisHacks = function(xtagsTekst) { // gjør endringer sånn at nettavisa skal godta saken, legger faktarammer og byline til slutten av saken
 
-        // Stikktittel enda førstere
-        myStikktit = xtagsTekst.match(/@stikktit:[^@]+/);
-        if (myStikktit) {
-            myStikktit = myStikktit[0];
-            xtagsTekst = xtagsTekst.replace(myStikktit, "\r");
-            xtagsTekst = "\r" + myStikktit + "\r" + xtagsTekst;
-        }
+    // Anmelderfakta etter temaord
+    myAnmfakta = xtagsTekst.match(/@fak\d:[^@]+/g) || [];
+    for (n = myAnmfakta.length - 1; n >= 0; n--) {
+      myFakta = myAnmfakta[n].replace(/\s*@$/, "");
+      xtagsTekst = xtagsTekst.replace(myFakta, "");
+      xtagsTekst = "\r" + myFakta + "\r" + xtagsTekst;
+    }
 
-        // Faktarammer til slutt
-        myFaktarammer = xtagsTekst.match(/@fakta:[^@]+/g) || [];
-        for ( n = 0; n < myFaktarammer.length; n++) {
-            myFakta = myFaktarammer[n].replace(/\s*@$/, "");
-            xtagsTekst = xtagsTekst.replace(myFakta, "");
-            myFakta = myFakta.replace(/\s+$/, "").replace(/\r/g, "\r# ");
-            xtagsTekst += "\r" + myFakta;
-        }
+    // Temaord etter tittel og ingress
+    myTemaord = xtagsTekst.match(/@temaord:[^@]+/);
+    if (myTemaord) {
+      myTemaord = myTemaord[0];
+      xtagsTekst = xtagsTekst.replace(myTemaord, "\r");
+      xtagsTekst = "\r" + myTemaord + "\r" + xtagsTekst;
+    }
 
-        // Bylines til slutt med kule mellom
-        myBylines = xtagsTekst.match(/[\r\n]*@bl:[^@]+/g) || [];
-        for ( n = 0; n < myBylines.length; n++) {
-            myByline = myBylines[n];
-            xtagsTekst = xtagsTekst.replace(myByline, "\r");
-            myByline = myByline.replace(/foto: ?([^\n\r]+)/ig, "$1 (foto)");
-            myByline = myByline.replace(/^\s+/g, "").replace(/\s+$/g, ""); // fjerner luft i slutten og starten av teksten.
-            myByline = myByline.replace(/\s*\r\s*(og)?(foto:)?(tekst:)?\s*/g, " \u2022 ");
-            myByline = myByline.replace(/[\n\r]/g, "").replace(/.+:/i, "");
-            xtagsTekst += n === 0 ? "\r@bl:" : " \u2022 ";
-            xtagsTekst += myByline;
-        }
+    // Ingress nest først
+    myIngress = xtagsTekst.match(/@ing:[^@]+/);
+    if (myIngress) {
+      myIngress = myIngress[0];
+      xtagsTekst = xtagsTekst.replace(myIngress, "\r");
+      xtagsTekst = "\r" + myIngress + "\r" + xtagsTekst;
+    }
 
-        // Bildetekster til slutt
-        myBildetekster = xtagsTekst.match(/@bt:[\s\S]+?^/gm) || [];
-        for ( n = 0; n < myBildetekster.length; n++) {
-            myBildetekst = myBildetekster[n];
-            xtagsTekst = xtagsTekst.replace(myBildetekst, "\r");
-            xtagsTekst = xtagsTekst + "\r" + myBildetekst + "\r";
-        }
+    // Tittel først
+    myTittel = xtagsTekst.match(/@tit:[^@]+/);
+    if (myTittel) {
+      myTittel = myTittel[0];
+      xtagsTekst = xtagsTekst.replace(myTittel, "\r");
+      xtagsTekst = "\r" + myTittel + "\r" + xtagsTekst;
+    }
 
-        xtagsTekst = xtagsTekst.replace(/\s*\r\s*/g, "\r\n\r\n"); // sørger for at alle avsnittskift blir markert på samme måte, slik webavisa vil ha det.
-        xtagsTekst = xtagsTekst.replace(/^\s+/g, "").replace(/\s+$/g, ""); // fjerner luft i slutten og starten av teksten.
-        return xtagsTekst;
-    };
+    // Stikktittel enda førstere
+    myStikktit = xtagsTekst.match(/@stikktit:[^@]+/);
+    if (myStikktit) {
+      myStikktit = myStikktit[0];
+      xtagsTekst = xtagsTekst.replace(myStikktit, "\r");
+      xtagsTekst = "\r" + myStikktit + "\r" + xtagsTekst;
+    }
 
-    main(myDoc);
+    // Faktarammer til slutt
+    myFaktarammer = xtagsTekst.match(/@fakta:[^@]+/g) || [];
+    for ( n = 0; n < myFaktarammer.length; n++) {
+      myFakta = myFaktarammer[n].replace(/\s*@$/, "");
+      xtagsTekst = xtagsTekst.replace(myFakta, "");
+      myFakta = myFakta.replace(/\s+$/, "").replace(/\r/g, "\r# ");
+      xtagsTekst += "\r" + myFakta;
+    }
+
+    // Bylines til slutt
+    myBylines = xtagsTekst.match(/[\r\n]*@bl:[^@]+/g) || [];
+    for ( n = 0; n < myBylines.length; n++) {
+      myByline = myBylines[n];
+      xtagsTekst = xtagsTekst.replace(myByline, "\r");
+      // myByline = myByline.replace(/\b (\w:)([^\n\r]+)/ig, "\n@bl: foto:");
+      // myByline = myByline.replace(/^\s+/g, "").replace(/\s+$/g, ""); // fjerner luft i slutten og starten av teksten.
+      // myByline = myByline.replace(/\s*\r\s*(og)?(foto:)?(tekst:)?\s*/g, " \u2022 ");
+      // myByline = myByline.replace(/[\n\r]/g, "").replace(/.+:/i, "");
+      xtagsTekst += myByline;
+    }
+
+    // Bildetekster til slutt
+    myBildetekster = xtagsTekst.match(/@bt:[\s\S]+?^/gm) || [];
+    for ( n = 0; n < myBildetekster.length; n++) {
+      myBildetekst = myBildetekster[n];
+      xtagsTekst = xtagsTekst.replace(myBildetekst, "\r");
+      xtagsTekst = xtagsTekst + "\r" + myBildetekst + "\r";
+    }
+
+    xtagsTekst = xtagsTekst.replace(/\s*\r\s*/g, "\n\n"); // sørger for at alle avsnittskift blir markert på samme måte, slik webavisa vil ha det.
+    xtagsTekst = xtagsTekst.replace(/^\s+/g, "").replace(/\s+$/g, ""); // fjerner luft i slutten og starten av teksten.
+    return xtagsTekst;
+  };
+
+  main(myDoc);
 };
-
-if (testing) {
-    eksportTilProdsys(app.activeDocument);
-}

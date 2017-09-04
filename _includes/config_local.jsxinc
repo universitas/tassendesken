@@ -1,9 +1,11 @@
-﻿// Diverse konstanter for å konfigurere skriptene. De fleste trivielle endringer skal kunne gjøres i denne fila.
+﻿// vim: set ft=javascript:
+// Diverse konstanter for å konfigurere skriptene. De fleste trivielle endringer skal kunne gjøres i denne fila.
 // Oppstartskriptene bruker ikke denne config-fila, så de må endres for seg.
 
+config.DEBUG = false;
 config.api.HOST = "universitas.no"; // url til webapi
-config.api.TEXT = "/admin/api/indesign/"; // url til webapi tekst
-config.api.PHOTO = "/admin/api/prodbilde"; // url til webapi bilde
+config.api.PORT = 80;
+config.api.ENDPOINT = "/api/legacy/"; // url til webapi tekst
 config.api.USER = "api"; // brukernavn til webapi
-config.api.PASSWORD = "Avier1gi"; // passord til webapi/**
+config.api.PASSWORD = "Avier1gi"; // passord til webapi
 

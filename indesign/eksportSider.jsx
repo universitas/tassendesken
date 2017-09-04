@@ -1,9 +1,11 @@
-﻿/* jshint ignore:start */
-#include ../_includes/dokTools.jsxinc
-#include ../_includes/eksport.jsxinc
-#include ../_includes/prodsys.jsxinc
-#targetengine "session"
+/* jshint ignore:start */
+#targetengine "session";
+#target "indesign";
+#include "../_includes/index.jsxinc"; // imports!
+#include "../_includes/eksport.jsxinc"; // brukergrensesnittet
 /* jshint ignore:end */
+
+// config.DEBUG = true;
 
 try {
   var dok = app.activeDocument;
@@ -108,11 +110,7 @@ function lagPDF(dok) {
     }
     myProgressBar.close();
     if (tilProdsys.checkedState) {
-      try {
-        eksportTilProdsys(dok);
-      } catch (e) {
-        alert("Noe gikk feil med eksport til prodsys\r" + e);
-      }
+        eksportTilProdsys(dok);     
     }
   }
 }
