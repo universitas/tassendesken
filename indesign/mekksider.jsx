@@ -1,8 +1,7 @@
 ﻿/* jshint ignore:start */
-#include ../_includes/config.jsxinc
-#include ../_includes/dokTools.jsxinc
-
-#targetengine "session";
+#include ../_includes/index.jsxinc
+#target "indesign"
+#targetengine "session"
 /* jshint ignore:end */
 
 var avismal = File(config.mal_avis); // malfil for avisa

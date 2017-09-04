@@ -3,8 +3,9 @@
 // Skrevet av Håken Lid 2011
 
 /* jshint ignore:start */
-#include ../_includes/dokTools.jsxinc
-#include ../_includes/config.jsxinc
+#include ../_includes/index.jsxinc
+#target "indesign"
+#targetengine "session"
 /* jshint ignore:end */
 dokTools.clearSearch();
 

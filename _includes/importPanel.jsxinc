@@ -1,23 +1,18 @@
-﻿// vim: set ft=javascript:
+// vim: set ft=javascript:
 // Dette skriptet er brukergrensesnittet for import.jsx
 // Viser et fint panel i InDesign der man kan velge hvilke saker fra prodsys som skal importeres
 /* jshint ignore:start */
-#include "../_includes/config.jsxinc"; // diverse konfigurasjonsverdier
-#include "../_includes/prodsys.jsxinc"; // kommunikasjon med prodsys
-#include "../_includes/artikkeltyper.jsxinc"; // tilpasset konfigurasjon for hver enkelt artikkeltype og bylineboks
+#include index.jsxinc
 /* jshint ignore:end */
 
+
+// story -> Boolean
 function sortProdsys(a, b) { // sorterer sakene etter produsertstatus og navn. Saker med status "Til Desk" havner øverst
   return (a.produsert === b.produsert)
     ? a.arbeidstittel > b.arbeidstittel
     : a.produsert > b.produsert;
 }
 
-function objectKeys(obj) {
-  var result = []
-  for (key in obj) { result.push(key) }
-  return result
-}
 
 var STATUS = config.api.STATUS
 var statusOptions = {
@@ -46,7 +41,7 @@ function statusToIndex(status) {
 
 function importPanel(onImportClick) {
   var panelSize = 10; // max antall saker som vises i menyen
-  var getStatus = [STATUS.toEditor, STATUS.toDesk, STATUS.atDesk, STATUS.fromDesk]
+  var getStatus = [STATUS.toEditor, STATUS.toDesk, STATUS.atDesk]
   var importButton = config.resources + "/import.png";
   var windowTitle = "Importer saker";
   var win = new Window("palette", windowTitle, undefined); // Selve vinduet som GUI vises i
@@ -67,19 +62,18 @@ function importPanel(onImportClick) {
   });
   listePanel.alignChildren = "fill";
   listePanel.margins = [0, 0, 0, 0];
-  listePanel.firstIndex = 0;
+  listePanel.firstIndex = null;
 
 
   listePanel.sjekkProdsys = function() { // henter saker fra prodsys
     var prodsysSaker = [];
 
-    var response = prodsys.get(null, 
+    var response = prodsys.list(
       {
-        limit:200, 
-        publication_status__in: getStatus.join(',')
+        status: getStatus,
+        limit:50
       }
     );
-    log(response.status);
     prodsysSaker = response.json.results || [];
     prodsysSaker.sort(sortProdsys);
     listePanel.firstIndex = 0;
@@ -87,11 +81,11 @@ function importPanel(onImportClick) {
       var minIndex = sakstyper.length - 1;
       var minSakstype, erTtype;
       minSak = prodsysSaker[i];
-      minLoop: for (var n = 0; n < sakstyper.length; n += 1) {
+      for (var n = 0; n < sakstyper.length; n += 1) {
         minSakstype = artikkeltyper[sakstyper[n].toLowerCase()];
         erType = minSakstype.erType(minSak);
         if (minSak.produsert == STATUS.toDesk &&
-          listePanel.firstIndex === 0 &&
+          listePanel.firstIndex === null &&
           prodsysSaker.length > panelSize) {
           listePanel.firstIndex = Math.min(i, prodsysSaker.length - panelSize);
         }
@@ -99,7 +93,7 @@ function importPanel(onImportClick) {
           minIndex = n; // foreløpig gjetting
         } else if (erType === true) {
           minIndex = n; // definitiv gjetting
-          break minLoop;
+          break;
         }
       }
       minSak.sakstype = minIndex; // sette hvilken artikkeltype som skal være valgt i rullegardinmenyen på forhånd
@@ -219,14 +213,13 @@ function importPanel(onImportClick) {
         return function() {
           aktivSak.produsert = textToStatus(aktivRad.produsert.selection.text);
           response = prodsys.patch(aktivSak.prodsak_id, {produsert: aktivSak.produsert});
-          log(response);
           listePanel.update();
         };
       }(minSak, minRad);
 
       // minrad.button
       minRad.button.enabled = minSak.produsert == STATUS.toDesk; // knappen er ikke enabled hvis saken ikke er lagt til desk
-      minRad.button.onClick = function(aktivSak, aktivRad) { // snedig innpakking av funksjonen for å oppnå "closure" hvis jeg har skjønt det riktig. Det funker i allefall.
+      minRad.button.onClick = (function(aktivSak, aktivRad) { // snedig innpakking av funksjonen for å oppnå "closure" hvis jeg har skjønt det riktig. Det funker i allefall.
         return function() { // dette er funksjonen som blir utført når importknappen trykkes.
           var artikkeltype = artikkeltyper[sakstyper[aktivRad.mappe.selection.index].toLowerCase()]; // henter verdien fra rullegardinmenyen
           var importImages = win.importerbilder.value;
@@ -235,7 +228,7 @@ function importPanel(onImportClick) {
           aktivSak.produsert = STATUS.atDesk;
           listePanel.update();
         };
-      }(minSak, minRad); // kaller funksjonen som nettopp er laget - dette er så snedig at jeg ikke helt har skjønt hvordan det funker selv.
+      })(minSak, minRad); // kaller funksjonen som nettopp er laget - dette er så snedig at jeg ikke helt har skjønt hvordan det funker selv.
     }
   };
 

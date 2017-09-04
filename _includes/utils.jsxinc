@@ -1,0 +1,149 @@
+// vim: set ft=javascript:
+
+// Image -> Number
+function getImageSize(image) {
+  var bounds = image.parent.geometricBounds
+  return (bounds[2] - bounds[0]) * (bounds[3] - bounds[1])
+}
+
+// Image | Story -> String
+function getLabel(item, key) {
+  var label, value, match
+  if (item instanceof Image)  {
+    label = item.parent.label;
+  } else if (item instanceof Story) {
+    label = item.textContainers[0].label;
+  } else if (item instanceof String) {
+    label = item;
+  } else {
+    throw ('unknown type ' + typeof item)
+  }
+  value = label.replace(/^ */, '').replace(/ *$/, '')
+  if (key) {
+    try {
+      value = JSON.parse(value)[key]
+    } catch (e) {
+      match = value.match(RegExp(key + ':[ "]*([^ "]+)'));
+      value = match && match[1];
+    }
+  }
+  value = parseInt(value) || value;
+  return value;
+  // if (key) {
+  //   var data = {label: label}
+  //   data[key] = value
+  //   log(jsonify(data))
+  // }
+}
+
+// (Image | Story, String | Object) -> void
+function setLabel(item, label) {
+  if (typeof label !== 'string') {
+    label = jsonify(label)
+  }
+  if (item instanceof Image)  {
+    item.parent.label = label;
+  } else if (item instanceof Story) {
+    item.textContainers[0].label = label;
+  } else {
+    throw ('unknown type ' + typeof item)
+  }
+}
+
+// String -> String
+function trim(str) {
+  // trim whitespace from string
+  return str.replace(/^\s*/, '').replace(/\s*$/, '')
+}
+
+// String -> String
+function toUnicode(theString) { // lager unicode-entiteter av vanskelige bokstaver, tar en string og returnerer en string
+  function charToUnicode(letter) {
+    var charCode = ('0000' + letter.charCodeAt(0).toString(16).toUpperCase()).substr(-4, 4);
+    return '\\u' + charCode;
+  }
+  var result = theString;
+  result = result.replace(/[\u0080-\uFFFF]/g , charToUnicode);
+  result = result.replace(/\\u(201C|201D)/g, "\\u0022"); // fikser feil unicode for fancy hermetegn
+  result = result.replace(/\\u(2019|2018)/g, "\\u0092"); // fikser feil unicode for apostrofer
+  result = result.replace(/\\u2022/g, "\\u0095"); // fikser feil unicode for bullet
+  result = result.replace(/\\u2013/g, "\\u0096"); // fikser feil unicode for tankestrek
+  result = result.replace(/\\u2026/g, "..."); // fikser ellipsis
+  result = result.replace(/\+/g, "\\u002B"); // fikser pluss
+  result = result.replace(/\&/g, "\\u0026"); // fikser &
+  return result; // String
+}
+
+// Object -> Object
+function serializeObject(obj) {
+  // make object serializable
+  var pt = Object.prototype.toString.call(obj);
+  switch(pt) {
+    case '[object global]':
+    case '[object String]':
+    case '[object Number]':
+    case '[object Boolean]':
+      return obj
+    case '[object Object]':
+    case '[object Error]':
+      var obj2 = {};
+      for (var key in obj)
+        obj2[key] = serializeObject(obj[key]);
+      return obj2
+    case '[object Array]':
+      var newarr = [];
+      for (var i = 0; i < obj.length; i++)
+        newarr[i] = serializeObject(obj[i]);
+      return newarr;
+    case '[object Story]':
+      return '[Story id:' + obj.id + ' ' + obj.contents.substr(0,100) + ']'
+    case '[object Image]':
+      return '[Image id:' + obj.id + ' ' + obj.itemLink.name + ']'
+    default:
+      return pt
+  }
+}
+
+// Object -> String
+function jsonify(obj) {
+  return JSON.stringify(
+    serializeObject(obj),
+    null,
+    config.DEBUG ? 2 : 0
+  )
+}
+
+// (String | Object, ?String) -> void
+function logToFile(message, filename) {
+  // if (!config.DEBUG) return
+  if (!filename) filename='default.log';
+  var fp = File(config.logfiles + filename);
+  fp.open('w');
+  fp.encoding='UTF-8';
+  fp.lineFeed='Unix';
+  if (typeof message !== 'string') {
+    message = jsonify(message);
+  }
+  var successful = fp.write(message);
+  fp.close();
+  return successful;
+}
+
+// (String | Object, ?String) -> void
+function log(message, filename) {
+  // log to extendscript console
+  if (filename) {
+    logToFile(message, filename)
+  }
+  if (config.DEBUG)
+    $.writeln(typeof message === 'string' ? message : jsonify(message));
+  // else 
+  //   $.writeln('config.DEBUG = ' + config.DEBUG)
+}
+
+// Object -> [String]
+function objectKeys(obj) {
+  var result = []
+  for (key in obj) { result.push(key) }
+  return result
+}

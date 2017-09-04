@@ -1,4 +1,4 @@
-﻿/*
+/*
 import.jsx
 Dette skriptet er ryggraden i import fra prodsys til InDesign.
 Skrevet av Håken Lid 2011
@@ -6,14 +6,12 @@ Skrevet av Håken Lid 2011
 
 /* jshint ignore:start */
 #targetengine "session";
-#include "../_includes/config.jsxinc"; // diverse konfigurasjonsverdier
-#include "../_includes/dokTools.jsxinc"; // diverse nyttige verktøyfunksjoner
-#include "../_includes/prodsys.jsxinc"; // kommunikasjon med prodsys
-#include "../_includes/artikkeltyper.jsxinc"; // tilpasset konfigurasjon for hver enkelt artikkeltype og bylineboks
+#target "indesign";
+#include "../_includes/index.jsxinc"; // imports!
 #include "../_includes/importpanel.jsxinc"; // brukergrensesnittet
 /* jshint ignore:end */
 
-var DEBUG = false; // hvis true flyttes ikke saker til neste nivå i prodsys. Debug kan også være et prodsak_id - i såfall brukes ikke dialogboksen
+config.DEBUG = false;
 var BILDEDEBUG = false; // siden det tar så lang tid å finne bilder, kan det skrus av når man driver med bugtesting av skriptet
 var mappaMi; // mappa for denne utgava av universitas;
 var myDocument; // det aktive dokumentet;
@@ -47,21 +45,10 @@ function importerSak(JSONsak, somArtikkelType, importerbilder) { // JSONsak er e
   var artikkelType = (somArtikkelType) ? somArtikkelType : artikkeltyper[-1]; // for testeformål kan importerSak kalles uten somArtikkelType - da blir artikkeltype automatisk den siste typen i lista ("annet")
   mySpread = app.activeWindow.activeSpread;
   var originalenheter = dokTools.changeUnits(myDocument, [MeasurementUnits.MILLIMETERS, MeasurementUnits.MILLIMETERS]); // sørger for at millimeter er standard enhet - hvis det er noe annet, lagres det i objektet originalenheter.
-  try { // fanger opp eventuelle bugs
-    minArtikkel = new artikkel(prodsys.get(JSONsak.prodsak_id), artikkelType, mySpread, app.selection); 
+    var data = prodsys.get(JSONsak.prodsak_id).json;
+    minArtikkel = new artikkel(data, artikkelType, mySpread, app.selection); 
     // henter sak fra prodsys og oppretter artikkelobjekt
-    config.DEBUG || prodsys.post(JSONsak.prodsak_id, {produsert: config.api.STATUS.fromDesk}); // flytter saken videre i prodsys;
-  } catch (myError) { // produserer feilmelding
-    if (minArtikkel.progressBar) {
-      minArtikkel.progressBar.close(); // fjerner framdriftsvindu
-    }
-    // feilmelding 
-    var myMessage = "file: " + myError.fileName + "\r" + myError.name + ": " +
-      myError.description + " in line " + myError.line + "\r" + myError.line +
-      " " + myError.source.split("\n")[myError.line - 1];
-    // viser feilmelding i et vindu
-    dokTools.errorAlert(myMessage, "Noe gikk galt i import");
-  }
+    config.DEBUG || prodsys.patch(JSONsak.prodsak_id, {produsert: config.api.STATUS.fromDesk}); // flytter saken videre i prodsys;
 }
 
 function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det viktigste objektet i dette skriptet. Inneholder masse funksjoner og verdier - opprettes på grunnlag av en string fra prod.sys

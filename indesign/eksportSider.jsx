@@ -1,9 +1,11 @@
 /* jshint ignore:start */
-#include ../_includes/dokTools.jsxinc
-#include ../_includes/eksport.jsxinc
-#include ../_includes/prodsys.jsxinc
-#targetengine "session"
+#targetengine "session";
+#target "indesign";
+#include "../_includes/index.jsxinc"; // imports!
+#include "../_includes/eksport.jsxinc"; // brukergrensesnittet
 /* jshint ignore:end */
+
+// config.DEBUG = true;
 
 try {
   var dok = app.activeDocument;

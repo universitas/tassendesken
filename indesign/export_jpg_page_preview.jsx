@@ -1,4 +1,8 @@
-﻿#targetengine "session"
+﻿/* jshint ignore:start */
+#include ../_includes/index.jsxinc
+#target "indesign"
+#targetengine "session"
+/* jshint ignore:end */
 
 function export_all_pages(event) {
      var doc = event.target;

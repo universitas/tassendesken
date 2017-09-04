@@ -1,7 +1,7 @@
 ﻿/* jshint ignore:start */
-#include ../_includes/dokTools.jsxinc
-#include ../_includes/config.jsxinc
-//#targetengine "session"
+#include ../_includes/index.jsxinc
+#target "indesign"
+#targetengine "session"
 /* jshint ignore:end */
 
 dokTools.clearSearch();
