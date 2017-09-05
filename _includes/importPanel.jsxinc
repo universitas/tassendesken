@@ -3,6 +3,7 @@
 // Viser et fint panel i InDesign der man kan velge hvilke saker fra prodsys som skal importeres
 /* jshint ignore:start */
 #include index.jsxinc
+#targetengine "session";
 /* jshint ignore:end */
 
 

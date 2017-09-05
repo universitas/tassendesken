@@ -5,13 +5,16 @@ Skrevet av Håken Lid 2011
 */
 
 /* jshint ignore:start */
-#targetengine "session";
 #target "indesign";
+#targetengine "session";
 #include "../_includes/index.jsxinc"; // imports!
+#include "../_includes/artikkeltyper.jsxinc";
+#include "../_includes/prodsys.jsxinc";
 #include "../_includes/importpanel.jsxinc"; // brukergrensesnittet
 /* jshint ignore:end */
 
 config.DEBUG = false;
+var DEBUG = config.DEBUG;
 var BILDEDEBUG = false; // siden det tar så lang tid å finne bilder, kan det skrus av når man driver med bugtesting av skriptet
 var mappaMi; // mappa for denne utgava av universitas;
 var myDocument; // det aktive dokumentet;
@@ -46,9 +49,9 @@ function importerSak(JSONsak, somArtikkelType, importerbilder) { // JSONsak er e
   mySpread = app.activeWindow.activeSpread;
   var originalenheter = dokTools.changeUnits(myDocument, [MeasurementUnits.MILLIMETERS, MeasurementUnits.MILLIMETERS]); // sørger for at millimeter er standard enhet - hvis det er noe annet, lagres det i objektet originalenheter.
     var data = prodsys.get(JSONsak.prodsak_id).json;
-    minArtikkel = new artikkel(data, artikkelType, mySpread, app.selection); 
+    minArtikkel = new artikkel(data, artikkelType, mySpread, app.selection);
     // henter sak fra prodsys og oppretter artikkelobjekt
-    config.DEBUG || prodsys.patch(JSONsak.prodsak_id, {produsert: config.api.STATUS.fromDesk}); // flytter saken videre i prodsys;
+    config.DEBUG || prodsys.patch(JSONsak.prodsak_id, {produsert: config.api.STATUS.atDesk}); // flytter saken videre i prodsys;
 }
 
 function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det viktigste objektet i dette skriptet. Inneholder masse funksjoner og verdier - opprettes på grunnlag av en string fra prod.sys

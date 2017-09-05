@@ -1,6 +1,6 @@
 /* jshint ignore:start */
-#targetengine "session";
 #target "indesign";
+#targetengine "session";
 #include "../_includes/index.jsxinc"; // imports!
 #include "../_includes/eksport.jsxinc"; // brukergrensesnittet
 /* jshint ignore:end */
@@ -110,7 +110,7 @@ function lagPDF(dok) {
     }
     myProgressBar.close();
     if (tilProdsys.checkedState) {
-        eksportTilProdsys(dok);     
+        eksportTilProdsys(dok);
     }
   }
 }

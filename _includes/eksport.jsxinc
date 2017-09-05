@@ -272,7 +272,9 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
 
   var mekkSaksliste = function() {
     // lager en liste til rullegardinmenyen over saker som kan være aktuelle å koble seg på
-    var response = prodsys.list({status: config.api.STATUS.atDesk});
+    var response = prodsys.list({
+      status: [config.api.STATUS.fromDesk, config.api.STATUS.atDesk]
+    });
     // log(response.request);
     // log(response.head);
     // log(response.json);
