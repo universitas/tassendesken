@@ -83,5 +83,5 @@ if $updated_image_files; then
   # upload to linode
   logfile="$STAGING/linode-rsync.log"
   remote="$REMOTE_LINODE"
-  /usr/bin/rsync -rthzvLp $STAGING $remote --exclude=*.log | logger $logfile
+  /usr/bin/rsync -rthzvLp $STAGING/ $remote --exclude=*.log | logger $logfile
 fi

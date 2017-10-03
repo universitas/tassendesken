@@ -28,7 +28,7 @@ IMAGE_FOLDER="$STAGING/IMAGES"
 PDF_FOLDER="$STAGING/PDF"
 
 # SSH login til webservere
-REMOTE_LINODE="haakenlid@universitas.no:/srv"
+REMOTE_LINODE="haakenlid@universitas.no:/srv/tassen/volumes/staging/"
 
 # logfile
 LOGFILE="$STAGING/collect.log"
