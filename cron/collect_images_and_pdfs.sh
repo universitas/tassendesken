@@ -38,7 +38,7 @@ image_files=$(find "$DESKEN/$ISSUE" -iregex '.*\.\(jpg\|jpeg\|png\)' ! -name '._
 for original in $image_files; do
   compressed="$IMAGE_FOLDER/$(basename $original)"
   if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
-    convert "$original" -resize 2500x -quality 75 "$compressed" 2>> $errorlog 
+    convert "$original" -resize 2500x -quality 75 "$compressed" 2>> $logfile
     if [[ $? -eq 0 ]]; then
       updated_image_files=true
       echo "compressed  $original" | logger $logfile
