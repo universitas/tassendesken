@@ -38,14 +38,18 @@ image_files=$(find "$DESKEN/$ISSUE" -iregex '.*\.\(jpg\|jpeg\|png\)' ! -name '._
 for original in $image_files; do
   compressed="$IMAGE_FOLDER/$(basename $original)"
   if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
-    updated_image_files=true
-    convert "$original" -resize 1500x -quality 60 "$compressed"
-    echo "compressed  $original" | logger $logfile
-    if [[ ! -f "$compressed" ]]; then
-      # Unable to convert image file. Corrupt file or wrong filename.
-      broken_file=$(dirname "$original")"/$ERROR"$(basename "$original")
-      echo "ERROR: " $broken_file | logger $logfile
-      mv $original $broken_file # rename file.
+    convert "$original" -resize 2500x -quality 75 "$compressed" 2>> $errorlog 
+    if [[ $? -eq 0 ]]; then
+      updated_image_files=true
+      echo "compressed  $original" | logger $logfile
+    else
+      error_count=$(tail -n100 "$logfile" | grep -c "ERROR: $original")
+      echo "ERROR: $original $(( error_count + 1 ))" | logger $logfile
+      if (( $error_count > 2 )); then
+        # Unable to convert image file. Corrupt file or wrong filename.
+        broken_file=$(dirname "$original")"/$ERROR"$(basename "$original")
+        mv $original $broken_file # rename file.
+      fi
     fi
   fi
 done
