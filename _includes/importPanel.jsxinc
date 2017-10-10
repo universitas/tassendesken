@@ -83,7 +83,7 @@ function importPanel(onImportClick) {
       var minSakstype, erTtype;
       minSak = prodsysSaker[i];
       for (var n = 0; n < sakstyper.length; n += 1) {
-        minSakstype = artikkeltyper[sakstyper[n].toLowerCase()];
+        minSakstype = artikkeltyper[sakstyper[n].toLowerCase()] || artikkeltyper.annet;
         erType = minSakstype.erType(minSak);
         if (minSak.produsert == STATUS.toDesk &&
           listePanel.firstIndex === null &&

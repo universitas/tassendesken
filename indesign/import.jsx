@@ -45,7 +45,7 @@ function importerSak(JSONsak, somArtikkelType, importerbilder) { // JSONsak er e
     alert("Kan ikke importere\ringen åpne dokumenter, eller aktivt dokument er ikke lagret\r\rfeilmelding: " + myError);
     exit();
   }
-  var artikkelType = (somArtikkelType) ? somArtikkelType : artikkeltyper[-1]; // for testeformål kan importerSak kalles uten somArtikkelType - da blir artikkeltype automatisk den siste typen i lista ("annet")
+  var artikkelType = somArtikkelType || artikkeltyper.annet; // for testeformål kan importerSak kalles uten somArtikkelType - da blir artikkeltype automatisk den siste typen i lista ("annet")
   mySpread = app.activeWindow.activeSpread;
   var originalenheter = dokTools.changeUnits(myDocument, [MeasurementUnits.MILLIMETERS, MeasurementUnits.MILLIMETERS]); // sørger for at millimeter er standard enhet - hvis det er noe annet, lagres det i objektet originalenheter.
     var data = prodsys.get(JSONsak.prodsak_id).json;
@@ -314,7 +314,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
         nystil = nystil[0].slice(1, -1).toLowerCase(); // fjerner "@" og ":"
       }
       if (nystil) {
-        stil = this.skjema.styles[nystil] || this.artikkeltype["@" + nystil] || artikkeltyper["annet"]["@" + nystil] || "@" + nystil;
+        stil = this.skjema.styles[nystil] || this.artikkeltype["@" + nystil] || artikkeltyper.annet["@" + nystil] || "@" + nystil;
         mittAvsnitt = mittAvsnitt.replace(/@[^:]+:/, "");
       }
       if (stil.match(/bl/) && this.bylineboksInnhold) { // byline
@@ -633,7 +633,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
       }
       if (mineBilder[q].bt) {
         mineBilder[q].bt.applyObjectStyle(dokTools.velgStil(myDocument, "object", config.objektstiler.bt));
-        mineBilder[q].bt.parentStory.insertionPoints[0].applyParagraphStyle(dokTools.velgStil(myDocument, "paragraph", this.artikkeltype["@bt"] || artikkeltyper["annet"]["@bt"]));
+        mineBilder[q].bt.parentStory.insertionPoints[0].applyParagraphStyle(dokTools.velgStil(myDocument, "paragraph", this.artikkeltype["@bt"] || artikkeltyper.annet["@bt"]));
         mineBilder[q].bt.parentStory.insertionPoints[0].contents = minBildetekst;
         mineBilder[q].bt.label = 'prodsak_id:' + this.bilder[q].prodsak_id + ', prodbilde_id:' + this.bilder[q].prodbilde_id;
         this.pageItems.textFrames.push(mineBilder[q].bt);

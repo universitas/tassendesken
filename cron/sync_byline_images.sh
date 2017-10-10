@@ -12,12 +12,12 @@ WEB_BYLINES=/uio/kant/div-universitas-desken/STAGING/BYLINE
 
 $SCRIPT_FOLDER/fix_filnavn.py $LARGE_BYLINES
 
-originals=$(find "$LARGE_BYLINES" -iname "*.jp*g")
+originals=$(find "$LARGE_BYLINES" -iregex '.*\.\(png\|jpe\?g\)')
 for original in $originals; do
-  compressed="$WEB_BYLINES/$(basename $original)"
+  compressed="$WEB_BYLINES/$(basename ${original%.*}).jpg"
   if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
     updated_image_files=true
-    convert "$original" -resize 1500x -quality 75 "$compressed"
+    convert "$original" -alpha remove -background white -resize 1500x -quality 75 "$compressed"
     echo "compressed  $original" | logger $logfile
     if [[ ! -f "$compressed" ]]; then
       # Unable to convert image file. Corrupt file or wrong filename.

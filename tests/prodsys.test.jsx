@@ -1,13 +1,12 @@
 // vim: set ft=javascript:
-#include "../_includes/config.jsxinc"; // diverse konfigurasjonsverdier
-#include "../_includes/dokTools.jsxinc"; // diverse nyttige verktøyfunksjoner
-#include "../_includes/prodsys.jsxinc"; // kommunikasjon med prodsys
-#include "../_includes/json2.jsxinc"; // json library
+#include "../_includes/index.jsxinc"; // diverse konfigurasjonsverdier
+
 
 main();
 
 function main() {
   config.DEBUG=true;
+  $.level = 2;
   try {
     test_prodsys_list();
     // test_http_methods();
@@ -19,7 +18,7 @@ function main() {
 function assert(bool, msg) {
   if (! bool) 
     throw new Error('ASSERTION ERROR: ' + (msg || 'no message'));
-}
+
 
 function test_prodsys_list() {
   var status = config.api.STATUS;
