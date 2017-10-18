@@ -2,6 +2,10 @@
 
 # load environmental variables.
 source ${0%/*}/cron_environment_variables.sh
+# force upload
+if [[ -n $1 ]]; then
+  upload_files=true
+fi
 
 # logfile
 logfile="$STAGING/collect.log"
@@ -18,7 +22,7 @@ fi
 
 if [[ -z "$(find "$DESKEN/$ISSUE" -mmin -5 -print -quit)" ]]; then
   # no modified files
-  exit 0
+  [[ -z $upload_files ]] && exit 0
 fi
 
 # remove stale files in local image staging folder.
@@ -38,9 +42,10 @@ image_files=$(find "$DESKEN/$ISSUE" -iregex '.*\.\(jpg\|jpeg\|png\)' ! -name '._
 for original in $image_files; do
   compressed="$IMAGE_FOLDER/$(basename $original)"
   if [[ ! -f "$compressed" || "$original" -nt "$compressed" ]]; then
-    convert "$original" -resize 2500x -quality 75 "$compressed" 2>> $logfile
+    size='10000000@>'  # max 10 Megapixels
+    convert "$original" -resize $size -quality 75 "$compressed" 2>> $logfile
     if [[ $? -eq 0 ]]; then
-      updated_image_files=true
+      upload_files=true
       echo "compressed  $original" | logger $logfile
     else
       error_count=$(tail -n100 "$logfile" | grep -c "ERROR: $original")
@@ -62,23 +67,9 @@ for pdf_file in $pdf_files; do
   ln -fs $pdf_file $PDF_FOLDER # create symbolic links
 done
 
-if $updated_image_files; then
+if $upload_files; then
   # chmod 664 -R $IMAGE_FOLDER
   # chmod 775 $IMAGE_FOLDER
-
-  # # upload images to prodsys
-  # logfile="$STAGING/prodsys-rsync.log"
-  # remote="$PRODSYS/$YEAR/$ISSUE"
-  # mkdir -p $remote
-  # /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" --delete $remote | logger $logfile
-  # chmod 777 $remote
-
-#  # upload images to domeneshop
-#  logfile="$STAGING/domeneshop-rsync.log"
-#  remote="$REMOTE_DOMENESHOP/$YEAR/$ISSUE"
-#  # Make sure folder for year exists.
-#  /usr/bin/rsync -q /dev/null "$REMOTE_DOMENESHOP/$YEAR/"
-#  /usr/bin/rsync -thzvrp "$IMAGE_FOLDER/" "$remote" | logger $logfile
 
   # upload to linode
   logfile="$STAGING/linode-rsync.log"
