@@ -34,11 +34,14 @@ def rename(root, old, new):
             new_path = os.path.join(root, new)
         try:
             shutil.move(old_path, new_path)
-        except (IOError, OSError) as ex:
+        except Exception as ex:
             # something went wrong
             print(ex, file=sys.stderr)
             if os.path.isdir(new_path):
-                shutil.rmtree(new_path)
+                try:
+                    shutil.rmtree(new_path)
+                except Exception:
+                    pass
             return old_path
 
 
