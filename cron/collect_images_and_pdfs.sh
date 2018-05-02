@@ -74,5 +74,5 @@ if $upload_files; then
   # upload to linode
   logfile="$STAGING/linode-rsync.log"
   remote="$REMOTE_LINODE"
-  /usr/bin/rsync --temp-dir=/tmp/rsync -rthzvLp $STAGING/ $remote --exclude=*.log | logger $logfile
+  /usr/bin/rsync --temp-dir=/tmp -rthzvLp $STAGING/ $remote --exclude=*.log | logger $logfile
 fi
