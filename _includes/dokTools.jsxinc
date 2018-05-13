@@ -1,4 +1,4 @@
-﻿// vim: set ft=javascript:
+// vim: set ft=javascript:
 dokTools = {}
 
 dokTools.velgStil = function(myDocument, stiltype, stilnavn) { //velger en paragraph-, cell-, table-, eller characterStyle, og oppretter en ny hvis den ikke finnes
@@ -119,7 +119,25 @@ dokTools.changeUnits = function(myDoc, units) { // Funksjon som gjør dokumentet
     myDoc.viewPreferences.verticalMeasurementUnits = V_units;
     return ([orig_H_units, orig_V_units]);
 }
-dokTools.finnFil = function(rotmappe, filnavn) { // Finne er fil i rotmappa eller undermapper, returnerer fila eller null
+
+dokTools.finnFil = function(root, filename) {
+  while (!root.exists) root = root.parent;
+  var pk = filename.match(/\.\d+\./);
+  var pattern = new RegExp(pk && pk[0] || '^' + filename + '$');
+  function matcher(path) { return pattern.test(path.name) }
+  function subfolders(path) { return path instanceof Folder }
+  var files = root.getFiles(matcher);
+  if (files.length) 
+    return files[0]
+  var folders = root.getFiles(subfolders);
+  for (var i=0; i < folders.length; i++) {
+    var file = dokTools.finnFil(folders[i], filename)
+    if (file) return file
+  }
+  return null
+}
+
+dokTools._finnFil = function(rotmappe, filnavn) { // Finne er fil i rotmappa eller undermapper, returnerer fila eller null
     var mineMapper = [rotmappe];
     var svarteliste = /(INDESIGN|PDF)/;
     var minMappe;

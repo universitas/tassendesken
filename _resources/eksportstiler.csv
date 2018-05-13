@@ -28,7 +28,7 @@ A sitatbyline,sitatbyline
 A sitatbyline hvit,sitatbyline
 A spørsmål,spm
 A strek sort,SLETT
-A temaord,temaord
+A temaord,tema
 A temaord vignett,SLETT
 A txt 1,txt
 A txt 2,txt
@@ -114,7 +114,7 @@ P novatxt,plaktxt
 P plakdag,plakdag
 P plaktxt,plaktxt
 P plaktxt anbefalt,plaktxt
-X brødtekst ,txt
+X brødtekst,txt
 X grotesk 6pt,txt
 X grotesk 7.5pt,txt
 X kolofon hvit,txt

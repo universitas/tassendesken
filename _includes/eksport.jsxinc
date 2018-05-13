@@ -1,4 +1,5 @@
 // vim: set ft=javascript:
+#include "prodsys.jsxinc";
 
 // Story | TextFrame -> Boolean
 var isCaption = function(item) {
@@ -9,7 +10,6 @@ var isCaption = function(item) {
   }
   return false;
 }
-
 
 var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prodsys MAIN
   var eksportSaker = {}; // et objekt som inneholder de ulike sakene på siden.
@@ -484,6 +484,7 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
       var myImage = inkognitoBilder[n];
       if (myImage.prodsak_id) {
         eksportSaker[myImage.prodsak_id].images.push(myImage);
+        setLabel(myImage.image, {prodsak_id: myImage.prodsak_id});
       } else {
         setLabel(myImage.image,  'ignore');
       }
@@ -517,7 +518,7 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
           return a.size < b.size;
         });
         for ( i = 0; i < myStory.images.length; i++) {
-          myStory.images[i].prioritet = i < 6 ? i + 1 : 5;
+          myStory.images[i].prioritet = i < 5 ? 5 - i : 1;
         }
         if (prodsak_id == "null") {
           for (n = 0; n < myStory.stories.length; n++) {
@@ -757,3 +758,7 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
 
   main(myDoc);
 };
+
+// ifmain
+if ($.stack.replace(/[\[\]\s]/g, '') == $.fileName.replace(/^.*\//, ''))
+  eksportTilProdsys(app.activeDocument);

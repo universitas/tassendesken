@@ -79,8 +79,8 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
       JSONsak.tekst = JSONsak.tekst + "\r@bl:" + this.artikkeltype.byline.replace(/;/g, ","); // legger inn en generisk byline ("Navn Navnesen")
     }
 
-    if (!JSONsak.tekst.match(/@temaord:/) && this.artikkeltype.temaord && !this.artikkeltype.bylineboks) { //hvis journalisten har glemt temaord
-      JSONsak.tekst = JSONsak.tekst + "\r@temaord:" + this.artikkeltype.temaord; // legger inn generisk temaord
+    if (!JSONsak.tekst.match(/@tema:/) && this.artikkeltype.temaord && !this.artikkeltype.bylineboks) { //hvis journalisten har glemt temaord
+      JSONsak.tekst = JSONsak.tekst + "\r@tema:" + this.artikkeltype.temaord; // legger inn generisk temaord
     }
 
     if (!JSONsak.tekst.match(/\w+@\w+\.\w+/) && this.artikkeltype.epostbyline) { // hvis journalisten har glemt epostadresse
@@ -505,19 +505,17 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
     var BTheight = 6; //  høyden på bt-bokser
     var mittBilde;
     var minBildeFrame;
-    var minBildetekst;
     var bildeRamme;
     var btRamme;
     var spalter = Math.floor(this.bilder.length / 3) + 1;
 
     for (var n = this.bilder.length - 1; n >= 0; n--) {
-      if (this.bilder[n].prioritet === "0") {
+      if (parseInt(this.bilder[n].prioritet) === 0)
         this.bilder.splice(n, 1);
-      }
     }
 
     this.bilder.sort(function(a, b) {
-      return a.prioritet - b.prioritet || a.bildefil > b.bildefil;
+      return b.prioritet - a.prioritet || a.bildefil > b.bildefil;
     });
 
     this.gb = dokTools.finnLedigPlass(mySpread, spalter) || config.kriseGB;
@@ -526,16 +524,11 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
     if (this.trynebilde && mineBilder.length > 0) {
       minBildeFrame = mineBilder.pop().rectangle;
       minBildeFrame.contentType = ContentType.graphicType;
-      try {
         minBildeFrame.place(this.trynebilde);
         minBildeFrame.fit(FitOptions.FILL_PROPORTIONALLY);
         minBildeFrame.fit(FitOptions.CENTER_CONTENT);
         minBildeFrame.label = "ignore";
-        //minBildeFrame.label='prodsak_id:'+this.id;
-      } catch (e) {
-        $.bp();
-        $.writeln(e);
-      }
+
     }
 
     while (this.bilder.length > mineBilder.length) {
@@ -563,29 +556,13 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
     for (var q = 0; q < this.bilder.length; q += 1) {
       this.progressBar.update("bilde " + (q + 1) + " av " + this.bilder.length + "  :  " + this.bilder[q].bildefil);
       minBildeFrame = mineBilder[q].rectangle;
-
-      if (BILDEDEBUG && this.bilder[q].bildefil) { // BILDEDEBUG kan skrus av for DEBUG
-        mittBilde = dokTools.finnFil(minFolder, this.bilder[q].bildefil);
-        if (!mittBilde) {
-          minFolder = Folder(config.rotMappe);
-          var pattern = this.bilder[q].bildefil.match(/^(\d{2})_([A-Z]{3})/);
-          if (pattern) {
-            minFolder = Folder(minFolder.fullName + "/" + pattern[1]);
-            minRegExp = new RegExp(pattern[2], "i");
-            if (minFolder.exists) {
-              minFolder = minFolder.getFiles(function(myFile) {
-                return myFile.constructor.name === "Folder" && myFile.name.match(new RegExp(pattern[2], "i"));
-              });
-              if (minFolder) {
-                minFolder = minFolder[0];
-                mittBilde = dokTools.finnFil(minFolder, this.bilder[q].bildefil);
-              }
-            }
-          }
-        }
-      }
-      minBildetekst = this.bilder[q].bildetekst || this.bildetekster.pop() || "";
-      if (minBildetekst !== "" && mineBilder[q].bt === null) {
+      var bilde = this.bilder[q];
+      var scriptLabel =  {prodsak_id: this.id, prodbilde_id: bilde.prodbilde_id};
+      setLabel(minBildeFrame, scriptLabel);
+      var filename = this.bilder[q].bildefil;
+      if (filename) mittBilde = dokTools.finnFil(minFolder, filename);
+      var caption = this.bilder[q].bildetekst || this.bildetekster.pop() || "";
+      if (caption && ! mineBilder[q].bt) {
         myGB = mineBilder[q].rectangle.geometricBounds;
         btRamme = mySpread.textFrames.add();
         btRamme.geometricBounds = [myGB[2] - BTheight, myGB[1], myGB[2], myGB[3]];
@@ -593,10 +570,9 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
         mineBilder[q].rectangle.bringToFront();
         mineBilder[q].bt = btRamme;
       }
-      minBildetekst = (minBildetekst === "") ? "BT: bildetekst" : this.taGrep(minBildetekst);
+      caption = caption ? this.taGrep(caption): "BT: bildetekst"  ;
       if (mittBilde) {
         minBildeFrame.contentType = ContentType.graphicType;
-        try {
           minBildeFrame.place(mittBilde);
           if (minBildeFrame.appliedObjectStyle.name === config.objektstiler.faksimile) { // faksimiler som anmeldelsesbildet står litt på skrå og skal ha et fast flateareal
             var myRotation = minBildeFrame.rotationAngle; // vinkelen som faksimilen står på skrå
@@ -619,8 +595,6 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
             minBildeFrame.fit(FitOptions.FILL_PROPORTIONALLY);
             minBildeFrame.fit(FitOptions.CENTER_CONTENT);
           }
-          minBildeFrame.label = 'prodsak_id:' + this.bilder[q].prodsak_id + ', prodbilde_id:' + this.bilder[q].prodbilde_id;
-        } catch (e) {}
         this.pageItems.rectangles.push(minBildeFrame);
 
       } else if (this.bilder[q].bildefil) {
@@ -632,11 +606,12 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
         feilMeldingFrame.parentStory.contents = feilmelding;
       }
       if (mineBilder[q].bt) {
-        mineBilder[q].bt.applyObjectStyle(dokTools.velgStil(myDocument, "object", config.objektstiler.bt));
-        mineBilder[q].bt.parentStory.insertionPoints[0].applyParagraphStyle(dokTools.velgStil(myDocument, "paragraph", this.artikkeltype["@bt"] || artikkeltyper.annet["@bt"]));
-        mineBilder[q].bt.parentStory.insertionPoints[0].contents = minBildetekst;
-        mineBilder[q].bt.label = 'prodsak_id:' + this.bilder[q].prodsak_id + ', prodbilde_id:' + this.bilder[q].prodbilde_id;
-        this.pageItems.textFrames.push(mineBilder[q].bt);
+        var btRamme = mineBilder[q].bt;
+        btRamme.applyObjectStyle(dokTools.velgStil(myDocument, "object", config.objektstiler.bt));
+        btRamme.parentStory.insertionPoints[0].applyParagraphStyle(dokTools.velgStil(myDocument, "paragraph", this.artikkeltype["@bt"] || artikkeltyper.annet["@bt"]));
+        btRamme.parentStory.insertionPoints[0].contents = caption;
+        setLabel(btRamme, scriptLabel);
+        this.pageItems.textFrames.push(btRamme);
       }
     }
   };
@@ -697,7 +672,8 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
       if (minStory.tables.length > 0) {
         minStory.tables.everyItem().cells.everyItem().label = "";
       }
-      minTextframe.label = 'prodsak_id: ' + this.id; // Setter prodsak_id på alle objekter i saken
+      if (! minTextframe.label)
+        setLabel(minTextframe, {prodsak_id: this.id}); 
       if (this.artikkeltype.opprydding(minTextframe)) { // type.opprydding kan fjerne tomme tekstrammer
         dokTools.avsnittSkift(minStory);
         applyItalic(minStory);

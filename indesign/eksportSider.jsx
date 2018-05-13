@@ -1,8 +1,9 @@
 /* jshint ignore:start */
 #target "indesign";
 #targetengine "session";
-#include "../_includes/index.jsxinc"; // imports!
-#include "../_includes/eksport.jsxinc"; // brukergrensesnittet
+#includepath "../_includes/";
+#include "index.jsxinc"; // imports!
+#include "eksport.jsxinc"; // brukergrensesnittet
 /* jshint ignore:end */
 
 // config.DEBUG = true;
@@ -10,6 +11,7 @@
 try {
   var dok = app.activeDocument;
 } catch (e) {
+  alert('Åpne et dokument');
   exit();
 }
 

@@ -9,19 +9,18 @@ function getImageSize(image) {
 // Image | Story -> String
 function getLabel(item, key) {
   var label, value, match
-  if (item instanceof Image)  {
-    label = item.parent.label;
-  } else if (item instanceof Story) {
-    label = item.textContainers[0].label;
-  } else if (item instanceof String) {
+  if (item instanceof Image)
+    item = item.parent;
+  if (item instanceof Story)
+    item = item.textContainers[0]
+  if (item instanceof String)
     label = item;
-  } else {
-    throw ('unknown type ' + typeof item)
-  }
-  value = label.replace(/^ */, '').replace(/ *$/, '')
+  else 
+    label = item.label;
+  value = label.replace(/^ */, '').replace(/ *$/, '');
   if (key) {
     try {
-      value = JSON.parse(value)[key]
+      value = JSON.parse(value)[key];
     } catch (e) {
       match = value.match(RegExp(key + ':[ "]*([^ "]+)'));
       value = match && match[1];
@@ -29,25 +28,15 @@ function getLabel(item, key) {
   }
   value = parseInt(value) || value;
   return value;
-  // if (key) {
-  //   var data = {label: label}
-  //   data[key] = value
-  //   log(jsonify(data))
-  // }
 }
 
 // (Image | Story, String | Object) -> void
 function setLabel(item, label) {
-  if (typeof label !== 'string') {
-    label = jsonify(label)
-  }
-  if (item instanceof Image)  {
-    item.parent.label = label;
-  } else if (item instanceof Story) {
-    item.textContainers[0].label = label;
-  } else {
-    throw ('unknown type ' + typeof item)
-  }
+  if (typeof label !== 'string') label = jsonify(label);
+  if ( item instanceof Story ) item = item.textContainers[0];
+  if ( item instanceof Image ) item = item.parent;
+  if ( 'label' in item ) item.label = label;
+  else throw new Error('unknown type ' + typeof item);
 }
 
 // String -> String
@@ -147,3 +136,29 @@ function objectKeys(obj) {
   for (key in obj) { result.push(key) }
   return result
 }
+
+// Test runner
+function testRunner() {
+  config.DEBUG=true;
+  $.level = 2; // full debug mode
+  for (name in $.global) {
+    if (/test_/.test(name)) {
+      fn = $.global[name];
+      try {
+        $.write('running tests:' + name);
+        fn();
+        $.write(' Ok\n');
+      } catch (error) {
+         log('\n' + error.fileName + ":" + error.line + '\n' + error.message);
+      }
+     }
+  }
+}
+
+// Test assertions
+function assert(bool, msg) {
+  if (! bool) 
+    throw new Error('ASSERTION ERROR: ' + (msg || 'no message'));
+}
+
+
