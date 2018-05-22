@@ -1,1 +1,3 @@
-try{	//alert("illustrator");}catch(myError){}
+try {
+  //alert("illustrator");
+} catch (myError) {}

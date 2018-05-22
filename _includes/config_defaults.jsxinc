@@ -1,4 +1,4 @@
-﻿// vim: set ft=javascript:
+// vim: set ft=javascript:
 // Diverse konstanter for å konfigurere skriptene. De fleste trivielle endringer skal kunne gjøres i denne fila.
 // Oppstartskriptene bruker ikke denne config-fila, så de må endres for seg.
 
@@ -6,10 +6,10 @@ var config = {}; // config-objektet
 
 if ($.os.match("Macintosh")) {
   config.rotMappe = "/univ-desken/"; // Rotmappe for macOS
-  config.smallFont = ScriptUI.newFont("Lucida Grande", "bold", 9) // litt mindre font enn standardstørrelsen
+  config.smallFont = ScriptUI.newFont("Lucida Grande", "bold", 9); // litt mindre font enn standardstørrelsen
 } else {
   config.rotMappe = "//kant.uio.no/div-universitas-desken/"; // Rotmappe for Windows
-  config.smallFont = ScriptUI.newFont("Arial", "regular", 9) // litt mindre font enn standardstørrelsen
+  config.smallFont = ScriptUI.newFont("Arial", "regular", 9); // litt mindre font enn standardstørrelsen
 }
 
 config.api = {}; // legg inn riktig api-innlogging i config_local.jsxinc
@@ -18,7 +18,8 @@ config.api.TEXT = "HEMMELIG"; // url til webapi
 config.api.PHOTO = "HEMMELIG"; // url til webapi
 config.api.USER = "HEMMELIG"; // brukernavn til webapi
 config.api.PASSWORD = "HEMMELIG"; // passord til webapi
-config.api.STATUS = { // status enum in prodsys database
+config.api.STATUS = {
+  // status enum in prodsys database
   draft: 0,
   toJournalist: 3,
   toSubeditor: 4,
@@ -31,9 +32,9 @@ config.api.STATUS = { // status enum in prodsys database
   privat: 15,
   template: 100,
   error: 500
-}
+};
 
-config.kriseGB = [42, -532, 300, -286, 5, 42, 4] // hvis man ikke finner noen gb, brukes denne i stedet. [topp, venstre, bunn, høyre, spalteantall, spaltebredde,spaltemellomrom] i mm
+config.kriseGB = [42, -532, 300, -286, 5, 42, 4]; // hvis man ikke finner noen gb, brukes denne i stedet. [topp, venstre, bunn, høyre, spalteantall, spaltebredde,spaltemellomrom] i mm
 config.billedtekststil = "A bt"; // paragraphstyle for bildetekst IKKE FJERN DENNE!
 config.objektstiler = {};
 config.objektstiler.bylineboks = "bylineboks"; // tabellstilen for bylineboks
@@ -60,16 +61,17 @@ config.overrideStyles = { stikktit: null, tit: null, ing: null };
 // en sjuspalter annen tittel enn en tospalter)
 
 config.trynemappe = config.rotMappe + "/FOTO/bylinebilder/"; // mappa der trynebilder ligger
-config.resources = config.rotMappe + "/SCRIPTS/_resources/"
-config.epostCSV = config.rotMappe + "/SCRIPTS/_resources/epostbyline.csv" // liste over epostadresser i bruk i epostbyline
-config.logfiles = config.rotMappe + "/LOGS/" // logfiler
-config.importCSV = config.rotMappe + "/SCRIPTS/_resources/importstiler.csv" // tabell med artikkeltype-konfigurasjon
-config.eksportCSV = config.rotMappe + "/SCRIPTS/_resources/eksportstiler.csv" // tabell med hva de ulike paragraph styles skal oversettes til ved eksport
-config.saksmaler = config.rotMappe + "/UTTEGNER/MALER/Saksmaler.indl" // bibliotek med saksmaler
+config.resources = config.rotMappe + "/SCRIPTS/_resources/";
+config.epostCSV = config.rotMappe + "/SCRIPTS/_resources/epostbyline.csv"; // liste over epostadresser i bruk i epostbyline
+config.logfiles = config.rotMappe + "/LOGS/"; // logfiler
+config.importCSV = config.rotMappe + "/SCRIPTS/_resources/importstiler.csv"; // tabell med artikkeltype-konfigurasjon
+config.eksportCSV = config.rotMappe + "/SCRIPTS/_resources/eksportstiler.csv"; // tabell med hva de ulike paragraph styles skal oversettes til ved eksport
+config.saksmaler = config.rotMappe + "/UTTEGNER/MALER/Saksmaler.indl"; // bibliotek med saksmaler
 config.saksmalLibrary = config.rotMappe + "/UTTEGNER/MALER/Saksmaler.indl"; // Biblioteket som saksmalene skal legges til
-config.backupLibrary = config.rotMappe + "/UTTEGNER/MALER/BACKUP/Saksmaler.indl" // Backup tas før skriptet kjøres
-config.mal_avis = config.rotMappe + "/UTTEGNER/MALER/MAL_AVIS.indt" // Avismalen
-config.backupMal = config.rotMappe + "/UTTEGNER/MALER/BACKUP/MAL_AVIS.indt" // Backup tas før fila blir overskrevet
+config.backupLibrary =
+  config.rotMappe + "/UTTEGNER/MALER/BACKUP/Saksmaler.indl"; // Backup tas før skriptet kjøres
+config.mal_avis = config.rotMappe + "/UTTEGNER/MALER/MAL_AVIS.indt"; // Avismalen
+config.backupMal = config.rotMappe + "/UTTEGNER/MALER/BACKUP/MAL_AVIS.indt"; // Backup tas før fila blir overskrevet
 
 config.rotRegExp = new RegExp(config.rotMappe + "../"); // brukes for å finne bildefiler
 

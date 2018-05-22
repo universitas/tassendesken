@@ -1,419 +1,484 @@
 // vim: set ft=javascript:
-var dokTools = {}
+var dokTools = {};
 
-dokTools.velgStil = function(myDocument, stiltype, stilnavn) { //velger en paragraph-, cell-, table-, eller characterStyle, og oppretter en ny hvis den ikke finnes
-    var minStil;
-    minStil = myDocument[stiltype + "Styles"].itemByName(stilnavn);
-    if (minStil == null) {
-        minStil = myDocument[stiltype + "Styles"].add({
-            name: stilnavn
-        });
-    }
-    return minStil;
-}
+dokTools.velgStil = function(myDocument, stiltype, stilnavn) {
+  //velger en paragraph-, cell-, table-, eller characterStyle, og oppretter en ny hvis den ikke finnes
+  var minStil;
+  minStil = myDocument[stiltype + "Styles"].itemByName(stilnavn);
+  if (minStil == null) {
+    minStil = myDocument[stiltype + "Styles"].add({
+      name: stilnavn
+    });
+  }
+  return minStil;
+};
 
-dokTools.sjekkOverlapp = function(mySpread, GB) { // return true hvis objektet eller GB (array av fire tall) overlapper et annet pageItem
-    var pageItems = mySpread.allPageItems;
-    var myObject;
-    try {
-        if (GB && GB.geometricBounds) {
-            myObject = GB;
-            GB = myObject.geometricBounds;
-        }
-    } catch (myError) {}
-    var item;
-    var itemGB;
-    for (i = 0; i < pageItems.length; i += 1) {
-        item = pageItems[i];
-        itemGB = item.geometricBounds;
-        if (!(GB[0] > itemGB[2] || GB[1] > itemGB[3] || GB[2] < itemGB[0] || GB[3] < itemGB[1] || isNaN(itemGB[0]))) {
-            if (item != myObject) {
-                return true
-            }
-        }
+dokTools.sjekkOverlapp = function(mySpread, GB) {
+  // return true hvis objektet eller GB (array av fire tall) overlapper et annet pageItem
+  var pageItems = mySpread.allPageItems;
+  var myObject;
+  try {
+    if (GB && GB.geometricBounds) {
+      myObject = GB;
+      GB = myObject.geometricBounds;
     }
-    return false
-}
+  } catch (myError) {}
+  var item;
+  var itemGB;
+  for (i = 0; i < pageItems.length; i += 1) {
+    item = pageItems[i];
+    itemGB = item.geometricBounds;
+    if (
+      !(
+        GB[0] > itemGB[2] ||
+        GB[1] > itemGB[3] ||
+        GB[2] < itemGB[0] ||
+        GB[3] < itemGB[1] ||
+        isNaN(itemGB[0])
+      )
+    ) {
+      if (item != myObject) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
 
-dokTools.avsnittSkift = function(myStory) { // funksjon som endrer avsnittstilen når to eller flere avsnitt etterhverandre er like og avsnittstilene har en nextStyle 
-    if (myStory.paragraphs.length == 0) {
-        return;
+dokTools.avsnittSkift = function(myStory) {
+  // funksjon som endrer avsnittstilen når to eller flere avsnitt etterhverandre er like og avsnittstilene har en nextStyle
+  if (myStory.paragraphs.length == 0) {
+    return;
+  }
+  var stil1 = myStory.paragraphs[0].appliedParagraphStyle;
+  var stil2 = null;
+  try {
+    var nextStyle = stil1.nextStyle;
+  } catch (e) {
+    // stil1 er no style
+    nextStyle = stil1;
+  }
+  var i;
+  for (i = 1; i < myStory.paragraphs.length; i++) {
+    stil2 = myStory.paragraphs[i].appliedParagraphStyle;
+    if (nextStyle == "[No Paragraph Style]") {
+      nextStyle = stil1;
     }
-    var stil1 = myStory.paragraphs[0].appliedParagraphStyle;
-    var stil2 = null;
-    try {
-        var nextStyle = stil1.nextStyle;
-    } catch (e) { // stil1 er no style
-        nextStyle = stil1;
+    if (stil1 == stil2) {
+      myStory.paragraphs[i].appliedParagraphStyle = nextStyle;
+      nextStyle = nextStyle.nextStyle;
+    } else {
+      stil1 = stil2;
+      nextStyle = stil1.nextStyle;
     }
-    var i;
-    for (i = 1; i < myStory.paragraphs.length; i++) {
-        stil2 = myStory.paragraphs[i].appliedParagraphStyle;
-        if (nextStyle == "[No Paragraph Style]") {
-            nextStyle = stil1;
-        }
-        if (stil1 == stil2) {
-            myStory.paragraphs[i].appliedParagraphStyle = nextStyle;
-            nextStyle = nextStyle.nextStyle;
-        } else {
-            stil1 = stil2;
-            nextStyle = stil1.nextStyle;
-        }
-    }
-}
+  }
+};
 
-dokTools.removeWhiteSpace = function(myStory) { // Fjerner luft først og sist i en story
-    // Remove all whitespace at the end of the story
-    try {
-        while (myStory.contents.match(/^\s/)) {
-            myStory.characters[0].remove()
-        }
-    } catch (myError) {}
-    try {
-        while (myStory.contents.match(/\s$/)) {
-            myStory.characters[-1].remove()
-        }
-    } catch (myError) {}
-}
+dokTools.removeWhiteSpace = function(myStory) {
+  // Fjerner luft først og sist i en story
+  // Remove all whitespace at the end of the story
+  try {
+    while (myStory.contents.match(/^\s/)) {
+      myStory.characters[0].remove();
+    }
+  } catch (myError) {}
+  try {
+    while (myStory.contents.match(/\s$/)) {
+      myStory.characters[-1].remove();
+    }
+  } catch (myError) {}
+};
 
-dokTools.clearSearch = function() { // Fjerner alle søkeinnstillinger
-    app.changeTextPreferences = NothingEnum.nothing;
-    app.findTextPreferences = NothingEnum.nothing;
-    app.findGrepPreferences = NothingEnum.nothing;
-    app.changeGrepPreferences = NothingEnum.nothing;
-}
+dokTools.clearSearch = function() {
+  // Fjerner alle søkeinnstillinger
+  app.changeTextPreferences = NothingEnum.nothing;
+  app.findTextPreferences = NothingEnum.nothing;
+  app.findGrepPreferences = NothingEnum.nothing;
+  app.changeGrepPreferences = NothingEnum.nothing;
+};
 
-dokTools.removeDuplicates = function(myArray) { // Funksjon som fjerner duplikater i en array, returnerer array
-    //Semi-clever method of removing duplicate array items; much faster 
-    //than comparing every item to every other item! 
-    if (myArray == null) {
-        return null;
+dokTools.removeDuplicates = function(myArray) {
+  // Funksjon som fjerner duplikater i en array, returnerer array
+  //Semi-clever method of removing duplicate array items; much faster
+  //than comparing every item to every other item!
+  if (myArray == null) {
+    return null;
+  }
+  if (myArray.length == 0) {
+    return myArray;
+  }
+  var myNewArray = [];
+  myArray = myArray.sort();
+  myNewArray.push(myArray[0]);
+  if (myArray.length > 1) {
+    for (var myCounter = 1; myCounter < myArray.length; myCounter++) {
+      if (myArray[myCounter] != myNewArray[myNewArray.length - 1]) {
+        myNewArray.push(myArray[myCounter]);
+      }
     }
-    if (myArray.length == 0) {
-        return myArray;
-    }
-    var myNewArray = [];
-    myArray = myArray.sort();
-    myNewArray.push(myArray[0]);
-    if (myArray.length > 1) {
-        for (var myCounter = 1; myCounter < myArray.length; myCounter++) {
-            if (myArray[myCounter] != myNewArray[myNewArray.length - 1]) {
-                myNewArray.push(myArray[myCounter]);
-            }
-        }
-    }
-    return myNewArray;
-}
+  }
+  return myNewArray;
+};
 
-dokTools.changeUnits = function(myDoc, units) { // Funksjon som gjør dokumentets measurements om til millimeter, eller annen måleenhet, returnerer originalenheter
-    try {
-        H_units = units[0]
-        V_units = units[1]
-    } catch (myError) {
-        H_units = MeasurementUnits.MILLIMETERS
-        V_units = MeasurementUnits.MILLIMETERS
-    }
-    orig_H_units = myDoc.viewPreferences.horizontalMeasurementUnits;
-    orig_V_units = myDoc.viewPreferences.verticalMeasurementUnits;
-    myDoc.viewPreferences.horizontalMeasurementUnits = H_units;
-    myDoc.viewPreferences.verticalMeasurementUnits = V_units;
-    return ([orig_H_units, orig_V_units]);
-}
+dokTools.changeUnits = function(myDoc, units) {
+  // Funksjon som gjør dokumentets measurements om til millimeter, eller annen måleenhet, returnerer originalenheter
+  try {
+    H_units = units[0];
+    V_units = units[1];
+  } catch (myError) {
+    H_units = MeasurementUnits.MILLIMETERS;
+    V_units = MeasurementUnits.MILLIMETERS;
+  }
+  orig_H_units = myDoc.viewPreferences.horizontalMeasurementUnits;
+  orig_V_units = myDoc.viewPreferences.verticalMeasurementUnits;
+  myDoc.viewPreferences.horizontalMeasurementUnits = H_units;
+  myDoc.viewPreferences.verticalMeasurementUnits = V_units;
+  return [orig_H_units, orig_V_units];
+};
 
 dokTools.finnFil = function(root, filename) {
   while (!root.exists) root = root.parent;
   var pk = filename.match(/\.\d+\./);
-  var pattern = new RegExp(pk && pk[0] || '^' + filename + '$');
-  function matcher(path) { return pattern.test(path.name) }
-  function subfolders(path) { return path instanceof Folder }
-  var files = root.getFiles(matcher);
-  if (files.length) 
-    return files[0]
-  var folders = root.getFiles(subfolders);
-  for (var i=0; i < folders.length; i++) {
-    var file = dokTools.finnFil(folders[i], filename)
-    if (file) return file
+  var pattern = new RegExp((pk && pk[0]) || "^" + filename + "$");
+  function matcher(path) {
+    return pattern.test(path.name);
   }
-  return null
-}
+  function subfolders(path) {
+    return path instanceof Folder;
+  }
+  var files = root.getFiles(matcher);
+  if (files.length) return files[0];
+  var folders = root.getFiles(subfolders);
+  for (var i = 0; i < folders.length; i++) {
+    var file = dokTools.finnFil(folders[i], filename);
+    if (file) return file;
+  }
+  return null;
+};
 
+dokTools.finnLedigPlass = function(mySpread, spalter) {
+  // finner ledig plass til å lime inn minArtikkel returnerer geometricBounds eller false
+  var spalteantall;
+  var spaltebredde;
+  var spaltemellomrom;
+  var myGB; // [topp, venstre, bunn, høyre, spalteantall, spaltebredde, spaltemellomrom]
+  var spreadbounds = [];
 
-dokTools.finnLedigPlass = function(mySpread, spalter) { // finner ledig plass til å lime inn minArtikkel returnerer geometricBounds eller false
-    var spalteantall;
-    var spaltebredde;
-    var spaltemellomrom;
-    var myGB; // [topp, venstre, bunn, høyre, spalteantall, spaltebredde, spaltemellomrom]
-    var spreadbounds = [];
+  spreadbounds[0] = mySpread.pages[0].marginPreferences.top; // topp
+  spreadbounds[1] = mySpread.pages[0].bounds[1]; // venstre
+  spreadbounds[2] = mySpread.pages[0].bounds[2]; // bunn
+  spreadbounds[3] = mySpread.pages[-1].bounds[3]; // høyre
 
-    spreadbounds[0] = mySpread.pages[0].marginPreferences.top; // topp
-    spreadbounds[1] = mySpread.pages[0].bounds[1]; // venstre
-    spreadbounds[2] = mySpread.pages[0].bounds[2]; // bunn
-    spreadbounds[3] = mySpread.pages[-1].bounds[3]; // høyre
+  var speilhoyde = spreadbounds[2] - spreadbounds[0];
+  var move = spreadbounds[3] - spreadbounds[1] + 20;
 
-    var speilhoyde = spreadbounds[2] - spreadbounds[0];
-    var move = spreadbounds[3] - spreadbounds[1] + 20;
+  myGB = leitEtterPlass();
 
+  if (!myGB) {
+    // leter til høyre for oppslaget
+    spreadbounds[3] += move;
+    spreadbounds[1] += move;
     myGB = leitEtterPlass();
+  }
 
-    if (!myGB) { // leter til høyre for oppslaget
-        spreadbounds[3] += move;
-        spreadbounds[1] += move;
-        myGB = leitEtterPlass();
-    }
+  if (!myGB) {
+    // leter til venstre for oppslaget
+    spreadbounds[3] -= 2 * move;
+    spreadbounds[1] -= 2 * move;
+    myGB = leitEtterPlass();
+  }
 
-    if (!myGB) { // leter til venstre for oppslaget
-        spreadbounds[3] -= 2 * move;
-        spreadbounds[1] -= 2 * move;
-        myGB = leitEtterPlass();
-    }
+  if (!myGB) {
+    // det finnes ikke noe ledig plass
+    return false;
+  }
+  myGB[4] = spalteantall;
+  myGB[5] = spaltebredde;
+  myGB[6] = spaltemellomrom;
+  return myGB;
 
-    if (!myGB) { // det finnes ikke noe ledig plass
-        return false;
-    }
-    myGB[4] = spalteantall;
-    myGB[5] = spaltebredde;
-    myGB[6] = spaltemellomrom;
-    return myGB;
-
-    function leitEtterPlass() {
-        var myGB = [];
-        var side;
-        var venstrekant;
-        var sidespalter
-        var spalteGuides
-        for (n = 0; n < mySpread.pages.length; n += 1) {
-            side = mySpread.pages[n];
-            spalteantall = Math.min(side.marginPreferences.columnCount, spalter);
-            venstrekant = spreadbounds[1] + side.bounds[1];
-            if (side.name % 2 == 0) {
-                venstrekant += side.marginPreferences.right;
-            } else {
-                venstrekant += side.marginPreferences.left;
-            }
-            sidespalter = side.marginPreferences.columnCount;
-            if (sidespalter < 3) {
-                sidespalter = 3;
-                spaltemellomrom = 5;
-                left = side.marginPreferences.columnsPositions[0]
-                right = side.marginPreferences.columnsPositions[side.marginPreferences.columnsPositions.length - 1]
-                spaltebredde = ((right - left) - (sidespalter - 1 * spaltemellomrom)) / sidespalter;
-                spalteGuides = [right]
-                for (var i = 0; i < sidespalter; i++) {
-                    spalteGuides.push(spalteGuides[0] + spaltebredde * (i + 1) + spaltemellomrom * i);
-                    if (i < sidespalter) {
-                        spalteGuides.push(spalteGuides[0] + spaltebredde * (i + 1) + spaltemellomrom * (i + 1))
-                    }
-                }
-            } else {
-                spalteGuides = side.marginPreferences.columnsPositions;
-                spaltebredde = spalteGuides[1] - spalteGuides[0];
-                spaltemellomrom = spalteGuides[2] - spalteGuides[1];
-            }
-
-            if (sidespalter < spalteantall) {
-                spalteantall = sidespalter;
-            }
-            myGB = [spreadbounds[0], venstrekant, spreadbounds[0] + speilhoyde / 2 - 5]; //øverste halvdel av speilet på "side"
-            for (o = 0; o < sidespalter - spalteantall + 1; o += 1) {
-                myGB[1] = venstrekant + spalteGuides[o * 2];
-                myGB[3] = venstrekant + spalteGuides[(spalteantall + o) * 2 - 1];
-                if (dokTools.sjekkOverlapp(mySpread, myGB) == false) { //sjekker øvre halvdel av speilet
-                    return myGB;
-                }
-                myGB[0] = myGB[2] + 10;
-                myGB[2] = spreadbounds[2];
-                if (dokTools.sjekkOverlapp(mySpread, myGB) == false) { //sjekker nedre halvdel av speilet
-                    return myGB;
-                }
-                myGB[2] = myGB[0] - 10;
-                myGB[0] = spreadbounds[0];
-            }
+  function leitEtterPlass() {
+    var myGB = [];
+    var side;
+    var venstrekant;
+    var sidespalter;
+    var spalteGuides;
+    for (n = 0; n < mySpread.pages.length; n += 1) {
+      side = mySpread.pages[n];
+      spalteantall = Math.min(side.marginPreferences.columnCount, spalter);
+      venstrekant = spreadbounds[1] + side.bounds[1];
+      if (side.name % 2 == 0) {
+        venstrekant += side.marginPreferences.right;
+      } else {
+        venstrekant += side.marginPreferences.left;
+      }
+      sidespalter = side.marginPreferences.columnCount;
+      if (sidespalter < 3) {
+        sidespalter = 3;
+        spaltemellomrom = 5;
+        left = side.marginPreferences.columnsPositions[0];
+        right =
+          side.marginPreferences.columnsPositions[
+            side.marginPreferences.columnsPositions.length - 1
+          ];
+        spaltebredde =
+          (right - left - (sidespalter - 1 * spaltemellomrom)) / sidespalter;
+        spalteGuides = [right];
+        for (var i = 0; i < sidespalter; i++) {
+          spalteGuides.push(
+            spalteGuides[0] + spaltebredde * (i + 1) + spaltemellomrom * i
+          );
+          if (i < sidespalter) {
+            spalteGuides.push(
+              spalteGuides[0] +
+                spaltebredde * (i + 1) +
+                spaltemellomrom * (i + 1)
+            );
+          }
         }
-        return false;
-    }
-}
+      } else {
+        spalteGuides = side.marginPreferences.columnsPositions;
+        spaltebredde = spalteGuides[1] - spalteGuides[0];
+        spaltemellomrom = spalteGuides[2] - spalteGuides[1];
+      }
 
-dokTools.parseCSV = function(filePath) { // leser en CSV-fil og returnerer en array med tabellen i fila
-    var csvfil;
-    var result;
-    csvfil = new File(filePath);
-    csvfil.open();
-    fileContent = csvfil.read();
-    csvfil.close();
-    eval("result=[['" + fileContent.replace(/,/g, "','").replace(/\n/g, "'],['") + "']];");
-    return result;
-}
-
-dokTools.zoomTo = function(myObj) { // snedig måte å zoome til et objekt på siden som har geometricBounds.
-    var marg = 10; // ekstra luft i mm på arket
-    var maxZoom = 150; // max innzooming i %
-    var myWindow = app.activeDocument.layoutWindows[0]; // det aktive vinduet i InDesign
-    var myZoomP = 100; // default innzooming i %
-    myWindow.zoom(ZoomOptions.fitPage); // zoomer ut slik at hele siden passer i vinduet
-    if (myObj.geometricBounds) { // hvis objektet har geometricBounds - dvs. er for eksempel en textframe eller rectangle
-        var gb = myObj.geometricBounds;
-        var pageBounds = myWindow.activePage.bounds;
-        var ObjHeight = gb[2] - gb[0] + marg; // høyden på objektet
-        var ObjWidth = gb[3] - gb[1] + marg; // bredden på objektet
-        var winHeight = myWindow.bounds[2] - myWindow.bounds[0]; // høyden på det aktive vinduet
-        var winWidth = myWindow.bounds[3] - myWindow.bounds[1]; // bredden på det aktive vinduet
-        var pageHeight = pageBounds[2] - pageBounds[0]; // høyden på arket
-        var pageWidth = pageBounds[3] - pageBounds[1]; // bredden på arket
-
-        var winRatio = winWidth / winHeight; // forhold mellom bredde og høyde i det aktive vinduet
-        var pageRatio = pageWidth / pageHeight; // forhold mellom bredde og høyde på arket der myObj hører hjemme
-
-        if (winRatio > pageRatio) { // er vindet relativt bredere enn siden?
-            winHeight = pageBounds[2] - pageBounds[0];
-            winWidth = winHeight * winRatio;
-        } else { // er vindet relativt høyere enn siden?
-            winWidth = pageBounds[3] - pageBounds[1];
-            winHeight = winWidth / winRatio;
+      if (sidespalter < spalteantall) {
+        spalteantall = sidespalter;
+      }
+      myGB = [
+        spreadbounds[0],
+        venstrekant,
+        spreadbounds[0] + speilhoyde / 2 - 5
+      ]; //øverste halvdel av speilet på "side"
+      for (o = 0; o < sidespalter - spalteantall + 1; o += 1) {
+        myGB[1] = venstrekant + spalteGuides[o * 2];
+        myGB[3] = venstrekant + spalteGuides[(spalteantall + o) * 2 - 1];
+        if (dokTools.sjekkOverlapp(mySpread, myGB) == false) {
+          //sjekker øvre halvdel av speilet
+          return myGB;
         }
-        var hRatio = winHeight / ObjHeight;
-        var wRatio = winWidth / ObjWidth;
-        var zoomRatio = Math.min(hRatio, wRatio); // maksimal innzoomingen uten at objektet faller utenfor vinduet
-        myZoomP = myWindow.zoomPercentage * zoomRatio;
-        myZoomP = Math.min(myZoomP, maxZoom); // sørger for at innzoomingen ikke er større enn maxZoom<
-
-    }
-    app.select(myObj); // myObj blir selektert slik at det havner i midten av zoomen
-    myWindow.zoomPercentage = myZoomP; // zoomer inn på objektet
-
-}
-
-dokTools.onPage = function(item) { // sjekker om en story ligger på siden eller i pasteboard
-    if (item instanceof Story) 
-      item = item.textContainers[0];
-       
-    while (item && 'parent' in item && !(item instanceof Application)) {
-
-        if (item.constructor.name == "Page" && item.parent.constructor.name == "Spread")
-            return true; // ligger ikke i pasteboard eller på en master spread.
-        if ('parentPage' in item)
-          item = item.parentPage;
-        else
-          item = item.parent;
+        myGB[0] = myGB[2] + 10;
+        myGB[2] = spreadbounds[2];
+        if (dokTools.sjekkOverlapp(mySpread, myGB) == false) {
+          //sjekker nedre halvdel av speilet
+          return myGB;
+        }
+        myGB[2] = myGB[0] - 10;
+        myGB[0] = spreadbounds[0];
+      }
     }
     return false;
-}
+  }
+};
 
-dokTools.getScriptFolder = function() { // finner folderen som skriptet ligger i både når det kjøres fra InDesign og fra EST
-    try {
-        var activeScript = File(app.activeScript); // InDesign
-    } catch (e) {
-        var activeScript = File(e.fileName); // EST
+dokTools.parseCSV = function(filePath) {
+  // leser en CSV-fil og returnerer en array med tabellen i fila
+  var csvfil;
+  var result;
+  csvfil = new File(filePath);
+  csvfil.open();
+  fileContent = csvfil.read();
+  csvfil.close();
+  eval(
+    "result=[['" +
+      fileContent.replace(/,/g, "','").replace(/\n/g, "'],['") +
+      "']];"
+  );
+  return result;
+};
+
+dokTools.zoomTo = function(myObj) {
+  // snedig måte å zoome til et objekt på siden som har geometricBounds.
+  var marg = 10; // ekstra luft i mm på arket
+  var maxZoom = 150; // max innzooming i %
+  var myWindow = app.activeDocument.layoutWindows[0]; // det aktive vinduet i InDesign
+  var myZoomP = 100; // default innzooming i %
+  myWindow.zoom(ZoomOptions.fitPage); // zoomer ut slik at hele siden passer i vinduet
+  if (myObj.geometricBounds) {
+    // hvis objektet har geometricBounds - dvs. er for eksempel en textframe eller rectangle
+    var gb = myObj.geometricBounds;
+    var pageBounds = myWindow.activePage.bounds;
+    var ObjHeight = gb[2] - gb[0] + marg; // høyden på objektet
+    var ObjWidth = gb[3] - gb[1] + marg; // bredden på objektet
+    var winHeight = myWindow.bounds[2] - myWindow.bounds[0]; // høyden på det aktive vinduet
+    var winWidth = myWindow.bounds[3] - myWindow.bounds[1]; // bredden på det aktive vinduet
+    var pageHeight = pageBounds[2] - pageBounds[0]; // høyden på arket
+    var pageWidth = pageBounds[3] - pageBounds[1]; // bredden på arket
+
+    var winRatio = winWidth / winHeight; // forhold mellom bredde og høyde i det aktive vinduet
+    var pageRatio = pageWidth / pageHeight; // forhold mellom bredde og høyde på arket der myObj hører hjemme
+
+    if (winRatio > pageRatio) {
+      // er vindet relativt bredere enn siden?
+      winHeight = pageBounds[2] - pageBounds[0];
+      winWidth = winHeight * winRatio;
+    } else {
+      // er vindet relativt høyere enn siden?
+      winWidth = pageBounds[3] - pageBounds[1];
+      winHeight = winWidth / winRatio;
     }
-    return activeScript.parent; // skriptfolderen
-}
+    var hRatio = winHeight / ObjHeight;
+    var wRatio = winWidth / ObjWidth;
+    var zoomRatio = Math.min(hRatio, wRatio); // maksimal innzoomingen uten at objektet faller utenfor vinduet
+    myZoomP = myWindow.zoomPercentage * zoomRatio;
+    myZoomP = Math.min(myZoomP, maxZoom); // sørger for at innzoomingen ikke er større enn maxZoom<
+  }
+  app.select(myObj); // myObj blir selektert slik at det havner i midten av zoomen
+  myWindow.zoomPercentage = myZoomP; // zoomer inn på objektet
+};
+
+dokTools.onPage = function(item) {
+  // sjekker om en story ligger på siden eller i pasteboard
+  if (item instanceof Story) item = item.textContainers[0];
+
+  while (item && "parent" in item && !(item instanceof Application)) {
+    if (
+      item.constructor.name == "Page" &&
+      item.parent.constructor.name == "Spread"
+    )
+      return true; // ligger ikke i pasteboard eller på en master spread.
+    if ("parentPage" in item) item = item.parentPage;
+    else item = item.parent;
+  }
+  return false;
+};
+
+dokTools.getScriptFolder = function() {
+  // finner folderen som skriptet ligger i både når det kjøres fra InDesign og fra EST
+  try {
+    var activeScript = File(app.activeScript); // InDesign
+  } catch (e) {
+    var activeScript = File(e.fileName); // EST
+  }
+  return activeScript.parent; // skriptfolderen
+};
 
 dokTools.progressBar = function(myTitle, myText, myNumberofStages, canCancel) {
-    var myProgress = {};
-    myProgress.numberOfStages = myNumberofStages;
-    myProgress.window = new Window('window', myTitle);
-    myProgress.progressBar = myProgress.window.add('progressbar', [12, 12, 350, 24], 0, myNumberofStages);
-    myProgress.staticText = myProgress.window.add('statictext', [0, 0, 340, 20], myText, {
-        alignment: "left"
-    });
-    myProgress.update = function(updateText, newValue) {
-        this.progressBar.value = newValue || this.progressBar.value + 1
-        this.staticText.text = updateText || 'Trinn ' + this.progressBar.value + ' av ' + this.numberOfStages;
-        return (this.numberOfStages - this.progressBar.value);
+  var myProgress = {};
+  myProgress.numberOfStages = myNumberofStages;
+  myProgress.window = new Window("window", myTitle);
+  myProgress.progressBar = myProgress.window.add(
+    "progressbar",
+    [12, 12, 350, 24],
+    0,
+    myNumberofStages
+  );
+  myProgress.staticText = myProgress.window.add(
+    "statictext",
+    [0, 0, 340, 20],
+    myText,
+    {
+      alignment: "left"
     }
-    myProgress.close = function() {
-        this.window.close();
-        return true;
-    }
-    myProgress.window.show();
-    return myProgress;
-}
+  );
+  myProgress.update = function(updateText, newValue) {
+    this.progressBar.value = newValue || this.progressBar.value + 1;
+    this.staticText.text =
+      updateText ||
+      "Trinn " + this.progressBar.value + " av " + this.numberOfStages;
+    return this.numberOfStages - this.progressBar.value;
+  };
+  myProgress.close = function() {
+    this.window.close();
+    return true;
+  };
+  myProgress.window.show();
+  return myProgress;
+};
 
 dokTools.findPosition = function(myStory) {
-    var myPosition = 0;
-    var firstchar = (myStory.insertionPoints[0]);
-    var myPage = myStory;
-    var myColumns;
-    var pageNumber;
+  var myPosition = 0;
+  var firstchar = myStory.insertionPoints[0];
+  var myPage = myStory;
+  var myColumns;
+  var pageNumber;
 
-    while (false == (myPage instanceof Page || myPage instanceof Document)) {
-        if (myPage.hasOwnProperty("textContainers")) {
-            myPage = myStory.textContainers[0];
-        } else if (myPage.hasOwnProperty("parentTextFrames") && myPage.parentTextFrames.length > 0) {
-            myPage = myPage.parentTextFrames[0];
-        } else {
-            myPage = myPage.parent;
-        }
-    }
-    if (myPage instanceof Page) {
-        myColumns = myPage.marginPreferences.columnsPositions;
-        for (var n = 0; n < myColumns.length; n++) {
-            myColumns[n] += myPage.bounds[1] + myPage.marginPreferences.left;
-        }
+  while (false == (myPage instanceof Page || myPage instanceof Document)) {
+    if (myPage.hasOwnProperty("textContainers")) {
+      myPage = myStory.textContainers[0];
+    } else if (
+      myPage.hasOwnProperty("parentTextFrames") &&
+      myPage.parentTextFrames.length > 0
+    ) {
+      myPage = myPage.parentTextFrames[0];
     } else {
-        myColumns = [0];
+      myPage = myPage.parent;
     }
-
-    try {
-        myPosition = myPosition + parseInt(firstchar.baseline);
-        myPosition = myPosition + parseInt(firstchar.horizontalOffset / 5);
-        for (var n = myColumns.length - 1; n >= 0; n--) {
-            if (firstchar.horizontalOffset > myColumns[n]) {
-                myPosition = myPosition + 1000 * n;
-                break;
-            }
-        }
-        pageNumber = myPage.name.match(/\d+/);
-        if (pageNumber) {
-            pageNumber = parseInt(pageNumber[0]);
-            myPosition = myPosition + pageNumber * 100000
-        }
-    } catch (e) {
-        $.writeln(e)
-    };
-    return myPosition;
-}
-
-dokTools.findOverflows = function(myPage) { // finner tekst som flyter over på en side. Returnerer en array av strings
-    var myOverflows = []
-    var myStory;
-    var myContents;
-    var overflowLength;
-    var myTextFrames = myPage.textFrames;
-    for (var n = 0; n < myTextFrames.length; n++) {
-        myTextFrame = myTextFrames[n];
-        if (myTextFrame.overflows) {
-            myStory = myTextFrame.parentStory;
-            overflowLength = myStory.contents.length;
-            for (var i = 0; i < myStory.textContainers.length; i++) {
-                overflowLength -= myStory.textContainers[i].contents.length;
-            }
-            myContents = myStory.contents.substring(myStory.contents.length - overflowLength)
-            myOverflows.push(myContents);
-        }
+  }
+  if (myPage instanceof Page) {
+    myColumns = myPage.marginPreferences.columnsPositions;
+    for (var n = 0; n < myColumns.length; n++) {
+      myColumns[n] += myPage.bounds[1] + myPage.marginPreferences.left;
     }
-    return myOverflows;
-}
+  } else {
+    myColumns = [0];
+  }
 
-dokTools.errorAlert = function(message, title) { // feilmelding i et edittext-felt
-    var d = new Window('dialog', title);
-    var f = d.graphics.font;
-    d.top = d.add("group");
-    d.top.orientation = "row";
-    d.right = d.top.add("group", undefined);
-    d.right.orientation = "column";
-    d.rom = d.right.add('edittext', undefined, message, {
-        readonly: false,
-        borderless: false,
-        multiline: true,
-        scrollable: true
-    });
-    d.rom.graphics.font = ScriptUI.newFont(f.name, f.style, f.size - 2);
-    d.rom.preferredSize = [300, 300];
-    d.rom.alignment = "fill";
-    d.rom.active = true;
-    d.ok = d.add("button", undefined, "OK", {
-        name: "ok"
-    });
-    d.ok.alignment = "right";
-    d.show();
-}
+  try {
+    myPosition = myPosition + parseInt(firstchar.baseline);
+    myPosition = myPosition + parseInt(firstchar.horizontalOffset / 5);
+    for (var n = myColumns.length - 1; n >= 0; n--) {
+      if (firstchar.horizontalOffset > myColumns[n]) {
+        myPosition = myPosition + 1000 * n;
+        break;
+      }
+    }
+    pageNumber = myPage.name.match(/\d+/);
+    if (pageNumber) {
+      pageNumber = parseInt(pageNumber[0]);
+      myPosition = myPosition + pageNumber * 100000;
+    }
+  } catch (e) {
+    $.writeln(e);
+  }
+  return myPosition;
+};
+
+dokTools.findOverflows = function(myPage) {
+  // finner tekst som flyter over på en side. Returnerer en array av strings
+  var myOverflows = [];
+  var myStory;
+  var myContents;
+  var overflowLength;
+  var myTextFrames = myPage.textFrames;
+  for (var n = 0; n < myTextFrames.length; n++) {
+    myTextFrame = myTextFrames[n];
+    if (myTextFrame.overflows) {
+      myStory = myTextFrame.parentStory;
+      overflowLength = myStory.contents.length;
+      for (var i = 0; i < myStory.textContainers.length; i++) {
+        overflowLength -= myStory.textContainers[i].contents.length;
+      }
+      myContents = myStory.contents.substring(
+        myStory.contents.length - overflowLength
+      );
+      myOverflows.push(myContents);
+    }
+  }
+  return myOverflows;
+};
+
+dokTools.errorAlert = function(message, title) {
+  // feilmelding i et edittext-felt
+  var d = new Window("dialog", title);
+  var f = d.graphics.font;
+  d.top = d.add("group");
+  d.top.orientation = "row";
+  d.right = d.top.add("group", undefined);
+  d.right.orientation = "column";
+  d.rom = d.right.add("edittext", undefined, message, {
+    readonly: false,
+    borderless: false,
+    multiline: true,
+    scrollable: true
+  });
+  d.rom.graphics.font = ScriptUI.newFont(f.name, f.style, f.size - 2);
+  d.rom.preferredSize = [300, 300];
+  d.rom.alignment = "fill";
+  d.rom.active = true;
+  d.ok = d.add("button", undefined, "OK", {
+    name: "ok"
+  });
+  d.ok.alignment = "right";
+  d.show();
+};

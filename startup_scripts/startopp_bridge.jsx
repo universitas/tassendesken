@@ -1,1 +1,3 @@
-try{	//alert("startopp_bridge");}catch(myError){}
+try {
+  //alert("startopp_bridge");
+} catch (myError) {}
