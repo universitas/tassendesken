@@ -1,6 +1,9 @@
 /* jshint ignore:start */
 #include ../_includes/index.jsxinc
+#include ../_includes/index.jsxinc
 #target "indesign"
+#target "indesign"
+#targetengine "session"
 #targetengine "session"
 /* jshint ignore:end */
 
@@ -11,23 +14,24 @@ if (nyttDok && gammeltDok != nyttDok) {
   gammeltDok.remove();
 }
 
-function endreSideTall(dok, mappe) { // fikser sidetall, filnavn med mer på nye sider fra malen
+function endreSideTall(dok, mappe) {
+  // fikser sidetall, filnavn med mer på nye sider fra malen
   var sidetallboks, saved, myFile;
   var firstPage = parseInt(dok.pages[0].name);
   var myDialog = app.dialogs.add({
     name: "Første side av oppslaget?",
     canCancel: true
   });
-  with(myDialog) {
+  with (myDialog) {
     //Add a dialog column.
-    with(dialogColumns.add()) {
-      with(borderPanels.add()) {
-        with(dialogColumns.add()) {
+    with (dialogColumns.add()) {
+      with (borderPanels.add()) {
+        with (dialogColumns.add()) {
           staticTexts.add({
             staticLabel: "Sidetall for første side av oppslaget:"
           });
         }
-        with(dialogColumns.add()) {
+        with (dialogColumns.add()) {
           sidetallboks = integerEditboxes.add({
             editValue: firstPage
           });
@@ -51,20 +55,29 @@ function endreSideTall(dok, mappe) { // fikser sidetall, filnavn med mer på nye
     myFile = new File(mappe + "/" + filnavn); // new file object
 
     if (myFile.exists) {
-        myDialog = app.dialogs.add({
+      myDialog = app.dialogs.add({
         name: "Lagre over?",
         canCancel: true
       });
       myDialog.dialogColumns.add().staticTexts.add({
-        staticLabel: "Fila: " + myFile.name + " finnes fra før. Vil du lagre over?"
+        staticLabel:
+          "Fila: " + myFile.name + " finnes fra før. Vil du lagre over?"
       });
       myResult = myDialog.show();
       if (myResult) {
         try {
           dok.save(myFile); // lagrer over
           saved = true;
-        } catch (myError) { // hvis det av en ellera annen grunn ikke funker
-          alert("Kan ikke lagre fila\rfilnavn: " + myFile.path + "/" + myFile.name + "/r" + myError);
+        } catch (myError) {
+          // hvis det av en ellera annen grunn ikke funker
+          alert(
+            "Kan ikke lagre fila\rfilnavn: " +
+              myFile.path +
+              "/" +
+              myFile.name +
+              "/r" +
+              myError
+          );
         }
       }
     } else {
@@ -72,7 +85,12 @@ function endreSideTall(dok, mappe) { // fikser sidetall, filnavn med mer på nye
         dok.save(myFile); // save to ...
         saved = true;
       } catch (myError) {
-        alert("Kan ikke lagre fila\rSjekk at mappe for denne utgaven eksisterer\rfilnavn: " + myFile.path + "/" + myFile.name);
+        alert(
+          "Kan ikke lagre fila\rSjekk at mappe for denne utgaven eksisterer\rfilnavn: " +
+            myFile.path +
+            "/" +
+            myFile.name
+        );
       }
     }
   }
@@ -80,9 +98,11 @@ function endreSideTall(dok, mappe) { // fikser sidetall, filnavn med mer på nye
   return saved ? myFile : null;
 }
 
-function sidetall(tall) { // Endrer hvor sidetallene starter i dokument.
+function sidetall(tall) {
+  // Endrer hvor sidetallene starter i dokument.
   var seksjon;
-  if (dok.pages[0].name % 2 === 0 && tall % 2 == 1 && dok.pages.length > 1) { //tall = oddetall, men activedocument starter med en venstreside
+  if (dok.pages[0].name % 2 === 0 && tall % 2 == 1 && dok.pages.length > 1) {
+    //tall = oddetall, men activedocument starter med en venstreside
     var myPage = dok.pages[1];
     try {
       myPage.appliedSection.remove();
@@ -100,17 +120,22 @@ function sidetall(tall) { // Endrer hvor sidetallene starter i dokument.
   }
 }
 
-function nestefredag(idag) { //TODO denne er strødd rundt. fiks det.
+function nestefredag(idag) {
+  //TODO denne er strødd rundt. fiks det.
   // Returnerer dag for neste utgave i formatet YYMMDD for filnavn.
   idag = idag || new Date(); //
   var fredag = new Date(idag.getTime()); // kloner idag
   var UKE = 7; //antall dager i en uke, ja.
   var FREDAG = 5; //Fredag
   var UKESTART = 3; //Onsdag
-  fredag.setDate(idag.getDate() + FREDAG + UKESTART - (idag.getDay() + UKESTART) % UKE);
-  var YY = fredag.getFullYear().toString().slice(-2);
+  fredag.setDate(
+    idag.getDate() + FREDAG + UKESTART - (idag.getDay() + UKESTART) % UKE
+  );
+  var YY = fredag
+    .getFullYear()
+    .toString()
+    .slice(-2);
   var MM = ("0" + (fredag.getMonth() + 1)).slice(-2);
   var DD = ("0" + fredag.getDate()).slice(-2);
   return YY + MM + DD;
 }
-

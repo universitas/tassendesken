@@ -3,31 +3,33 @@
 // Viser et fint panel i InDesign der man kan velge hvilke saker fra prodsys som skal importeres
 /* jshint ignore:start */
 #include index.jsxinc
+#include index.jsxinc
 #target "indesign";
+#target "indesign";
+#targetengine "session";
 #targetengine "session";
 /* jshint ignore:end */
 
-
 // story -> Boolean
-function sortProdsys(a, b) { // sorterer sakene etter produsertstatus og navn. Saker med status "Til Desk" havner øverst
-  return (a.produsert === b.produsert)
+function sortProdsys(a, b) {
+  // sorterer sakene etter produsertstatus og navn. Saker med status "Til Desk" havner øverst
+  return a.produsert === b.produsert
     ? a.arbeidstittel > b.arbeidstittel
     : a.produsert > b.produsert;
 }
 
-
-var STATUS = config.api.STATUS
+var STATUS = config.api.STATUS;
 var statusOptions = {
-  '0 skisse': STATUS.draft,
-  '3 journalist': STATUS.toJournalist,
-  '4 mellomleder': STATUS.toSubeditor,
-  '5 redaktør': STATUS.toEditor,
-  '6 til desk': STATUS.toDesk,
-  '7 på desk': STATUS.atDesk,
-  '9 fra desk': STATUS.fromDesk,
-}
+  "0 skisse": STATUS.draft,
+  "3 journalist": STATUS.toJournalist,
+  "4 mellomleder": STATUS.toSubeditor,
+  "5 redaktør": STATUS.toEditor,
+  "6 til desk": STATUS.toDesk,
+  "7 på desk": STATUS.atDesk,
+  "9 fra desk": STATUS.fromDesk
+};
 
-var statusArray = objectKeys(statusOptions)
+var statusArray = objectKeys(statusOptions);
 
 function textToStatus(text) {
   return statusOptions[text];
@@ -43,7 +45,7 @@ function statusToIndex(status) {
 
 function importPanel(onImportClick) {
   var panelSize = 10; // max antall saker som vises i menyen
-  var getStatus = [STATUS.toEditor, STATUS.toDesk, STATUS.atDesk]
+  var getStatus = [STATUS.toEditor, STATUS.toDesk, STATUS.atDesk];
   var importButton = config.resources + "/import.png";
   var windowTitle = "Importer saker";
   var win = new Window("palette", windowTitle, undefined); // Selve vinduet som GUI vises i
@@ -66,16 +68,14 @@ function importPanel(onImportClick) {
   listePanel.margins = [0, 0, 0, 0];
   listePanel.firstIndex = null;
 
-
-  listePanel.sjekkProdsys = function() { // henter saker fra prodsys
+  listePanel.sjekkProdsys = function() {
+    // henter saker fra prodsys
     var prodsysSaker = [];
 
-    var response = prodsys.list(
-      {
-        status: getStatus,
-        limit:50
-      }
-    );
+    var response = prodsys.list({
+      status: getStatus,
+      limit: 50
+    });
     prodsysSaker = response.json.results || [];
     prodsysSaker.sort(sortProdsys);
     listePanel.firstIndex = 0;
@@ -84,14 +84,18 @@ function importPanel(onImportClick) {
       var minSakstype, erTtype;
       minSak = prodsysSaker[i];
       for (var n = 0; n < sakstyper.length; n += 1) {
-        minSakstype = artikkeltyper[sakstyper[n].toLowerCase()] || artikkeltyper.annet;
+        minSakstype =
+          artikkeltyper[sakstyper[n].toLowerCase()] || artikkeltyper.annet;
         erType = minSakstype.erType(minSak);
-        if (minSak.produsert == STATUS.toDesk &&
+        if (
+          minSak.produsert == STATUS.toDesk &&
           listePanel.firstIndex === null &&
-          prodsysSaker.length > panelSize) {
+          prodsysSaker.length > panelSize
+        ) {
           listePanel.firstIndex = Math.min(i, prodsysSaker.length - panelSize);
         }
-        if (erType === "mappe") { // gjetter hvilken sakstype det dreier seg om - se artikkeltyper.jsxinc Dette er nødvendig i tilfelle lista over sakstyper i produksjonssystemet ikke er oppdatert.
+        if (erType === "mappe") {
+          // gjetter hvilken sakstype det dreier seg om - se artikkeltyper.jsxinc Dette er nødvendig i tilfelle lista over sakstyper i produksjonssystemet ikke er oppdatert.
           minIndex = n; // foreløpig gjetting
         } else if (erType === true) {
           minIndex = n; // definitiv gjetting
@@ -103,7 +107,8 @@ function importPanel(onImportClick) {
     return prodsysSaker;
   };
 
-  listePanel.refresh = function() { // fjerner innholdet i panelet og lager et nytt - i tilfelle antall saker i prodsys er endra eller noe sånt.
+  listePanel.refresh = function() {
+    // fjerner innholdet i panelet og lager et nytt - i tilfelle antall saker i prodsys er endra eller noe sånt.
     for (var linje = listePanel.children.length - 1; linje >= 0; linje--) {
       listePanel.remove(listePanel.children[linje]);
     }
@@ -119,8 +124,15 @@ function importPanel(onImportClick) {
       listePanel.scrollbar = undefined;
     }
     var listSize;
-    if (prodsysSaker.length > panelSize) { // scrollbar hvis sakslista er for lang
-      var myScrollbar = listePanel.scrollbar = win.panel1.add("scrollbar", undefined, listePanel.firstIndex, 0, prodsysSaker.length - panelSize);
+    if (prodsysSaker.length > panelSize) {
+      // scrollbar hvis sakslista er for lang
+      var myScrollbar = (listePanel.scrollbar = win.panel1.add(
+        "scrollbar",
+        undefined,
+        listePanel.firstIndex,
+        0,
+        prodsysSaker.length - panelSize
+      ));
       myScrollbar.alignment = ["right", "fill"];
       myScrollbar.preferredSize.width = 16;
       myScrollbar.onChanging = function() {
@@ -145,7 +157,12 @@ function importPanel(onImportClick) {
       minRad.produsert.preferredSize = [90, 16];
       minRad.produsert.helpTip = "Flytt saken i prodsys";
 
-      minRad.tittel = minRad.add("statictext", undefined, "arbeidstittel", undefined); // arbeidstittel
+      minRad.tittel = minRad.add(
+        "statictext",
+        undefined,
+        "arbeidstittel",
+        undefined
+      ); // arbeidstittel
       minRad.tittel.alignment = ["left", "top"];
       minRad.tittel.preferredSize = [225, 16];
       minRad.tittel.helpTip = "";
@@ -167,8 +184,10 @@ function importPanel(onImportClick) {
     listePanel.update();
   };
 
-  listePanel.update = function(firstIndex) { // firstIndex er indexen på første sak som skal vises i panelet
-    listePanel.firstIndex = (firstIndex === undefined) ? listePanel.firstIndex : firstIndex; // hvis firstIndex er undefined blir ikke indexen endret
+  listePanel.update = function(firstIndex) {
+    // firstIndex er indexen på første sak som skal vises i panelet
+    listePanel.firstIndex =
+      firstIndex === undefined ? listePanel.firstIndex : firstIndex; // hvis firstIndex er undefined blir ikke indexen endret
     prodsysSaker.sort(sortProdsys);
 
     var sidetall;
@@ -179,51 +198,64 @@ function importPanel(onImportClick) {
       minRad = listePanel.children[linje];
       minRad.prodsysSakerIndex = linje + listePanel.firstIndex;
       minSak = prodsysSaker[minRad.prodsysSakerIndex];
-      backGroundColor = minSak.produsert == STATUS.toDesk
-        ? (minRad.prodsysSakerIndex % 2
-          ? [0.95, 0.95, 0.70]
-          : [1.0, 1.0, 0.65])
-        : (minRad.prodsysSakerIndex % 2
-          ? [0.85, 0.85, 0.85]
-          : [0.9, 0.9, 0.9]);
+      backGroundColor =
+        minSak.produsert == STATUS.toDesk
+          ? minRad.prodsysSakerIndex % 2 ? [0.95, 0.95, 0.7] : [1.0, 1.0, 0.65]
+          : minRad.prodsysSakerIndex % 2 ? [0.85, 0.85, 0.85] : [0.9, 0.9, 0.9];
 
-      minRad.graphics.backgroundColor = minRad.graphics.newBrush(minRad.graphics.BrushType.SOLID_COLOR, backGroundColor);
+      minRad.graphics.backgroundColor = minRad.graphics.newBrush(
+        minRad.graphics.BrushType.SOLID_COLOR,
+        backGroundColor
+      );
 
       // minrad.tittel
       sidetall = minSak.arbeidstittel.match(/side\s?(\d+)/i);
       if (sidetall === null) {
         minRad.tittel.text = minSak.arbeidstittel.substr(0, 35); // arbeidstittel
       } else {
-        minRad.tittel.text = minSak.arbeidstittel.replace(/side\s?(\d+)/ig, "").substr(0, 26) + " SIDE " + sidetall[1]; // arbeidstittel
+        minRad.tittel.text =
+          minSak.arbeidstittel.replace(/side\s?(\d+)/gi, "").substr(0, 26) +
+          " SIDE " +
+          sidetall[1]; // arbeidstittel
       }
-      minRad.tittel.helpTip = minSak.tekst.substr(0, 200).replace(/@[^:]+:/g, "").replace(/[\r\n]+/g, "\n");
+      minRad.tittel.helpTip = minSak.tekst
+        .substr(0, 200)
+        .replace(/@[^:]+:/g, "")
+        .replace(/[\r\n]+/g, "\n");
 
       // minrad.mappe
       minRad.mappe.enabled = minSak.produsert == STATUS.toDesk; // knappen er ikke enabled hvis saken ikke er lagt til desk
       minRad.mappe.onChange = null; // skrur av funksjonen før seleksjonen i dropdownmenyen endres
       minRad.mappe.selection = minSak.sakstype;
-      minRad.mappe.onChange = function(aktivSak, aktivRad) {
+      minRad.mappe.onChange = (function(aktivSak, aktivRad) {
         return function() {
           minSak.sakstype = aktivRad.mappe.selection.index;
         };
-      }(minSak, minRad);
+      })(minSak, minRad);
 
       // minrad.produsert
       minRad.produsert.onChange = null; // skrur av funksjonen før seleksjonen i dropdownmenyen endres
       minRad.produsert.selection = statusToIndex(minSak.produsert);
-      minRad.produsert.onChange = function(aktivSak, aktivRad) {
+      minRad.produsert.onChange = (function(aktivSak, aktivRad) {
         return function() {
           aktivSak.produsert = textToStatus(aktivRad.produsert.selection.text);
-          response = prodsys.patch(aktivSak.prodsak_id, {produsert: aktivSak.produsert});
+          response = prodsys.patch(aktivSak.prodsak_id, {
+            produsert: aktivSak.produsert
+          });
           listePanel.update();
         };
-      }(minSak, minRad);
+      })(minSak, minRad);
 
       // minrad.button
       minRad.button.enabled = minSak.produsert == STATUS.toDesk; // knappen er ikke enabled hvis saken ikke er lagt til desk
-      minRad.button.onClick = (function(aktivSak, aktivRad) { // snedig innpakking av funksjonen for å oppnå "closure" hvis jeg har skjønt det riktig. Det funker i allefall.
-        return function() { // dette er funksjonen som blir utført når importknappen trykkes.
-          var artikkeltype = artikkeltyper[sakstyper[aktivRad.mappe.selection.index].toLowerCase()]; // henter verdien fra rullegardinmenyen
+      minRad.button.onClick = (function(aktivSak, aktivRad) {
+        // snedig innpakking av funksjonen for å oppnå "closure" hvis jeg har skjønt det riktig. Det funker i allefall.
+        return function() {
+          // dette er funksjonen som blir utført når importknappen trykkes.
+          var artikkeltype =
+            artikkeltyper[
+              sakstyper[aktivRad.mappe.selection.index].toLowerCase()
+            ]; // henter verdien fra rullegardinmenyen
           var importImages = win.importerbilder.value;
           win.importerbilder.value = true;
           onImportClick(aktivSak, artikkeltype, importImages); // importerer saken og plasserer den på siden.
@@ -236,19 +268,29 @@ function importPanel(onImportClick) {
 
   listePanel.create();
 
-  win.gjenopprettSak = function() { // sjekker prodsys om det er noen saker som er klare for import
+  win.gjenopprettSak = function() {
+    // sjekker prodsys om det er noen saker som er klare for import
     listePanel.refresh(); // oppdaterer innholdet i listepanelet
   };
 
   win.panel2 = win.add("group", undefined, undefined); // gruppe med kontroller nederst i vinduet
 
   // importer bilder
-  win.importerbilder_label = win.panel2.add("statictext", undefined, "plasser bilder:");
+  win.importerbilder_label = win.panel2.add(
+    "statictext",
+    undefined,
+    "plasser bilder:"
+  );
   win.importerbilder = win.panel2.add("checkbox");
   win.importerbilder.value = true;
 
   // Knappen "Sjekk prodsys"
-  win.hentSakerBtn = win.panel2.add("button", undefined, "Sjekk prodsys", undefined); // en knapp
+  win.hentSakerBtn = win.panel2.add(
+    "button",
+    undefined,
+    "Sjekk prodsys",
+    undefined
+  ); // en knapp
   win.hentSakerBtn.helpTip = "Oppdater sakslista fra prodsys";
   win.hentSakerBtn.onClick = win.gjenopprettSak; // spør prodsys etter nye saker til menyen
 
@@ -257,6 +299,6 @@ function importPanel(onImportClick) {
   win.lukkMegBtn.helpTip = "Lukk dette vinduet";
   win.lukkMegBtn.onClick = function() {
     win.close();
-  }
+  };
   win.show(); // viser vinduet i InDesign
-};
+}

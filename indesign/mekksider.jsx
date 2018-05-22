@@ -1,6 +1,9 @@
-﻿/* jshint ignore:start */
+/* jshint ignore:start */
+#include ../_includes/index.jsxinc
 #include ../_includes/index.jsxinc
 #target "indesign"
+#target "indesign"
+#targetengine "session"
 #targetengine "session"
 /* jshint ignore:end */
 
@@ -12,7 +15,9 @@ var mekkfilerPanel = {
     var panelSize = 24; // max antall sider som vises i menyen
     var myPages = myDoc.pages.everyItem().getElements();
     var utgaveNr = utgave();
-    var myFolder = Folder(config.rotMappe + ("0" + utgaveNr).slice(-2) + "/INDESIGN/");
+    var myFolder = Folder(
+      config.rotMappe + ("0" + utgaveNr).slice(-2) + "/INDESIGN/"
+    );
     if (false === myFolder.exists) {
       myFolder.create();
     }
@@ -26,7 +31,7 @@ var mekkfilerPanel = {
       page.pageNumber = myPageNumber;
       page.filename = filnavn.replace(/XX/, myPageNumber);
       page.master = masterPage;
-      page.start = (n === 0 || n % 2 == 1);
+      page.start = n === 0 || n % 2 == 1;
       pageArray[n] = page;
     }
     var win = new Window("palette", "Opprett sider", undefined); // Selve vinduet som GUI vises i
@@ -54,28 +59,44 @@ var mekkfilerPanel = {
     listePanel.alignChildren = "fill";
     listePanel.margins = [0, 0, 0, 0];
     listePanel.firstIndex = 0;
-    
- 
-    win.infoboks = win.mainpanel.add("statictext", undefined, "Del opp avisa i flere filer. Velg hvilke sider som skal være førsteside i de ulike indesign-filene og endre filnavnene hvis nødvendig.", {
-      multiline: true
-    });
+
+    win.infoboks = win.mainpanel.add(
+      "statictext",
+      undefined,
+      "Del opp avisa i flere filer. Velg hvilke sider som skal være førsteside i de ulike indesign-filene og endre filnavnene hvis nødvendig.",
+      {
+        multiline: true
+      }
+    );
     win.infoboks.preferredSize = [355, 50];
     win.infoboks.graphics.font = smallFont;
-    
-    win.folderName = win.mainpanel.add("statictext", undefined, "utgave:  " + utgaveNr);
-    win.folderName.preferredSize = [355, 15];
-    win.folderName.graphics.font = smallFont;
-    
-    win.folderName = win.mainpanel.add("statictext", undefined, "dato:    onsdag " + dateToString (nesteonsdag ()));
-    win.folderName.preferredSize = [355, 15];
-    win.folderName.graphics.font = smallFont;
 
-    win.folderName = win.mainpanel.add("statictext", undefined, "mappe:  " + myFolder);
+    win.folderName = win.mainpanel.add(
+      "statictext",
+      undefined,
+      "utgave:  " + utgaveNr
+    );
     win.folderName.preferredSize = [355, 15];
     win.folderName.graphics.font = smallFont;
 
+    win.folderName = win.mainpanel.add(
+      "statictext",
+      undefined,
+      "dato:    onsdag " + dateToString(nesteonsdag())
+    );
+    win.folderName.preferredSize = [355, 15];
+    win.folderName.graphics.font = smallFont;
 
-    listePanel.refresh = function() { // fjerner innholdet i panelet og lager et nytt - i tilfelle antall saker i prodsys er endra eller noe sånt.
+    win.folderName = win.mainpanel.add(
+      "statictext",
+      undefined,
+      "mappe:  " + myFolder
+    );
+    win.folderName.preferredSize = [355, 15];
+    win.folderName.graphics.font = smallFont;
+
+    listePanel.refresh = function() {
+      // fjerner innholdet i panelet og lager et nytt - i tilfelle antall saker i prodsys er endra eller noe sånt.
       for (var linje = listePanel.children.length - 1; linje >= 0; linje--) {
         listePanel.remove(listePanel.children[linje]);
       }
@@ -89,8 +110,15 @@ var mekkfilerPanel = {
         win.panel1.remove(listePanel.scrollbar);
       }
       var listSize;
-      if (pageArray.length > panelSize) { // scrollbar hvis sakslista er for lang
-        var myScrollbar = listePanel.scrollbar = win.panel1.add("scrollbar", undefined, listePanel.firstIndex, 0, pageArray.length - panelSize);
+      if (pageArray.length > panelSize) {
+        // scrollbar hvis sakslista er for lang
+        var myScrollbar = (listePanel.scrollbar = win.panel1.add(
+          "scrollbar",
+          undefined,
+          listePanel.firstIndex,
+          0,
+          pageArray.length - panelSize
+        ));
         myScrollbar.alignment = ["right", "fill"];
         myScrollbar.preferredSize.width = 16;
         myScrollbar.onChanging = function() {
@@ -113,11 +141,9 @@ var mekkfilerPanel = {
         minRad.sidetall = minRad.add("statictext", undefined, "side 00");
         minRad.sidetall.preferredSize = [45, 20];
         //minRad.sidetall.graphics.font = smallFont;
-        
-
 
         minRad.startFil = minRad.add("checkbox");
-        minRad.startFil.onClick = function(aktivRad) {
+        minRad.startFil.onClick = (function(aktivRad) {
           return function() {
             pageArray[aktivRad.pageArrayIndex].start = aktivRad.startFil.value;
             if (aktivRad.startFil.value) {
@@ -126,18 +152,23 @@ var mekkfilerPanel = {
               aktivRad.filename.hide();
             }
           };
-        }(minRad);
+        })(minRad);
         minRad.startFil.helpTip = "Første side i InDesign-fil?";
 
         minRad.filename = minRad.add("edittext");
         minRad.filename.preferredSize = [200, 20];
         minRad.filename.helpTip = "Filnavn";
-        minRad.filename.onChange = function(aktivRad) {
+        minRad.filename.onChange = (function(aktivRad) {
           return function() {
-            aktivRad.filename.text = (aktivRad.filename.text.replace(/[^a-z0-9.]+/gi, "_") + ".").replace(/\..*/, ".indd");
-            pageArray[aktivRad.pageArrayIndex].filename = aktivRad.filename.text;
+            aktivRad.filename.text = (aktivRad.filename.text.replace(
+              /[^a-z0-9.]+/gi,
+              "_"
+            ) + "."
+            ).replace(/\..*/, ".indd");
+            pageArray[aktivRad.pageArrayIndex].filename =
+              aktivRad.filename.text;
           };
-        }(minRad);
+        })(minRad);
         minRad.master = minRad.add("statictext", undefined, "master");
         minRad.master.preferredSize = [75, 20];
         minRad.master.graphics.font = smallFont;
@@ -145,16 +176,18 @@ var mekkfilerPanel = {
       listePanel.update();
     };
 
-    listePanel.update = function(firstIndex) { // firstIndex er indexen på første sak som skal vises i panelet
+    listePanel.update = function(firstIndex) {
+      // firstIndex er indexen på første sak som skal vises i panelet
       var minSide;
-      listePanel.firstIndex = (firstIndex === undefined) ? listePanel.firstIndex : firstIndex; // hvis firstIndex er undefined blir ikke indexen endret
+      listePanel.firstIndex =
+        firstIndex === undefined ? listePanel.firstIndex : firstIndex; // hvis firstIndex er undefined blir ikke indexen endret
       for (var linje = 0; linje < listePanel.children.length; linje++) {
         minRad = listePanel.children[linje];
         minRad.pageArrayIndex = linje + listePanel.firstIndex;
         minSide = pageArray[minRad.pageArrayIndex];
 
-        minRad.sidetall.text = "side " + (minSide.pageNumber);
-        minRad.master.text = (minSide.master);
+        minRad.sidetall.text = "side " + minSide.pageNumber;
+        minRad.master.text = minSide.master;
 
         minRad.startFil.value = minSide.start;
         minRad.filename.text = minSide.filename;
@@ -165,14 +198,22 @@ var mekkfilerPanel = {
 
     listePanel.create();
 
-
     win.panel2 = win.mainpanel.add("group", undefined, undefined); // gruppe med kontroller nederst i vinduet
 
     // Knappen "Velg mappe"
-    win.changeFolderBtn = win.panel2.add("button", undefined, "Velg mappe", undefined); // en knapp
+    win.changeFolderBtn = win.panel2.add(
+      "button",
+      undefined,
+      "Velg mappe",
+      undefined
+    ); // en knapp
     win.changeFolderBtn.helpTip = "Velg en annen mappe";
     win.changeFolderBtn.onClick = function() {
-      myFolder = Folder.selectDialog("Velg mappa filene skal lagres i", myFolder.parent) || myFolder;
+      myFolder =
+        Folder.selectDialog(
+          "Velg mappa filene skal lagres i",
+          myFolder.parent
+        ) || myFolder;
       win.folderName.text = "mappe: " + myFolder;
     };
 
@@ -195,15 +236,34 @@ var mekkfilerPanel = {
     win.show(); // viser vinduet i InDesign
 
     function dateToString(date) {
-      var mnd = ["januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"];
-      return dateline = date.getDate() + ". " + mnd[date.getMonth()] + " " + (date.getYear() + 1900);
+      var mnd = [
+        "januar",
+        "februar",
+        "mars",
+        "april",
+        "mai",
+        "juni",
+        "juli",
+        "august",
+        "september",
+        "oktober",
+        "november",
+        "desember"
+      ];
+      return (dateline =
+        date.getDate() +
+        ". " +
+        mnd[date.getMonth()] +
+        " " +
+        (date.getYear() + 1900));
     }
 
     function endredato() {
       //riktig dato
       var onsdag = nesteonsdag();
       var dateline = dateToString(onsdag);
-      var datelineFront = "årgang " + (onsdag.getYear() - 46) + ", utgave " + utgave();
+      var datelineFront =
+        "årgang " + (onsdag.getYear() - 46) + ", utgave " + utgave();
       app.findGrepPreferences = NothingEnum.nothing;
       app.changeGrepPreferences = NothingEnum.nothing;
       app.findChangeGrepOptions.includeLockedLayersForFind = true;
@@ -218,7 +278,6 @@ var mekkfilerPanel = {
       app.findGrepPreferences = NothingEnum.nothing;
       app.changeGrepPreferences = NothingEnum.nothing;
     }
-
 
     function utgave(nummer) {
       var path = config.rotMappe;
@@ -248,7 +307,10 @@ var mekkfilerPanel = {
         ukedag = ukedag - 7;
       }
       fredag.setDate(idag.getDate() + (5 - ukedag));
-      resultat = fredag.getFullYear().toString().slice(2);
+      resultat = fredag
+        .getFullYear()
+        .toString()
+        .slice(2);
       if (fredag.getMonth() + 1 < 10) {
         resultat += "0" + (fredag.getMonth() + 1);
       } else {
@@ -303,12 +365,19 @@ mekkfilerPanel.mekkSider = function(sideArray, myFolder) {
     myDoc.save(myFile);
     myDoc.close();
     app.documents.add();
-    var myProgress = dokTools.progressBar("Splitter sider", "gjør klar", sideArray.length, false);
+    var myProgress = dokTools.progressBar(
+      "Splitter sider",
+      "gjør klar",
+      sideArray.length,
+      false
+    );
     sideArray[0].file = myFile;
-    var saveIt = function(myDoc) { // Det ser ut som om filsystemet henger i blandt
+    var saveIt = function(myDoc) {
+      // Det ser ut som om filsystemet henger i blandt
       try {
         myDoc.save();
-      } catch (e) { // prøver på nytt etter 100 millisekunder
+      } catch (e) {
+        // prøver på nytt etter 100 millisekunder
         $.sleep(100);
         saveIt(myDoc);
       }
@@ -347,12 +416,14 @@ mekkfilerPanel.mekkSider = function(sideArray, myFolder) {
   }
 };
 
-
 // for testing av mekkfilerPanel.jsxinc TODO: Finn ut hva jeg tenkte her!
 /* jshint ignore:start */
-// #targetengine "session"
-// #include "config.jsxinc"
-// #include "dokTools.jsxinc"
+ #targetengine "session"
+ #targetengine "session"
+ #include "config.jsxinc"
+ #include "config.jsxinc"
+ #include "dokTools.jsxinc"
+ #include "dokTools.jsxinc"
 /* jshint ignore:end */
 
 if (app.documents.length == 1) {
@@ -361,5 +432,7 @@ if (app.documents.length == 1) {
 } else if (app.documents.length === 0) {
   app.open(avismal);
 } else {
-  alert("Opprett sider\rKan ikke opprette sider når du har mer enn ett dokument åpent");
+  alert(
+    "Opprett sider\rKan ikke opprette sider når du har mer enn ett dokument åpent"
+  );
 }

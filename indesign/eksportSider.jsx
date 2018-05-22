@@ -1,8 +1,13 @@
 /* jshint ignore:start */
 #target "indesign";
+#target "indesign";
+#targetengine "session";
 #targetengine "session";
 #includepath "../_includes/";
+#includepath "../_includes/";
 #include "index.jsxinc"; // imports!
+#include "index.jsxinc"; // imports!
+#include "eksport.jsxinc"; // brukergrensesnittet
 #include "eksport.jsxinc"; // brukergrensesnittet
 /* jshint ignore:end */
 
@@ -11,7 +16,7 @@
 try {
   var dok = app.activeDocument;
 } catch (e) {
-  alert('Åpne et dokument');
+  alert("Åpne et dokument");
   exit();
 }
 
@@ -22,11 +27,13 @@ var utgave = utgave();
 var nestefredag = nestefredag();
 dok.pages[0].appliedSection.sectionPrefix = "";
 
-if (!dok.saved) { // hvis dokumentet er "untitled"
+if (!dok.saved) {
+  // hvis dokumentet er "untitled"
   alert(
     "Kan ikke opprette PDF\rLagre dokumentet før du lager kan eksportere en pdf"
   ); // setter inn sidetall og lager filnavn
-} else { // hvis siden er lagret og har filnavn
+} else {
+  // hvis siden er lagret og har filnavn
   lagPDF(dok); // eksporterer PDF
 }
 
@@ -34,10 +41,12 @@ function lagPDF(dok) {
   var myName = "UNI11VER" + nestefredag;
   var myPath = dok.filePath.path + "/PDF/";
   var PDFmappe = new Folder(myPath);
-  if (!PDFmappe.exists) { // finnes PDF-folderen?
+  if (!PDFmappe.exists) {
+    // finnes PDF-folderen?
     PDFmappe.create();
   }
-  if (dok.name.match(/UNI11VER/)) { //hvis dokumentet har et filnavn som inneholder "UNI11VER" så tar man utgangspunkt i det.
+  if (dok.name.match(/UNI11VER/)) {
+    //hvis dokumentet har et filnavn som inneholder "UNI11VER" så tar man utgangspunkt i det.
     myName = dok.name.slice(0, -10);
   }
   var eksportliste = [];
@@ -75,31 +84,40 @@ function lagPDF(dok) {
       editContents: eksportliste[i].filnavn
     });
   }
-  var tilProdsys = myColumn.dialogRows.add()
-    .checkboxControls.add({
-      staticLabel: "Eksporter alle saker tilbake til prodsys?",
-      checkedState: eksporterDefault
-    });
+  var tilProdsys = myColumn.dialogRows.add().checkboxControls.add({
+    staticLabel: "Eksporter alle saker tilbake til prodsys?",
+    checkedState: eksporterDefault
+  });
   var myResult = myDialog.show();
   if (myResult) {
-    if (dok.modified) { // lagrer dokumentet hvis det er gjort endringer
+    if (dok.modified) {
+      // lagrer dokumentet hvis det er gjort endringer
       dok.save();
     }
-    dok.sections.everyItem()
-      .sectionPrefix = "";
-    var myProgressBar = dokTools.progressBar("Lager PDF", "", dok.pages.length +
-      1, false);
+    dok.sections.everyItem().sectionPrefix = "";
+    var myProgressBar = dokTools.progressBar(
+      "Lager PDF",
+      "",
+      dok.pages.length + 1,
+      false
+    );
     for (i = 0; i < dialogbokser.length; i += 1) {
       if (dialogbokser[i][0].checkedState) {
         fjern = true;
         minEksportSide = eksportliste[i];
-        myProgressBar.update("Eksporterer side " + minEksportSide.pageNumber +
-          " til pdf\n" + minEksportSide.filnavn, i + 1);
+        myProgressBar.update(
+          "Eksporterer side " +
+            minEksportSide.pageNumber +
+            " til pdf\n" +
+            minEksportSide.filnavn,
+          i + 1
+        );
         minEksportSide.filnavn = dialogbokser[i][1].editContents;
         minEksportSide.path = new File(myPath + minEksportSide.filnavn);
         try {
           eksportPDF(minEksportSide.pageNumber, minEksportSide.path);
-        } catch (myError) { // pdf-fila er åpen i acrobat
+        } catch (myError) {
+          // pdf-fila er åpen i acrobat
           var slettmeg = new File(myPath + "slettmeg.pdf");
           if (slettmeg.exists) {
             slettmeg.remove();
@@ -112,7 +130,7 @@ function lagPDF(dok) {
     }
     myProgressBar.close();
     if (tilProdsys.checkedState) {
-        eksportTilProdsys(dok);
+      eksportTilProdsys(dok);
     }
   }
 }
@@ -122,11 +140,16 @@ function eksportPDF(page, path) {
   myOverflows = dokTools.findOverflows(dok.pages.itemByName(page));
   if (myOverflows.length > 0) {
     myOverflows = myOverflows.join("\r\r");
-    myOverflows = myOverflows.length > 1000 ? myOverflows.substr(0, 1000) +
-      "[...]" : myOverflows;
+    myOverflows =
+      myOverflows.length > 1000
+        ? myOverflows.substr(0, 1000) + "[...]"
+        : myOverflows;
     svar = confirm(
-      "Tekst flyter over, eksporter likevel?\rDet finnes tekst på side " + page +
-      " som ikke kommer med:\r\r" + myOverflows);
+      "Tekst flyter over, eksporter likevel?\rDet finnes tekst på side " +
+        page +
+        " som ikke kommer med:\r\r" +
+        myOverflows
+    );
     if (svar === false) {
       return;
     }
@@ -137,7 +160,7 @@ function eksportPDF(page, path) {
   try {
     dok.exportFile(ExportFormat.pdfType, path, false, myPDFpref, "", true);
   } catch (e) {
-    throw (e);
+    throw e;
   }
 }
 
@@ -166,7 +189,8 @@ function nestefredag() {
   var fredag = new Date();
   var resultat = "";
   fredag.setDate(idag.getDate() + (5 - ukedag));
-  resultat = fredag.getFullYear()
+  resultat = fredag
+    .getFullYear()
     .toString()
     .slice(2);
   if (fredag.getMonth() + 1 < 10) {

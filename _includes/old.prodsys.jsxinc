@@ -1,31 +1,35 @@
-﻿// vim: set ft=javascript:
+// vim: set ft=javascript:
 /* jshint ignore:start */
 #include config.jsxinc
+#include config.jsxinc
 #include base64.jsxinc
-//#include json2.jsxinc
+#include base64.jsxinc
+#include json2.jsxinc
+#include json2.jsxinc
 /* jshint ignore:end */
 
 function log(message) {
-  if (!config.DEBUG) return
-  $.writeln(typeof message === 'string'
-    ? message
-    : JSON.stringify(message, null, 2)
-  )
+  if (!config.DEBUG) return;
+  $.writeln(
+    typeof message === "string" ? message : JSON.stringify(message, null, 2)
+  );
 }
 
-function importerSak(sak, artikkeltype) { // placeholder som skal erstattes med en annen funksjon i skriptet import.jsx
+function importerSak(sak, artikkeltype) {
+  // placeholder som skal erstattes med en annen funksjon i skriptet import.jsx
   try {
     var nysak = prodsys.get(sak.prodsak_id); // henter sak i prodsys
     log(sak.arbeidstittel + " " + artikkeltype.type); // skriver info til konsollen i EST
-    var payload = {produsert: prodsys.gammelDeskStatus}
+    var payload = { produsert: prodsys.gammelDeskStatus };
     prodsys.post(sak.prodsak_id, payload); // flytter saken til neste status i prodsys
   } catch (e) {
     log(e); // skriver feilmelding til konsollen
   }
 }
 
-var prodsys = { // Objekt om representerer produksjonssystemet på webserveren
-  brukerogpassord: Base64.encode(config.api.USER+':'+config.api.PASSWORD),
+var prodsys = {
+  // Objekt om representerer produksjonssystemet på webserveren
+  brukerogpassord: Base64.encode(config.api.USER + ":" + config.api.PASSWORD),
   host: config.api.HOST, // vertmaskin for prodsys
   port: 80,
   apiPlassering: config.api.TEXT, // der API-skriptet ligger
@@ -34,14 +38,13 @@ var prodsys = { // Objekt om representerer produksjonssystemet på webserveren
   tilDeskStatus: 3, // status i prodsys på saker som skal til desken
   gammelDeskStatus: 4, // status i prodsys på saker som er limt inn - kan være hva som helst, men produksjonssystemet skjønner ikke alt 4 = gammel desk. 9 = slett
   tilWebStatus: 6, // status på saker som er redigert til web
-  slettStatus: 9, // status på gamle saker som er "slettet" fra prodsys
+  slettStatus: 9 // status på gamle saker som er "slettet" fra prodsys
 };
 
-
-prodsys.request = function(url, method, data){
+prodsys.request = function(url, method, data) {
   var httpMethod = method; // GET spør om informasjon fra prodsys
   var connection = new Socket();
-  var api_url = this.apiPlassering + url + '/json/'
+  var api_url = this.apiPlassering + url + "/json/";
   var response;
   var httpRequest = "";
 
@@ -50,9 +53,10 @@ prodsys.request = function(url, method, data){
   httpRequest += "\rHost:" + this.host;
 
   if (data) {
-    data = typeof data === 'string' ? data : JSON.stringify(data)
+    data = typeof data === "string" ? data : JSON.stringify(data);
     data = "json=" + toUnicode(data); // Odins skript krever en sånn json= før json-objectet.
-    httpRequest += "\rContent-Type: application/x-www-form-urlencoded; charset=UTF-8";
+    httpRequest +=
+      "\rContent-Type: application/x-www-form-urlencoded; charset=UTF-8";
     httpRequest += "\rContent-Length: " + data.length;
   }
 
@@ -67,25 +71,27 @@ prodsys.request = function(url, method, data){
 
   log(api_url + "\n" + method + "\n" + data + "\n" + httpRequest);
 
-  if (connection.open(this.host+':'+this.port)) { // koble til produksjonssystemet
+  if (connection.open(this.host + ":" + this.port)) {
+    // koble til produksjonssystemet
     connection.write(httpRequest);
     var reply = connection.read(9999999); // Maks antall tegn som jeg forventer at JSON-objektet skal være.
     connection.close();
-    var parts = reply.split('\n\n', 2)
-    if (!/200 OK/.test(parts[0])) { // "200 OK" er http-kode for vellykket request
-      return { error: reply }
+    var parts = reply.split("\n\n", 2);
+    if (!/200 OK/.test(parts[0])) {
+      // "200 OK" er http-kode for vellykket request
+      return { error: reply };
     }
     try {
-      return JSON.parse(trim(parts[1]))
+      return JSON.parse(trim(parts[1]));
     } catch (error) {
-      return { error: error }
+      return { error: error };
     }
   }
 };
 
 function trim(str) {
   // trim whitespace from string
-  return str.replace(/^\s*/, '').replace(/\s*$/, '')
+  return str.replace(/^\s*/, "").replace(/\s*$/, "");
 }
 
 prodsys.get = function(prodsak_id) {
@@ -93,7 +99,7 @@ prodsys.get = function(prodsak_id) {
   // databasen. Hvis ikke finner den en array med saker som er plassert til
   // Desken.
 
-  return  this.request(prodsak_id, "GET" , null);
+  return this.request(prodsak_id, "GET", null);
 };
 
 prodsys.post = function(prodsak_id, data) {
@@ -104,22 +110,26 @@ prodsys.put = function(prodsak_id) {
   return this.request(prodsak_id, "PUT", {});
 };
 
-prodsys.bildepost = function(prodsak_id, prodbilde_id, data){
-  data =  '{"bilete":[{"prodbilde_id":"'+prodbilde_id +'",' + data +'}]}';
+prodsys.bildepost = function(prodsak_id, prodbilde_id, data) {
+  data = '{"bilete":[{"prodbilde_id":"' + prodbilde_id + '",' + data + "}]}";
   reply = this.post(prodsak_id, data);
-  return reply
+  return reply;
 };
 
-
-function toUnicode(theString) { // lager unicode-entiteter av vanskelige bokstaver, tar en string og returnerer en string
-  var result = ''; // skal returneres
+function toUnicode(theString) {
+  // lager unicode-entiteter av vanskelige bokstaver, tar en string og returnerer en string
+  var result = ""; // skal returneres
   for (var cha = 0; cha < theString.length; cha++) {
     var theUnicode = theString.charCodeAt(cha);
-    if (theUnicode === 8211) { // tankestrek
-      result += '--'; // prodsys regner to bindestreker som tankestrek - lettere for brukerne å skrive inn
-    } else if (theUnicode < 32 || theUnicode > 127) { // tegn og bokstover som skal være så jævla spesielle som "æøå", norske hermetegn o.s.v
-      result += "\\u" + ("0000" + theUnicode.toString(16).toUpperCase()).substr(-4, 4); // legger til den nye unicoden til strengen vår
-    } else { // de vanligste tegnene (a-z, A-Z, tall og en del skilletegn)
+    if (theUnicode === 8211) {
+      // tankestrek
+      result += "--"; // prodsys regner to bindestreker som tankestrek - lettere for brukerne å skrive inn
+    } else if (theUnicode < 32 || theUnicode > 127) {
+      // tegn og bokstover som skal være så jævla spesielle som "æøå", norske hermetegn o.s.v
+      result +=
+        "\\u" + ("0000" + theUnicode.toString(16).toUpperCase()).substr(-4, 4); // legger til den nye unicoden til strengen vår
+    } else {
+      // de vanligste tegnene (a-z, A-Z, tall og en del skilletegn)
       result += theString.charAt(cha); // legges bare til uten konvertering
     }
   }
@@ -133,24 +143,25 @@ function toUnicode(theString) { // lager unicode-entiteter av vanskelige bokstav
   return result; // String
 }
 
-function fixEncoding (text) {
+function fixEncoding(text) {
   text = text.replace(/\\u0085/gi, "..."); // gjør om ellipsis
   text = text.replace(/\\u0092/gi, "\\u2019"); // fikser riktig unicode for apostrofer - vet ikke hvorfor databasen bruker 0092
   text = text.replace(/\\u0095/gi, "\\u2022"); // fikser riktig unicode for bullet - vet ikke hvorfor databasen bruker 0095
   text = text.replace(/\\u00(97|96)/gi, "\\u2013"); // fikser riktig unicode for tankestrek - vet ikke hvorfor databasen bruker 0097
   text = text.replace(/\\u00(94|93)/gi, "\\u00AB"); // fikser riktig hermetegn venstre
   text = text.replace(/\b\\u00AB/gi, "\\u00BB"); // fikser  riktig hermetegn venstre høyre
-  return text ;
+  return text;
 }
 
-function fixHTMLentities(myString) { // Gjør om HTML-entiteter av typen &#261; om til C-type unicode av typen \u0105
+function fixHTMLentities(myString) {
+  // Gjør om HTML-entiteter av typen &#261; om til C-type unicode av typen \u0105
   var myMatches = myString.match(/&#\d+;/g); //finner ut om stringen inneholder slike html-entiteter
   if (myMatches) {
     for (n = 0; n < myMatches.length; n += 1) {
       var myHTML = myMatches[n];
       var myUnicode = myHTML.match(/\d+/)[0];
       myUnicode = parseInt(myUnicode, 10).toString(16); //decimal til hexadecimal
-      myUnicode = "\\u"+("0000"+myUnicode.toUpperCase().substr(-4));
+      myUnicode = "\\u" + ("0000" + myUnicode.toUpperCase().substr(-4));
       myString = myString.replace(myHTML, myUnicode);
     }
   }

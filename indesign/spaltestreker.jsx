@@ -1,6 +1,9 @@
-﻿/* jshint ignore:start */
+/* jshint ignore:start */
+#include ../_includes/index.jsxinc
 #include ../_includes/index.jsxinc
 #target "indesign"
+#target "indesign"
+#targetengine "session"
 #targetengine "session"
 /* jshint ignore:end */
 
@@ -11,12 +14,17 @@ mekkStreker = function(minTekstramme) {
   var spaltemellomrom = minTekstramme.textFramePreferences.textColumnGutter;
   var bounds = minTekstramme.geometricBounds;
   inset = minTekstramme.textFramePreferences.insetSpacing;
-  if (typeof(inset) == "number") {
+  if (typeof inset == "number") {
     inset = [inset, inset, inset, inset];
   }
-  bounds = [bounds[0] + inset[0], bounds[1] + inset[1], bounds[2] - inset[2], bounds[3] - inset[3]];
+  bounds = [
+    bounds[0] + inset[0],
+    bounds[1] + inset[1],
+    bounds[2] - inset[2],
+    bounds[3] - inset[3]
+  ];
   var bredde = bounds[3] - bounds[1];
-  var spaltebredde = (bredde - ((spalter - 1) * spaltemellomrom)) / spalter;
+  var spaltebredde = (bredde - (spalter - 1) * spaltemellomrom) / spalter;
   var streker = app.activeDocument.graphicLines.everyItem().getElements() || [];
   var myLabel = "textFrameid: " + minTekstramme.id;
   for (var i = 0; i < streker.length; i++) {
@@ -26,14 +34,19 @@ mekkStreker = function(minTekstramme) {
   }
 
   for (i = 0; i < spalter + 1; i++) {
-    var x = bounds[1] + i * (spaltebredde + spaltemellomrom) - spaltemellomrom / 2;
-    var minStrek = minTekstramme.parent.graphicLines.add(undefined, undefined, undefined, {
-      appliedObjectStyle: strekStil
-    });
+    var x =
+      bounds[1] + i * (spaltebredde + spaltemellomrom) - spaltemellomrom / 2;
+    var minStrek = minTekstramme.parent.graphicLines.add(
+      undefined,
+      undefined,
+      undefined,
+      {
+        appliedObjectStyle: strekStil
+      }
+    );
     minStrek.label = myLabel;
     minStrek.paths[0].pathPoints[0].anchor = [x, bounds[0]];
     minStrek.paths[0].pathPoints[1].anchor = [x, bounds[2]];
-
   }
 };
 

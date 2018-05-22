@@ -1,20 +1,21 @@
-﻿#target "indesign";
+#target "indesign";
+#target "indesign";
+#targetengine "session";
 #targetengine "session";
 
-app.scriptPreferences.version = '7.5';
+app.scriptPreferences.version = "7.5";
 
 function get() {
-  
-  var scriptArr = [  
-  'Set app = CreateObject("InDesign.Application")',  
-  'app.ScriptArgs.SetValue "myLabel", "text msg goes here"'  
+  var scriptArr = [
+    'Set app = CreateObject("InDesign.Application")',
+    'app.ScriptArgs.SetValue "myLabel", "text msg goes here"'
   ];
-  var script = scriptArr.join('\n');
+  var script = scriptArr.join("\n");
   //$.write(script);
-  $.write(app, ScriptLanguage.VISUAL_BASIC)
-  app.scriptPreferences.version = 7  
+  $.write(app, ScriptLanguage.VISUAL_BASIC);
+  app.scriptPreferences.version = 7;
   app.doScript(script, ScriptLanguage.VISUAL_BASIC);
   return app.scriptArgs;
 }
 
-get()
+get();

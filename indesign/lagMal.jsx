@@ -1,6 +1,9 @@
-﻿/* jshint ignore:start */
+/* jshint ignore:start */
+#include ../_includes/index.jsxinc
 #include ../_includes/index.jsxinc
 #target "indesign"
+#target "indesign"
+#targetengine "session"
 #targetengine "session"
 /* jshint ignore:end */
 
@@ -40,7 +43,10 @@ if (!alleGrupper) {
   var myPage;
   for (i = myPageItems.length - 1; i > -1; i--) {
     myItem = myPageItems[i];
-    if ((myItem instanceof Group || myItem instanceof TextFrame) && myItem.parent) {
+    if (
+      (myItem instanceof Group || myItem instanceof TextFrame) &&
+      myItem.parent
+    ) {
       myItems.push(myItem);
     }
   }
@@ -54,7 +60,10 @@ if (!alleGrupper) {
     }
     var mySpread = myGroup;
     if (myGroup.label !== "") {
-      while (false === (mySpread instanceof Spread || mySpread instanceof MasterSpread)) {
+      while (
+        false ===
+        (mySpread instanceof Spread || mySpread instanceof MasterSpread)
+      ) {
         mySpread = mySpread.parent;
       }
       if (mySpread instanceof Spread) {
@@ -69,7 +78,12 @@ if (!alleGrupper) {
     $.writeln(i + " p" + myPage.name + "   " + itemName);
   }
   if (lagreOverAvismal) {
-    if (confirm("Lagre over?\rEr du sikker på at du vil lagre ny MAL_AVIS.indt ?", false)) {
+    if (
+      confirm(
+        "Lagre over?\rEr du sikker på at du vil lagre ny MAL_AVIS.indt ?",
+        false
+      )
+    ) {
       lagNyAvisMal();
       alert("Ny MAL_AVIS er laget");
     }
@@ -88,7 +102,7 @@ function mekkMalGeo(mySelection, promptMe) {
 
   if (promptMe) {
     if (myPrompt === "") {
-      myPrompt = (mySelection.length == 1) ? myPrompt : "";
+      myPrompt = mySelection.length == 1 ? myPrompt : "";
       sakstype = prompt("Lag Geometri\rsakstype?", myPrompt) || "";
     } else {
       sakstype = mySelection[0].label;
@@ -129,7 +143,11 @@ function mekkMalGeo(mySelection, promptMe) {
     mySpread = mySpread.parent;
   }
   for (var m = mySelection.length - 1; m >= 0; m--) {
-    if (false === (mySelection[m].parent instanceof Page || mySelection[m].parent instanceof Spread)) {
+    if (
+      false ===
+      (mySelection[m].parent instanceof Page ||
+        mySelection[m].parent instanceof Spread)
+    ) {
       mySelection.splice(m, 1);
     }
   }
@@ -158,9 +176,11 @@ function mekkMalGeo(mySelection, promptMe) {
   app.changeGrepPreferences.appliedParagraphStyle = parStyle1;
   myReportTextFrame.parentStory.changeGrep();
 
-
-  myGB = [myGB[0], ((myGroup.geometricBounds[1] + myGroup.geometricBounds[3]) / 2) - (myGB[3] / 2),
-    myGB[2], ((myGroup.geometricBounds[1] + myGroup.geometricBounds[3]) / 2) + (myGB[3] / 2)
+  myGB = [
+    myGB[0],
+    (myGroup.geometricBounds[1] + myGroup.geometricBounds[3]) / 2 - myGB[3] / 2,
+    myGB[2],
+    (myGroup.geometricBounds[1] + myGroup.geometricBounds[3]) / 2 + myGB[3] / 2
   ];
   app.select(myGroup);
 
@@ -171,26 +191,33 @@ function mekkMalGeo(mySelection, promptMe) {
 
   while (myReportTextFrame.overflows) {
     myGB[2] += 5;
-    if ((myGB[2] - myGB[0]) > 100) {
+    if (myGB[2] - myGB[0] > 100) {
       break;
     }
     myReportTextFrame.geometricBounds = myGB;
   }
 
   if (myGroup.geometricBounds[2] < 350) {
-    myReportTextFrame.geometricBounds = [-13 - (myGB[2] - myGB[0]), myGB[1], -13, myGB[3]];
+    myReportTextFrame.geometricBounds = [
+      -13 - (myGB[2] - myGB[0]),
+      myGB[1],
+      -13,
+      myGB[3]
+    ];
   }
   var myName = myReport.split("\r")[0].replace(/\s/g, " ");
   if (addToLibrary && myLibrary.itemByName(myName) === null) {
     var myAsset = myGroup.store(myLibrary);
     myAsset.assetType = AssetType.TEXT_TYPE;
     myAsset.name = myName;
-    myAsset.description = myReport.split("\r").slice(0, 2).join(" ");
+    myAsset.description = myReport
+      .split("\r")
+      .slice(0, 2)
+      .join(" ");
     myAsset.label = myReport;
   }
   return myName;
 }
-
 
 function tagReport(myTextFrames, sakstype) {
   var spaltebredde = 57;
@@ -198,16 +225,27 @@ function tagReport(myTextFrames, sakstype) {
   var loftstr = 250;
   var myReport;
   var paragraphStyles = [];
-  var spalter = Math.ceil((myGroup.geometricBounds[3] - myGroup.geometricBounds[1]) / spaltebredde);
+  var spalter = Math.ceil(
+    (myGroup.geometricBounds[3] - myGroup.geometricBounds[1]) / spaltebredde
+  );
   var myXtagStyles = [];
   var makeReport = function() {
     myReport = (sakstype || "sakstype") + "\n" + spalter + " spalter";
-    myReport = myReport + ((myGroup.geometricBounds[0] > loft && myGroup.geometricBounds[2] - myGroup.geometricBounds[0] > loftstr) ? " loft\r" : "\r");
-    myReport = myReport.substr(0, 1).toUpperCase() + myReport.substr(1).toLowerCase();
+    myReport =
+      myReport +
+      (myGroup.geometricBounds[0] > loft &&
+      myGroup.geometricBounds[2] - myGroup.geometricBounds[0] > loftstr
+        ? " loft\r"
+        : "\r");
+    myReport =
+      myReport.substr(0, 1).toUpperCase() + myReport.substr(1).toLowerCase();
     var myStories = [];
     var myXtags = "";
     for (n = 0; n < myTextFrames.length; n++) {
-      if (myTextFrames[n] instanceof TextFrame && myTextFrames[n].textFrameIndex === 0) {
+      if (
+        myTextFrames[n] instanceof TextFrame &&
+        myTextFrames[n].textFrameIndex === 0
+      ) {
         myStories.push(myTextFrames[n].parentStory);
       }
     }
@@ -221,14 +259,21 @@ function tagReport(myTextFrames, sakstype) {
     var myRegExp;
     myReport += "Xtags:\u0008" + myXtags.length + " tegn\r";
     if (myXtags) {
-        var myXtagsArray = myXtags.split("\n@");
-        //myXtagsArray.splice(0,1);
-        for (var n = 0; n < myXtagsArray.length; n++) {
-          myTaggedText = myXtagsArray[n].match(/([^:]+):(.*)/);
-          myReport = myReport + "@" + myTaggedText[1] + "\u0008" + myTaggedText[2].length + " tegn\r";
-        }
+      var myXtagsArray = myXtags.split("\n@");
+      //myXtagsArray.splice(0,1);
+      for (var n = 0; n < myXtagsArray.length; n++) {
+        myTaggedText = myXtagsArray[n].match(/([^:]+):(.*)/);
+        myReport =
+          myReport +
+          "@" +
+          myTaggedText[1] +
+          "\u0008" +
+          myTaggedText[2].length +
+          " tegn\r";
+      }
     }
-    myReport += "\rtegn/spalte:\u0008" + Math.ceil(myXtags.length / spalter) + "\r";
+    myReport +=
+      "\rtegn/spalte:\u0008" + Math.ceil(myXtags.length / spalter) + "\r";
 
     myReport = myReport + "Paragraphstyles:" + "\r";
     for (var m = 0; m < paragraphStyles.length; m++) {
@@ -254,7 +299,10 @@ function tagReport(myTextFrames, sakstype) {
     for (n = 0; n < myStories.length; n++) {
       var myStory = {};
       myStory.story = myStories[n];
-      var firstchar = (myStory.story.contents === "") ? myStory.story.insertionPoints[0] : myStory.story.characters[0];
+      var firstchar =
+        myStory.story.contents === ""
+          ? myStory.story.insertionPoints[0]
+          : myStory.story.characters[0];
       try {
         myStory.position = firstchar.horizontalOffset + firstchar.baseline * 2; // hokus pokus lager et vekttall som gjetter leserekkefølgen
       } catch (e) {
@@ -265,7 +313,7 @@ function tagReport(myTextFrames, sakstype) {
     }
 
     myStories.sort(function(a, b) {
-      return (a.position - b.position);
+      return a.position - b.position;
     });
 
     for (var n = myStories.length - 1; n > 0; n--) {
@@ -301,7 +349,8 @@ function tagReport(myTextFrames, sakstype) {
       }
     }
 
-    function getXtagStory(minStory) { // denne er ganske treig :(
+    function getXtagStory(minStory) {
+      // denne er ganske treig :(
       var xtagsStory = "";
       var b;
       var minTextStyleRange;
@@ -325,11 +374,14 @@ function tagReport(myTextFrames, sakstype) {
       }
       return xtagsStory + "\r";
     }
-
   };
 
-  var xtagsGrep = function(xtagsTekst) { // gjør diverse utskiftinger før saken sendes til prodsys
-    xtagsTekst = xtagsTekst.replace(/(\u2002|\u2003|\u2007|\u2009|\u202F|\u00A0)/g, " "); // diverse space
+  var xtagsGrep = function(xtagsTekst) {
+    // gjør diverse utskiftinger før saken sendes til prodsys
+    xtagsTekst = xtagsTekst.replace(
+      /(\u2002|\u2003|\u2007|\u2009|\u202F|\u00A0)/g,
+      " "
+    ); // diverse space
     xtagsTekst = xtagsTekst.replace(/(\u2013|\u2014)/gi, "--"); // gjør om tankestreker til to bindestreker
     xtagsTekst = xtagsTekst.replace(/\u00AD/gi, ""); // conditional hyphen (myk bindestrek) fjernes
     xtagsTekst = xtagsTekst.replace(/\uFFFC|\u0016/gi, ""); // anchored object tegn fjernes
@@ -347,7 +399,6 @@ function tagReport(myTextFrames, sakstype) {
 
 function errorAlert(errorString) {
   var myAlert = new Window("dialogue", "Error", [50, 50, 200, 200], properties);
-
 }
 
 function clearReports(myDok, objStyle) {
@@ -360,40 +411,636 @@ function clearReports(myDok, objStyle) {
   }
 }
 
-
-function loremIpsumize(myText) { // myText could be a TextFrame, Story, InsertionPoint, Word, Text etc...
+function loremIpsumize(myText) {
+  // myText could be a TextFrame, Story, InsertionPoint, Word, Text etc...
   var loremIpsumDictionary = [
     [""], // this is the dictionary of words sorted by number of letters. The words are taken from InDesigns "fill with placeholder text"-feature
     ["a", "e", "y"],
-    ["el", "si", "em", "se", "an", "er", "do", "re", "te", "at", "os", "od", "to", "et", "eu", "ud", "na", "ex", "ed", "ut", "ad", "il", "in", "la", "it", "is", "ip", "am", "ea"],
-    ["ing", "lam", "vel", "lan", "lis", "lor", "ute", "ver", "con", "lum", "lut", "ibh", "del", "unt", "min", "mod", "feu", "nim", "nis", "nit", "non", "nos", "bla", "eum", "eui", "num", "aut", "dio", "odo", "wis", "tis", "tio", "pis", "pit", "qui", "ate", "tin", "tie", "ese", "tet", "tem", "dip", "rat", "ero", "ril", "rit", "ros", "dit"],
-    ["duis", "alit", "dunt", "ecte", "sisi", "elis", "elit", "enim", "enis", "enit", "sent", "wisl", "erat", "amet", "tate", "alis", "erci", "erit", "wisi", "eros", "esed", "esse", "essi", "dion", "atem", "atet", "acil", "esto", "atio", "quis", "atue", "etue", "quip", "ting", "etum", "atum", "quat", "quam", "diat", "euip", "prat"],
-    ["lorem", "ispum", "magna", "ulput", "lutem", "minci", "minis", "lummy", "commy", "adiat", "minit", "conse", "lorer", "lorem", "ullum", "adiam", "lobor", "modip", "modit", "lenit", "lenim", "laore", "cipit", "molor", "utpat", "velis", "iusto", "iusci", "iurem", "molum", "velit", "ullan", "ullam", "nisci"],
-    ["mconse", "magnit", "mincip", "magnis", "magnim", "minisi", "minisl", "lutpat", "wissis", "wissim", "acidui", "modiat", "commod", "luptat", "wiscip", "wiscin", "lumsan", "wiscil", "molent", "cinibh", "lortio", "vulput", "molore", "lortin", "lortie", "vullut", "vullan", "vullam", "ncidui", "volute", "lorper"],
-    ["feuisci", "sustrud", "ationse", "feuisis", "feuisit", "feuguer", "feuismo", "feugiat", "feummod", "feugiam", "hendiam", "feugait", "dolorem", "andreet", "suscipi", "hendrem", "hendrer", "facipit", "heniamc", "amconul", "atuerat", "facipis", "dolorer", "facinim", "tetummy", "facinim", "delesto"],
-    ["dolortis", "vendreet", "vullutat", "consequi", "niatuero", "eugiamet", "nismodit", "adignibh", "eugiatet", "zzriusto", "doluptat", "veliquat", "nonsecte", "veliquam", "velestis", "dolortio", "nonsenim", "velessim", "dolortin", "dolortie", "velenibh", "nonsequi", "veleniat", "conullam", "eraessit"],
-    ["iriliquis", "blandipis", "quismolor", "irillamet", "consequis", "iriuscing", "blaorerit", "iriustrud", "etuerosto", "nissectet", "vendiamet", "volestisl", "dionsenim", "digniamet", "eniatisit", "quamcommy", "iurerosto", "ionsequat", "ptatueros", "consequat", "duiscipit", "scillummy", "veliquisl"],
-    ["loremipsum", "exeriurero", "nummodolor", "ullamcommy", "veriliquat", "conulputat", "uismodolor", "exeraessit", "exerostrud", "nullaortis", "tisiscipis", "nullaoreet", "nullandrem", "odigniamet", "nullandiat", "verciduisi", "erciduisit", "faciduisim", "lummolessi", "facincipit", "voloreetum"],
-    ["dolortionum", "veliquiscil", "euguerostie", "veliquamcon", "aciliquisim", "eummolestin", "adionsequat", "adipsustrud", "vercincinis", "dolorpercin", "exeraestrud", "ullaorperit", "wismolobore", "amconsequis", "essequating", "facipsustio", "doloreetuer", "elesequisim", "augiametuer"],
-    ["dolutatueros", "adigniamcore", "velesequipit", "adigniscipis", "eummolortion", "dolorperiure", "dolorpercing", "ulputpatetue", "uipsuscidunt", "aliquipsusci", "tumsandionse", "tionsequisim", "facilismolut", "facillametum", "atueraestrud", "sustionsenim", "iliquatiniat", "dolenismodit"]
+    [
+      "el",
+      "si",
+      "em",
+      "se",
+      "an",
+      "er",
+      "do",
+      "re",
+      "te",
+      "at",
+      "os",
+      "od",
+      "to",
+      "et",
+      "eu",
+      "ud",
+      "na",
+      "ex",
+      "ed",
+      "ut",
+      "ad",
+      "il",
+      "in",
+      "la",
+      "it",
+      "is",
+      "ip",
+      "am",
+      "ea"
+    ],
+    [
+      "ing",
+      "lam",
+      "vel",
+      "lan",
+      "lis",
+      "lor",
+      "ute",
+      "ver",
+      "con",
+      "lum",
+      "lut",
+      "ibh",
+      "del",
+      "unt",
+      "min",
+      "mod",
+      "feu",
+      "nim",
+      "nis",
+      "nit",
+      "non",
+      "nos",
+      "bla",
+      "eum",
+      "eui",
+      "num",
+      "aut",
+      "dio",
+      "odo",
+      "wis",
+      "tis",
+      "tio",
+      "pis",
+      "pit",
+      "qui",
+      "ate",
+      "tin",
+      "tie",
+      "ese",
+      "tet",
+      "tem",
+      "dip",
+      "rat",
+      "ero",
+      "ril",
+      "rit",
+      "ros",
+      "dit"
+    ],
+    [
+      "duis",
+      "alit",
+      "dunt",
+      "ecte",
+      "sisi",
+      "elis",
+      "elit",
+      "enim",
+      "enis",
+      "enit",
+      "sent",
+      "wisl",
+      "erat",
+      "amet",
+      "tate",
+      "alis",
+      "erci",
+      "erit",
+      "wisi",
+      "eros",
+      "esed",
+      "esse",
+      "essi",
+      "dion",
+      "atem",
+      "atet",
+      "acil",
+      "esto",
+      "atio",
+      "quis",
+      "atue",
+      "etue",
+      "quip",
+      "ting",
+      "etum",
+      "atum",
+      "quat",
+      "quam",
+      "diat",
+      "euip",
+      "prat"
+    ],
+    [
+      "lorem",
+      "ispum",
+      "magna",
+      "ulput",
+      "lutem",
+      "minci",
+      "minis",
+      "lummy",
+      "commy",
+      "adiat",
+      "minit",
+      "conse",
+      "lorer",
+      "lorem",
+      "ullum",
+      "adiam",
+      "lobor",
+      "modip",
+      "modit",
+      "lenit",
+      "lenim",
+      "laore",
+      "cipit",
+      "molor",
+      "utpat",
+      "velis",
+      "iusto",
+      "iusci",
+      "iurem",
+      "molum",
+      "velit",
+      "ullan",
+      "ullam",
+      "nisci"
+    ],
+    [
+      "mconse",
+      "magnit",
+      "mincip",
+      "magnis",
+      "magnim",
+      "minisi",
+      "minisl",
+      "lutpat",
+      "wissis",
+      "wissim",
+      "acidui",
+      "modiat",
+      "commod",
+      "luptat",
+      "wiscip",
+      "wiscin",
+      "lumsan",
+      "wiscil",
+      "molent",
+      "cinibh",
+      "lortio",
+      "vulput",
+      "molore",
+      "lortin",
+      "lortie",
+      "vullut",
+      "vullan",
+      "vullam",
+      "ncidui",
+      "volute",
+      "lorper"
+    ],
+    [
+      "feuisci",
+      "sustrud",
+      "ationse",
+      "feuisis",
+      "feuisit",
+      "feuguer",
+      "feuismo",
+      "feugiat",
+      "feummod",
+      "feugiam",
+      "hendiam",
+      "feugait",
+      "dolorem",
+      "andreet",
+      "suscipi",
+      "hendrem",
+      "hendrer",
+      "facipit",
+      "heniamc",
+      "amconul",
+      "atuerat",
+      "facipis",
+      "dolorer",
+      "facinim",
+      "tetummy",
+      "facinim",
+      "delesto"
+    ],
+    [
+      "dolortis",
+      "vendreet",
+      "vullutat",
+      "consequi",
+      "niatuero",
+      "eugiamet",
+      "nismodit",
+      "adignibh",
+      "eugiatet",
+      "zzriusto",
+      "doluptat",
+      "veliquat",
+      "nonsecte",
+      "veliquam",
+      "velestis",
+      "dolortio",
+      "nonsenim",
+      "velessim",
+      "dolortin",
+      "dolortie",
+      "velenibh",
+      "nonsequi",
+      "veleniat",
+      "conullam",
+      "eraessit"
+    ],
+    [
+      "iriliquis",
+      "blandipis",
+      "quismolor",
+      "irillamet",
+      "consequis",
+      "iriuscing",
+      "blaorerit",
+      "iriustrud",
+      "etuerosto",
+      "nissectet",
+      "vendiamet",
+      "volestisl",
+      "dionsenim",
+      "digniamet",
+      "eniatisit",
+      "quamcommy",
+      "iurerosto",
+      "ionsequat",
+      "ptatueros",
+      "consequat",
+      "duiscipit",
+      "scillummy",
+      "veliquisl"
+    ],
+    [
+      "loremipsum",
+      "exeriurero",
+      "nummodolor",
+      "ullamcommy",
+      "veriliquat",
+      "conulputat",
+      "uismodolor",
+      "exeraessit",
+      "exerostrud",
+      "nullaortis",
+      "tisiscipis",
+      "nullaoreet",
+      "nullandrem",
+      "odigniamet",
+      "nullandiat",
+      "verciduisi",
+      "erciduisit",
+      "faciduisim",
+      "lummolessi",
+      "facincipit",
+      "voloreetum"
+    ],
+    [
+      "dolortionum",
+      "veliquiscil",
+      "euguerostie",
+      "veliquamcon",
+      "aciliquisim",
+      "eummolestin",
+      "adionsequat",
+      "adipsustrud",
+      "vercincinis",
+      "dolorpercin",
+      "exeraestrud",
+      "ullaorperit",
+      "wismolobore",
+      "amconsequis",
+      "essequating",
+      "facipsustio",
+      "doloreetuer",
+      "elesequisim",
+      "augiametuer"
+    ],
+    [
+      "dolutatueros",
+      "adigniamcore",
+      "velesequipit",
+      "adigniscipis",
+      "eummolortion",
+      "dolorperiure",
+      "dolorpercing",
+      "ulputpatetue",
+      "uipsuscidunt",
+      "aliquipsusci",
+      "tumsandionse",
+      "tionsequisim",
+      "facilismolut",
+      "facillametum",
+      "atueraestrud",
+      "sustionsenim",
+      "iliquatiniat",
+      "dolenismodit"
+    ]
   ];
 
   loremIpsumDictionary = [
     [""], // Gangsta!
     ["i", "a"],
-    ["yo", "eu", "ut", "up", "sa", "fo", "go", "we", "ac", "at", "to", "im", "oo", "in", "of", "it", "ma", "my", "mi", "et", "da"],
-    ["the", "bow", "leo", "its", "nec", "non", "wow", "out", "own", "ass", "hac", "son", "get", "for", "and", "pot", "yih", "cum", "sit", "saw", "mah", "est", "vel", "sed", "you"],
-    ["shit", "shut", "amet", "quis", "quam", "ante", "phat", "dope", "down", "yall", "eget", "sure", "pede", "elit", "away", "enim", "orci", "nunc", "dang", "nisl", "nisi", "nibh", "neck", "mofo", "bomb", "urna", "boom", "this", "went", "home", "uhuh", "shiz", "dawg"],
-    ["vitae", "morbi", "fresh", "neque", "funky", "fusce", "velit", "metus", "doggy", "crazy", "thats", "black", "massa", "gonna", "risus", "nulla", "mamma", "dolor", "felis", "purus", "break", "crunk", "lacus", "class", "owned", "justo", "stuff", "izzle", "ipsum", "chung", "check", "bling", "shizz"],
-    ["pimpin", "ornare", "pizzle", "lectus", "bizzle", "libero", "ligula", "daahng", "luctus", "platea", "tellus", "nullam", "vizzle", "things", "hizzle", "tortor", "nostra", "sizzle", "mattis", "rizzle", "mauris", "gizzle", "nizzle", "ghetto", "sapien", "mizzle", "varius", "dizzle", "tempor", "montes", "turpis", "sheezy", "taciti", "fizzle"],
-    ["blandit", "shiznit", "gangsta", "etizzle", "yippiyo", "gdizzle", "nonummy", "boofron", "vivamus", "mammasa", "amizzle", "gravida", "viverra", "quizzle", "erizzle", "brizzle", "quisque", "enizzle", "feugiat", "lacinia", "elizzle", "commodo", "pretium", "posuere", "integer", "egestas", "tizzles", "crizzle", "shizzle"],
-    ["eleifend", "donizzle", "praesent", "pharetra", "socizzle", "pulvinar", "sociosqu", "ipsizzle", "varizzle", "dolizzle", "lacizzle", "beyonces", "torquent", "bibendum", "lorizzle", "maecenas", "felizzle", "mammasay", "aenizzle", "gangster", "metizzle", "shizznit", "shizzlin", "faucibus", "dictumst", "vehicula", "velizzle", "molestie", "interdum", "facilisi", "accumsan"],
-    ["sempizzle", "turpizzle", "auctizzle", "hendrerit", "consequat", "vulputate", "pretizzle", "phasellus", "tristique", "curabitur", "facilisis", "dictizzle", "elementum", "tellizzle", "tortizzle", "tempizzle", "nullizzle", "mollizzle", "maurizzle", "mattizzle", "malesuada", "fringilla", "feugizzle"],
-    ["iaculizzle", "euismizzle", "parturient", "dapibizzle", "vestibulum", "rhoncizzle", "aliquizzle", "integizzle", "adipiscing", "shackalack"],
-    ["pulvinizzle", "ultricizzle", "sagittizzle", "maecenizzle", "tellivizzle", "scelerisque", "suspendisse", "suscipizzle", "volutpizzle", "crocodizzle", "bibendizzle", "accumsizzle"],
-    ["crackalackin", "penatibizzle", "curabitizzle", "pellentesque", "hendrerizzle", "facilisizzle", "convallizzle", "fermentizzle"]
+    [
+      "yo",
+      "eu",
+      "ut",
+      "up",
+      "sa",
+      "fo",
+      "go",
+      "we",
+      "ac",
+      "at",
+      "to",
+      "im",
+      "oo",
+      "in",
+      "of",
+      "it",
+      "ma",
+      "my",
+      "mi",
+      "et",
+      "da"
+    ],
+    [
+      "the",
+      "bow",
+      "leo",
+      "its",
+      "nec",
+      "non",
+      "wow",
+      "out",
+      "own",
+      "ass",
+      "hac",
+      "son",
+      "get",
+      "for",
+      "and",
+      "pot",
+      "yih",
+      "cum",
+      "sit",
+      "saw",
+      "mah",
+      "est",
+      "vel",
+      "sed",
+      "you"
+    ],
+    [
+      "shit",
+      "shut",
+      "amet",
+      "quis",
+      "quam",
+      "ante",
+      "phat",
+      "dope",
+      "down",
+      "yall",
+      "eget",
+      "sure",
+      "pede",
+      "elit",
+      "away",
+      "enim",
+      "orci",
+      "nunc",
+      "dang",
+      "nisl",
+      "nisi",
+      "nibh",
+      "neck",
+      "mofo",
+      "bomb",
+      "urna",
+      "boom",
+      "this",
+      "went",
+      "home",
+      "uhuh",
+      "shiz",
+      "dawg"
+    ],
+    [
+      "vitae",
+      "morbi",
+      "fresh",
+      "neque",
+      "funky",
+      "fusce",
+      "velit",
+      "metus",
+      "doggy",
+      "crazy",
+      "thats",
+      "black",
+      "massa",
+      "gonna",
+      "risus",
+      "nulla",
+      "mamma",
+      "dolor",
+      "felis",
+      "purus",
+      "break",
+      "crunk",
+      "lacus",
+      "class",
+      "owned",
+      "justo",
+      "stuff",
+      "izzle",
+      "ipsum",
+      "chung",
+      "check",
+      "bling",
+      "shizz"
+    ],
+    [
+      "pimpin",
+      "ornare",
+      "pizzle",
+      "lectus",
+      "bizzle",
+      "libero",
+      "ligula",
+      "daahng",
+      "luctus",
+      "platea",
+      "tellus",
+      "nullam",
+      "vizzle",
+      "things",
+      "hizzle",
+      "tortor",
+      "nostra",
+      "sizzle",
+      "mattis",
+      "rizzle",
+      "mauris",
+      "gizzle",
+      "nizzle",
+      "ghetto",
+      "sapien",
+      "mizzle",
+      "varius",
+      "dizzle",
+      "tempor",
+      "montes",
+      "turpis",
+      "sheezy",
+      "taciti",
+      "fizzle"
+    ],
+    [
+      "blandit",
+      "shiznit",
+      "gangsta",
+      "etizzle",
+      "yippiyo",
+      "gdizzle",
+      "nonummy",
+      "boofron",
+      "vivamus",
+      "mammasa",
+      "amizzle",
+      "gravida",
+      "viverra",
+      "quizzle",
+      "erizzle",
+      "brizzle",
+      "quisque",
+      "enizzle",
+      "feugiat",
+      "lacinia",
+      "elizzle",
+      "commodo",
+      "pretium",
+      "posuere",
+      "integer",
+      "egestas",
+      "tizzles",
+      "crizzle",
+      "shizzle"
+    ],
+    [
+      "eleifend",
+      "donizzle",
+      "praesent",
+      "pharetra",
+      "socizzle",
+      "pulvinar",
+      "sociosqu",
+      "ipsizzle",
+      "varizzle",
+      "dolizzle",
+      "lacizzle",
+      "beyonces",
+      "torquent",
+      "bibendum",
+      "lorizzle",
+      "maecenas",
+      "felizzle",
+      "mammasay",
+      "aenizzle",
+      "gangster",
+      "metizzle",
+      "shizznit",
+      "shizzlin",
+      "faucibus",
+      "dictumst",
+      "vehicula",
+      "velizzle",
+      "molestie",
+      "interdum",
+      "facilisi",
+      "accumsan"
+    ],
+    [
+      "sempizzle",
+      "turpizzle",
+      "auctizzle",
+      "hendrerit",
+      "consequat",
+      "vulputate",
+      "pretizzle",
+      "phasellus",
+      "tristique",
+      "curabitur",
+      "facilisis",
+      "dictizzle",
+      "elementum",
+      "tellizzle",
+      "tortizzle",
+      "tempizzle",
+      "nullizzle",
+      "mollizzle",
+      "maurizzle",
+      "mattizzle",
+      "malesuada",
+      "fringilla",
+      "feugizzle"
+    ],
+    [
+      "iaculizzle",
+      "euismizzle",
+      "parturient",
+      "dapibizzle",
+      "vestibulum",
+      "rhoncizzle",
+      "aliquizzle",
+      "integizzle",
+      "adipiscing",
+      "shackalack"
+    ],
+    [
+      "pulvinizzle",
+      "ultricizzle",
+      "sagittizzle",
+      "maecenizzle",
+      "tellivizzle",
+      "scelerisque",
+      "suspendisse",
+      "suscipizzle",
+      "volutpizzle",
+      "crocodizzle",
+      "bibendizzle",
+      "accumsizzle"
+    ],
+    [
+      "crackalackin",
+      "penatibizzle",
+      "curabitizzle",
+      "pellentesque",
+      "hendrerizzle",
+      "facilisizzle",
+      "convallizzle",
+      "fermentizzle"
+    ]
   ];
-
 
   var myStory; // the parent Story of myText
 
@@ -401,9 +1048,11 @@ function loremIpsumize(myText) { // myText could be a TextFrame, Story, Insertio
     myStory = myText;
   } else if (myText instanceof InsertionPoint) {
     myText = myStory = myText.parentStory;
-  } else if (myText.hasOwnProperty("parentStory")) { // myText instanceof Word, TextFrame, Character, TextColumn or Paragraph
+  } else if (myText.hasOwnProperty("parentStory")) {
+    // myText instanceof Word, TextFrame, Character, TextColumn or Paragraph
     myStory = myText.parentStory;
-  } else { // myText is not text, but some other object
+  } else {
+    // myText is not text, but some other object
     return;
   }
   myStory.label = "";
@@ -412,7 +1061,8 @@ function loremIpsumize(myText) { // myText could be a TextFrame, Story, Insertio
       loremIpsumize(myStory.textFrames[n]); // clever recurson
     }
   }
-  if (myText.hasOwnProperty("paragraphs") && myText.paragraphs.length > 1) { // The script returns better looking results when one Paragraph is processed at a time
+  if (myText.hasOwnProperty("paragraphs") && myText.paragraphs.length > 1) {
+    // The script returns better looking results when one Paragraph is processed at a time
     var myParagraphs = myText.paragraphs.everyItem().getElements();
     for (var m = myParagraphs.length - 1; m >= 0; m--) {
       loremIpsumize(myParagraphs[m]); // clever recurson
@@ -420,7 +1070,8 @@ function loremIpsumize(myText) { // myText could be a TextFrame, Story, Insertio
   } else if (myText.contents !== "") {
     app.findGrepPreferences = NothingEnum.nothing;
     app.changeGrepPreferences = NothingEnum.nothing;
-    app.findGrepPreferences.findWhat = "[\\u\\l'@\u00E6\u00C6]{1," + loremIpsumDictionary.length + "}"; // only looks for word-characters and leave punctuation, spaces as they are
+    app.findGrepPreferences.findWhat =
+      "[\\u\\l'@\u00E6\u00C6]{1," + loremIpsumDictionary.length + "}"; // only looks for word-characters and leave punctuation, spaces as they are
 
     var storyLineNumber = myStory.lines.length; // remembers how many lines the story has, and tries to make the new text the same number of lines
     var myWordMatches = myText.findGrep(); // an array of Word references that fit the grep
@@ -430,18 +1081,26 @@ function loremIpsumize(myText) { // myText could be a TextFrame, Story, Insertio
     fineTuneText(storyLineNumber);
   }
 
-  function fineTuneText(targetNumberOfLines) { // tries to make the text the correct number of lines by adding or subtracting one letter at a time
+  function fineTuneText(targetNumberOfLines) {
+    // tries to make the text the correct number of lines by adding or subtracting one letter at a time
     var myNumberOfCharacters;
     var newWord;
     var myWord;
     while (targetNumberOfLines !== myStory.lines.length) {
       myNumberOfCharacters = myText.characters.length;
-      for (var changeWord = myWordMatches.length - 1; changeWord >= 0; changeWord--) {
+      for (
+        var changeWord = myWordMatches.length - 1;
+        changeWord >= 0;
+        changeWord--
+      ) {
         myWord = myWordMatches[changeWord];
         if (targetNumberOfLines > myStory.lines.length) {
-          newWord = loremipsumWord(myWord.contents + "a"); // adds a letter 
+          newWord = loremipsumWord(myWord.contents + "a"); // adds a letter
         } else if (targetNumberOfLines < myStory.lines.length) {
-          newWord = myWord.contents.length > 1 ? loremipsumWord(myWord.contents.slice(0, -1)) : myWord.contents; // removes a letter				
+          newWord =
+            myWord.contents.length > 1
+              ? loremipsumWord(myWord.contents.slice(0, -1))
+              : myWord.contents; // removes a letter
         } else {
           return true; // targetNumberOfLines === myStory.lines.length
         }
@@ -455,18 +1114,30 @@ function loremIpsumize(myText) { // myText could be a TextFrame, Story, Insertio
     }
   }
 
-  function loremipsumWord(myWord) { // takes a string and returns a random word with same number of letters, and the same capitalization
+  function loremipsumWord(myWord) {
+    // takes a string and returns a random word with same number of letters, and the same capitalization
     var replacementWord = "";
     var correctCaseWord = "";
     var wordLength = myWord.length;
-    if (wordLength >= loremIpsumDictionary.length) { // in case myWord is longer than the longest words in the dictionary 
-      replacementWord = loremipsumWord(myWord.substr(0, loremIpsumDictionary.length - 1)) + loremipsumWord(myWord.substr(loremIpsumDictionary.length - 1)); // The word is longer than the longest words in the dictionary. So it's split in two.
+    if (wordLength >= loremIpsumDictionary.length) {
+      // in case myWord is longer than the longest words in the dictionary
+      replacementWord =
+        loremipsumWord(myWord.substr(0, loremIpsumDictionary.length - 1)) +
+        loremipsumWord(myWord.substr(loremIpsumDictionary.length - 1)); // The word is longer than the longest words in the dictionary. So it's split in two.
     } else {
-      replacementWord = loremIpsumDictionary[wordLength][Math.floor(Math.random() * loremIpsumDictionary[wordLength].length)]; // finds a random word of the same length
-      if (myWord.toLowerCase() != myWord) { // the word contains uppercase characters
+      replacementWord =
+        loremIpsumDictionary[wordLength][
+          Math.floor(Math.random() * loremIpsumDictionary[wordLength].length)
+        ]; // finds a random word of the same length
+      if (myWord.toLowerCase() != myWord) {
+        // the word contains uppercase characters
         correctCaseWord = "";
-        for (var n = 0; n < wordLength; n++) { // loops through each character in the original word, checking if it's upper or lower case.
-          correctCaseWord += myWord.charAt(n).toUpperCase() == myWord.charAt(n) ? replacementWord.charAt(n).toUpperCase() : replacementWord.charAt(n); // makes the character the correct case
+        for (var n = 0; n < wordLength; n++) {
+          // loops through each character in the original word, checking if it's upper or lower case.
+          correctCaseWord +=
+            myWord.charAt(n).toUpperCase() == myWord.charAt(n)
+              ? replacementWord.charAt(n).toUpperCase()
+              : replacementWord.charAt(n); // makes the character the correct case
         }
         replacementWord = correctCaseWord;
       }
@@ -476,44 +1147,57 @@ function loremIpsumize(myText) { // myText could be a TextFrame, Story, Insertio
 }
 
 function lagNyAvisMal() {
-  var avismal = [ // sider som skal være i MAL_AVIS.indt
+  var avismal = [
+    // sider som skal være i MAL_AVIS.indt
     {
       master: "F-Front",
       tomside: false
-    }, {
+    },
+    {
       master: "2-Side 2-3",
       tomside: false
-    }, {
+    },
+    {
       master: "N-Nyhet Intro",
       tomside: false
-    }, {
+    },
+    {
       master: "N-Nyhet",
       tomside: true
-    }, {
+    },
+    {
       master: "N-Nyhet",
       tomside: true
-    }, {
+    },
+    {
       master: "N-Nyhet",
       tomside: true
-    }, {
+    },
+    {
       master: "D-Debatt Intro",
       tomside: false
-    }, {
+    },
+    {
       master: "K-Kultur Intro",
       tomside: true
-    }, {
+    },
+    {
       master: "K-Kultur",
       tomside: true
-    }, {
+    },
+    {
       master: "K-Kultur",
       tomside: true
-    }, {
+    },
+    {
       master: "K-Reportasje",
       tomside: true
-    }, {
+    },
+    {
       master: "P-Plakat",
       tomside: false
-    }, {
+    },
+    {
       master: "B-Baksida",
       tomside: false
     }
@@ -522,7 +1206,9 @@ function lagNyAvisMal() {
   var myDok = app.activeDocument;
   var beskjed = myDok.objectStyles.itemByName("beskjed");
   var lagreSom = File("/univ-desken/UTTEGNER/MALER_CS55/MAL_AVIS.indt");
-  var backupMal = File("/univ-desken/UTTEGNER/MALER_CS55/BACKUP_AVISMAL/MAL_AVIS.indt");
+  var backupMal = File(
+    "/univ-desken/UTTEGNER/MALER_CS55/BACKUP_AVISMAL/MAL_AVIS.indt"
+  );
   var myMasterPage;
 
   myDok.save(undefined, false, undefined, true);
@@ -544,7 +1230,10 @@ function lagNyAvisMal() {
       }
       if (avismal[n].tomside === false) {
         try {
-          while (myDok.spreads[n].appliedMaster !== myMasterPage && myDok.spreads[n] !== null) {
+          while (
+            myDok.spreads[n].appliedMaster !== myMasterPage &&
+            myDok.spreads[n] !== null
+          ) {
             myDok.spreads[n].remove();
           }
         } catch (e) {
