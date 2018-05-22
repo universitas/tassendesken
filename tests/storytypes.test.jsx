@@ -1,8 +1,7 @@
 // vim: set ft=javascript:
-#include "../_includes/index.jsxinc"; // diverse konfigurasjonsverdier
-#include "../_includes/index.jsxinc"; // diverse konfigurasjonsverdier
-#include "../_includes/artikkeltyper.jsxinc"; // story types
-#include "../_includes/artikkeltyper.jsxinc"; // story types
+#includepath "../_includes/"
+#include "index.jsxinc"
+#include "artikkeltyper.jsxinc"
 
 main();
 

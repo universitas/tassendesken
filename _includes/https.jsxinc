@@ -1,6 +1,5 @@
+// vim: set ft=javascript:
 #target "indesign";
-#target "indesign";
-#targetengine "session";
 #targetengine "session";
 
 app.scriptPreferences.version = "7.5";

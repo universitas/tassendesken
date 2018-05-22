@@ -1,8 +1,7 @@
 /* jshint ignore:start */
-#include "../_includes/importpanel.jsxinc"; // brukergrensesnittet
-#include "../_includes/importpanel.jsxinc"; // brukergrensesnittet
-#include "../_includes/prodsys.jsxinc";
-#include "../_includes/prodsys.jsxinc";
+#includepath "../_includes/"
+#include "importpanel.jsxinc"; 
+#include "prodsys.jsxinc";
 /* jshint ignore:end */
 
 function onImportClick(aktivSak, artikkeltype, importImages) {

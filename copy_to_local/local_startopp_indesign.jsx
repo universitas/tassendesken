@@ -1,6 +1,5 @@
 /* jshint ignore:start */
 #targetengine 'session'
-#targetengine 'session'
 /* jshint ignore:end */
 
 main();
@@ -47,7 +46,7 @@ function remove_indesign_menu(delete_this_name) {
 }
 
 function make_event_handler(name, file) {
-  return function() {
+  return tryLogErrors(function() {
     try {
       app.doScript(
         file,
@@ -56,10 +55,8 @@ function make_event_handler(name, file) {
         UndoModes.AUTO_UNDO,
         name
       );
-    } catch (e) {
-      alert(e);
-    }
-  };
+    } 
+  }) 
 }
 
 function add_indesign_menu(menu_name, script_path, menu_items) {

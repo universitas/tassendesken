@@ -1,10 +1,7 @@
 // vim: set ft=javascript:
 /* jshint ignore:start */
 #include config.jsxinc
-#include config.jsxinc
 #include base64.jsxinc
-#include base64.jsxinc
-#include json2.jsxinc
 #include json2.jsxinc
 /* jshint ignore:end */
 

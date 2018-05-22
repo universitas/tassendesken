@@ -1,10 +1,7 @@
 /* jshint ignore:start */
-#include ../_includes/index.jsxinc
-#include ../_includes/index.jsxinc
-#target "indesign"
 #target "indesign"
 #targetengine "session"
-#targetengine "session"
+#include ../_includes/index.jsxinc
 /* jshint ignore:end */
 
 var avismal = File(config.mal_avis); // malfil for avisa
@@ -415,16 +412,6 @@ mekkfilerPanel.mekkSider = function(sideArray, myFolder) {
     alert("Ugyldig valg\rKan ikke splitte dokumenter");
   }
 };
-
-// for testing av mekkfilerPanel.jsxinc TODO: Finn ut hva jeg tenkte her!
-/* jshint ignore:start */
- #targetengine "session"
- #targetengine "session"
- #include "config.jsxinc"
- #include "config.jsxinc"
- #include "dokTools.jsxinc"
- #include "dokTools.jsxinc"
-/* jshint ignore:end */
 
 if (app.documents.length == 1) {
   var myDoc = app.activeDocument;

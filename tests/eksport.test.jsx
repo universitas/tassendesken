@@ -1,24 +1,20 @@
 /* jshint ignore:start */
-#include ../_includes/dokTools.jsxinc
-#include ../_includes/dokTools.jsxinc
-#include ../_includes/eksport.jsxinc
-#include ../_includes/eksport.jsxinc
-#include ../_includes/prodsys.jsxinc
-#include ../_includes/prodsys.jsxinc
-#target "indesign"
 #target "indesign"
 #targetengine "session"
-#targetengine "session"
+#includepath "../_includes/"
+#include "prodsys.jsxinc"
+#include "dokTools.jsxinc"
+#include "eksport.jsxinc"
 /* jshint ignore:end */
 
-config.DEBUG = true;
+config.DEBUG = true
 http.use_mock = function(request) {
-  return request.match(/^GET/) ? false : true;
-};
-try {
-  var dok = app.activeDocument;
-} catch (e) {
-  log("ERROR " + e.message);
-  exit();
+  return request.match(/^GET/) ? false : true
 }
-eksportTilProdsys(dok);
+try {
+  var dok = app.activeDocument
+} catch (e) {
+  log('ERROR ' + e.message)
+  exit()
+}
+eksportTilProdsys(dok)

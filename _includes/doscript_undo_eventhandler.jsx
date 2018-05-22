@@ -1,6 +1,4 @@
-#target 'indesign';
-#target 'indesign';
-#targetengine 'session'
+#target 'indesign'
 #targetengine 'session'
 
 function make_event_handler(name, file) {

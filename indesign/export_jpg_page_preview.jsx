@@ -1,10 +1,7 @@
 /* jshint ignore:start */
-#include ../_includes/index.jsxinc
-#include ../_includes/index.jsxinc
-#target "indesign"
 #target "indesign"
 #targetengine "session"
-#targetengine "session"
+#include ../_includes/index.jsxinc
 /* jshint ignore:end */
 
 function export_all_pages(event) {

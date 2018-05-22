@@ -1,13 +1,8 @@
 /* jshint ignore:start */
 #target "indesign";
-#target "indesign";
-#targetengine "session";
 #targetengine "session";
 #includepath "../_includes/";
-#includepath "../_includes/";
 #include "index.jsxinc"; // imports!
-#include "index.jsxinc"; // imports!
-#include "eksport.jsxinc"; // brukergrensesnittet
 #include "eksport.jsxinc"; // brukergrensesnittet
 /* jshint ignore:end */
 

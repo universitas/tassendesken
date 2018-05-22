@@ -3,12 +3,9 @@
 // Skrevet av Håken Lid 2011
 
 /* jshint ignore:start */
-#include ../_includes/index.jsxinc
-#include ../_includes/index.jsxinc
-#target "indesign"
 #target "indesign"
 #targetengine "session"
-#targetengine "session"
+#include ../_includes/index.jsxinc
 /* jshint ignore:end */
 dokTools.clearSearch();
 
@@ -1240,7 +1237,6 @@ function lagNyAvisMal() {
           myDok.spreads[n].remove();
         }
       } catch (e) {
-        alert(e);
         myDok.spreads.add();
         myDok.spreads[-1].appliedMaster = myMasterPage;
       }

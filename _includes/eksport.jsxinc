@@ -1,6 +1,5 @@
 // vim: set ft=javascript:
-#include "prodsys.jsxinc";
-#include "prodsys.jsxinc";
+#include "prodsys.jsxinc"
 
 // Story | TextFrame -> Boolean
 var isCaption = function(item) {

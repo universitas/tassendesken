@@ -1,8 +1,6 @@
 /* jshint ignore:start */
- #include ../_includes/prodsys.jsxinc
- #include ../_includes/prodsys.jsxinc
-#include prodsys.jsxinc
-#include prodsys.jsxinc
+#includepath "../_includes/"
+#include "prodsys.jsxinc"
 /* jshint ignore:end */
 
 var artikkeltyper = {

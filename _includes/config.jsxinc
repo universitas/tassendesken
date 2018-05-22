@@ -4,7 +4,5 @@
 
 /* jshint ignore:start */
 #include "config_defaults.jsxinc"
-#include "config_defaults.jsxinc"
-#include "config_local.jsxinc"
 #include "config_local.jsxinc"
 /* jshint ignore:end */

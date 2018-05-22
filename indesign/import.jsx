@@ -1,16 +1,11 @@
 /* jshint ignore:start */
-#target "indesign";
-#target "indesign";
-#targetengine "session";
-#targetengine "session";
-#include "../_includes/index.jsxinc"; // imports!
-#include "../_includes/index.jsxinc"; // imports!
-#include "../_includes/artikkeltyper.jsxinc";
-#include "../_includes/artikkeltyper.jsxinc";
-#include "../_includes/prodsys.jsxinc";
-#include "../_includes/prodsys.jsxinc";
-#include "../_includes/importpanel.jsxinc"; // brukergrensesnittet
-#include "../_includes/importpanel.jsxinc"; // brukergrensesnittet
+#target "indesign"
+#targetengine "session"
+#includepath "../_includes/"
+#include "index.jsxinc" 
+#include "artikkeltyper.jsxinc"
+#include "prodsys.jsxinc"
+#include "importpanel.jsxinc"
 /* jshint ignore:end */
 
 var epostMatrix = dokTools.parseCSV(config.epostCSV); // tabell over navn og epostadresser
@@ -49,10 +44,9 @@ function importerSak(JSONsak, somArtikkelType) {
     MeasurementUnits.MILLIMETERS
   ]); // sørger for at millimeter er standard enhet - hvis det er noe annet, lagres det i objektet originalenheter.
   var data = prodsys.get(JSONsak.prodsak_id).json;
-  var func = function() {
-    // importer sak.
+  var func = tryLogErrors(function() {
     new artikkel(data, artikkelType, mySpread, app.selection);
-  };
+  }, []);
   if (config.DEBUG) {
     // uten doScript
     func();
