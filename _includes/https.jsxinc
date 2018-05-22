@@ -1,3 +1,6 @@
+﻿#target "indesign";
+#targetengine "session";
+
 app.scriptPreferences.version = '7.5';
 
 function get() {

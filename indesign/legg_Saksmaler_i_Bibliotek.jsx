@@ -1,4 +1,4 @@
-﻿// Lager saksmaler fra dokumentet saksmaler.indd
+// Lager saksmaler fra dokumentet saksmaler.indd
 // Legger malgrupper til i et bibliotek og oppretter MAL_AVIS.indt
 // Skrevet av Håken Lid 2011
 
@@ -188,7 +188,11 @@ function mekkMalGeo(mySelection, promptMe) {
 
   myGroup.label = sakstype;
 
-  myReport = tagReport(mySelection, sakstype);
+  try{
+    myReport = tagReport(mySelection, sakstype);
+  }catch(e){
+    myReport = e.message
+  }
 
   if (lagRapport) {
     myReportTextFrame = myGroup.parent.textFrames.add();
@@ -253,8 +257,11 @@ function tagReport(myTextFrames, sakstype) {
       }
     }
     myXtags = getXtags(myStories);
+    $.writeln(myXtags);
     myXtags = xtagsGrep(myXtags);
     myXtags = myXtags.replace(/@/, "");
+    if (myXtags == '') 
+      return 'Ingen tekst'
     //var myXtagStyles = myXtags.match(/@[^:]+:/g)||[];
     paragraphStyles = dokTools.removeDuplicates(paragraphStyles);
     //myXtagStyles = dokTools.removeDuplicates(myXtagStyles);
@@ -264,7 +271,7 @@ function tagReport(myTextFrames, sakstype) {
     var myXtagsArray = myXtags.split("\n@");
     //myXtagsArray.splice(0,1);
     for (var n = 0; n < myXtagsArray.length; n++) {
-      myTaggedText = myXtagsArray[n].match(/([^:]+):(.*)/);
+      myTaggedText = myXtagsArray[n].match(/([^:]+):(.+)/);
       myReport = myReport + "@" + myTaggedText[1] + "\u0008" + myTaggedText[2].length + " tegn\r";
     }
     myReport += "\rtegn/spalte:\u0008" + Math.ceil(myXtags.length / spalter) + "\r";

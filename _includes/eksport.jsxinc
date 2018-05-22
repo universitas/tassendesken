@@ -760,5 +760,10 @@ var eksportTilProdsys = function(myDoc) { // sender saker i dokumentet til prods
 };
 
 // ifmain
-if ($.stack.replace(/[\[\]\s]/g, '') == $.fileName.replace(/^.*\//, ''))
+if ($.stack.replace(/[\[\]\s]/g, '') == $.fileName.replace(/^.*\//, '')) {
+  #target "indesign";
+  #targetengine "session";
+  #include "index.jsxinc"; // imports!
+  
   eksportTilProdsys(app.activeDocument);
+}

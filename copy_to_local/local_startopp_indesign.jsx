@@ -1,4 +1,4 @@
-﻿/* jshint ignore:start */
+/* jshint ignore:start */
 #targetengine 'session'
 /* jshint ignore:end */
 
@@ -33,17 +33,6 @@ function main(){
     server + new_scripts_folder,
     menu_items
     );
-
-  menu_items = [ // skript som skal ha egne menyvalg
-        ['Opprett ny avis', 'mekksider.jsx']
-  ];
-
-//~   add_indesign_menu(
-//~     '(gammel)',
-//~     server + old_scripts_folder,
-//~     menu_items
-//~     );
-
   open_indesign_libraries(desktop);
 }
 
@@ -58,6 +47,21 @@ function remove_indesign_menu(delete_this_name){
   }
 }
 
+function make_event_handler(name, file){
+  return function() {
+    try{
+		app.doScript(
+			file, 
+			ScriptLanguage.JAVASCRIPT, 
+			[], 
+			UndoModes.AUTO_UNDO, 
+			name
+	  );
+    }catch(e){alert(e)}
+	}
+}
+
+
 function add_indesign_menu(menu_name, script_path, menu_items){ // lager en meny i Indesign for egne skripts
   var new_menu_item;
   var existing_menu = app.menus.item('$ID/Main').submenus.item(menu_name);
@@ -69,11 +73,12 @@ function add_indesign_menu(menu_name, script_path, menu_items){ // lager en meny
   var new_menu = app.menus.item('$ID/Main').submenus.add(menu_name);
 
   for (var n = 0; n < menu_items.length; n++){
-    var item_name = menu_items[n][0];
-    var item_script = File(script_path+menu_items[n][1]);
-    new_menu_item = app.scriptMenuActions.add(item_name);
-    new_menu_item.addEventListener ('onInvoke', item_script);
-    new_menu.menuItems.add(new_menu_item);
+		var item_name = menu_items[n][0];
+		var script_file = File(script_path + menu_items[n][1]);
+		var event_handler = make_event_handler(item_name, script_file)
+		menu_item = app.scriptMenuActions.add(item_name);
+		menu_item.addEventListener('onInvoke', event_handler);
+		new_menu.menuItems.add(menu_item);
   }
 
   function show_item_when(item_name, script_file, my_menu, test_something){

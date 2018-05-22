@@ -1,5 +1,5 @@
 // vim: set ft=javascript:
-dokTools = {}
+var dokTools = {}
 
 dokTools.velgStil = function(myDocument, stiltype, stilnavn) { //velger en paragraph-, cell-, table-, eller characterStyle, og oppretter en ny hvis den ikke finnes
     var minStil;
@@ -137,48 +137,7 @@ dokTools.finnFil = function(root, filename) {
   return null
 }
 
-dokTools._finnFil = function(rotmappe, filnavn) { // Finne er fil i rotmappa eller undermapper, returnerer fila eller null
-    var mineMapper = [rotmappe];
-    var svarteliste = /(INDESIGN|PDF)/;
-    var minMappe;
-    var mineFiler;
-    var minRegExp = new RegExp("^" + filnavn.replace(/\./, "\\\.").replace(/(-|_| )/gi, "[_-]?(%20)?"));
-    var i;
-    var j;
-    var webVersjon;
-    var resultat;
 
-    var erMappe = function(enFil) {
-        if (svarteliste.test(enFil.name)) {
-            return false;
-        }
-        return (enFil instanceof Folder) ? true : false;
-    }
-
-    var erFila = function(enFil) {
-        return (minRegExp.test(enFil.name)) ? true : false;
-    }
-
-    for (i = 0; i < mineMapper.length; i += 1) {
-        mineFiler = mineMapper[i].getFiles(erFila);
-        if (mineFiler.length === 1) {
-            return mineFiler[0];
-        } else if (mineFiler.length > 1) {
-            for (j = 0; j < mineFiler.length; j += 1) {
-                if (mineFiler[j].name.match(/[rgb|web]/i)) {
-                    webVersjon = mineFiler[j];
-                } else {
-                    return mineFiler[j];
-                }
-            }
-            return webVersjon;
-        } else {
-            resultat = mineMapper[i].getFiles(erMappe);
-            mineMapper = mineMapper.concat(resultat);
-        }
-    }
-    return null;
-}
 dokTools.finnLedigPlass = function(mySpread, spalter) { // finner ledig plass til å lime inn minArtikkel returnerer geometricBounds eller false
     var spalteantall;
     var spaltebredde;
@@ -323,29 +282,20 @@ dokTools.zoomTo = function(myObj) { // snedig måte å zoome til et objekt på s
 
 }
 
-dokTools.onPage = function(minStory) { // sjekker om en story ligger på siden eller i pasteboard
-    var result = false; // antar at den ligge i pasteboard
-    var myPage;
-    if (app.version.charAt(0) <= 5) {
-        if (minStory instanceof Story) {
-            myPage = minStory.textContainers[0].parent;
-        } else {
-            myPage = minStory.parent;
-        }
-    } else {
-        if (minStory instanceof Story) {
-            myPage = minStory.textContainers[0].parentPage;
-        } else {
-            myPage = minStory.parentPage;
-        }
+dokTools.onPage = function(item) { // sjekker om en story ligger på siden eller i pasteboard
+    if (item instanceof Story) 
+      item = item.textContainers[0];
+       
+    while (item && 'parent' in item && !(item instanceof Application)) {
+
+        if (item.constructor.name == "Page" && item.parent.constructor.name == "Spread")
+            return true; // ligger ikke i pasteboard eller på en master spread.
+        if ('parentPage' in item)
+          item = item.parentPage;
+        else
+          item = item.parent;
     }
-    while (myPage && !(myPage instanceof Application)) {
-        if (myPage.constructor.name == "Page" && myPage.parent.constructor.name == "Spread") { //hvis første textContainer sin parent er en Page, så er storyen på side, ellers er parent.constructor.name=="Spread". Sjekker også at storyen ikke ligger på en masterpage.
-            result = true; // Storyens første textContainer ligger ikke i pasteboard eller på en master spread.
-        }
-        myPage = myPage.parent;
-    }
-    return result;
+    return false;
 }
 
 dokTools.getScriptFolder = function() { // finner folderen som skriptet ligger i både når det kjøres fra InDesign og fra EST

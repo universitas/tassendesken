@@ -3,6 +3,7 @@
 // Viser et fint panel i InDesign der man kan velge hvilke saker fra prodsys som skal importeres
 /* jshint ignore:start */
 #include index.jsxinc
+#target "indesign";
 #targetengine "session";
 /* jshint ignore:end */
 
@@ -257,6 +258,5 @@ function importPanel(onImportClick) {
   win.lukkMegBtn.onClick = function() {
     win.close();
   }
-
   win.show(); // viser vinduet i InDesign
 };

@@ -1,8 +1,8 @@
-/*
-import.jsx
-Dette skriptet er ryggraden i import fra prodsys til InDesign.
-Skrevet av Håken Lid 2011
-*/
+﻿/*
+ import.jsx
+ Dette skriptet er ryggraden i import fra prodsys til InDesign.
+ Skrevet av Håken Lid 2011
+ */
 
 /* jshint ignore:start */
 #target "indesign";
@@ -36,7 +36,8 @@ function finnUtgaveMappe() {
   return app.activeDocument.filePath
 }
 
-function importerSak(JSONsak, somArtikkelType, importerbilder) { // JSONsak er et objekt basert på prodsys-json. somArtikkelType er et artikkeltypeobjekt
+function importerSak(JSONsak, somArtikkelType, importerbilder) {
+  // JSONsak er et objekt basert på prodsys-json. somArtikkelType er et artikkeltypeobjekt
   BILDEDEBUG = importerbilder; // Skal bilder importeres. Kan skrus av for å teste eller spare litt tid
   try { // sørger for at det finnes et åpent dokument og avslutter skriptet hvis ikke
     myDocument = app.activeDocument;
@@ -48,25 +49,41 @@ function importerSak(JSONsak, somArtikkelType, importerbilder) { // JSONsak er e
   var artikkelType = somArtikkelType || artikkeltyper.annet; // for testeformål kan importerSak kalles uten somArtikkelType - da blir artikkeltype automatisk den siste typen i lista ("annet")
   mySpread = app.activeWindow.activeSpread;
   var originalenheter = dokTools.changeUnits(myDocument, [MeasurementUnits.MILLIMETERS, MeasurementUnits.MILLIMETERS]); // sørger for at millimeter er standard enhet - hvis det er noe annet, lagres det i objektet originalenheter.
-    var data = prodsys.get(JSONsak.prodsak_id).json;
-    minArtikkel = new artikkel(data, artikkelType, mySpread, app.selection);
-    // henter sak fra prodsys og oppretter artikkelobjekt
-    config.DEBUG || prodsys.patch(JSONsak.prodsak_id, {produsert: config.api.STATUS.atDesk}); // flytter saken videre i prodsys;
+  var data = prodsys.get(JSONsak.prodsak_id).json;
+  var func = function() { // importer sak.
+    new artikkel(data, artikkelType, mySpread, app.selection);
+  }
+  if (config.DEBUG) {
+    func();
+  } else {
+    // app.doScript gjor undo mulig
+    app.doScript(
+      func,
+      ScriptLanguage.JAVASCRIPT,
+      [],
+      UndoModes.ENTIRE_SCRIPT,
+      'importer ' + data.arbeidstittel
+    );
+    prodsys.patch(JSONsak.prodsak_id, {produsert: config.api.STATUS.atDesk});
+  }
 }
 
-function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det viktigste objektet i dette skriptet. Inneholder masse funksjoner og verdier - opprettes på grunnlag av en string fra prod.sys
-  this.main = function() { // hovedfunksjon - kaller en drøss subrutiner i rekkefølge
-    if (JSONsak === null) {
+function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
+  // det viktigste objektet i dette skriptet. Inneholder masse funksjoner og
+  // verdier - opprettes på grunnlag av en string fra prod.sys
+  this.main = function() {
+    if (JSONsak === null)
       exit();
-    } // avslutter hele skriptet hvis den opprinnelige JSON-importen fra prodsys ikke resulterer i en gyldig string
-    this.id = JSONsak.prodsak_id; // unik id-nummer for artikkelen i prodsys
-    this.artikkeltype = somArtikkelType; // artikkeltypeobjekt fra artikkeltyper.jsxinc - inneholder info og metoder for tittelstil, bylineboks med mer.
-    this.selection = mySelection; // Tekstrammer og bilderammer i InDesign der saken skal limes inn
-    JSONsak = this.lagUndersak(JSONsak); // hvis saken inneholder undersak blir den skilt ut og importert for seg selv.
-    this.skjema = lagSkjema(this, this.selection, app.activeWindow.activeSpread); // finner skjema for å koble saker.
-    this.bylineboksInnhold = this.artikkeltype.bylineboks ? [this.artikkeltype.temaord] : null; //en array med tekster til bylineboksen, hvis det skal være en. Inneholder temaord og navn på en eller flere journalister og fotografer
-    this.gb = []; // topp, venstre, bunn, høyre, spalteantall, spaltebredde, spaltemellomrom - dette er den geometriske plasseringen på siden der saken blir importert
-    this.bilder = JSONsak.bilete || []; // Array av JSON-objekter for bildene. i et slikt format: {"prodbilde_id":"37547","bildefil":"29_fotobest_01_CL.jpg","bildetekst":"","kommentar":"","prioritet":"1","prodsak_id":"11124"},
+    this.id = JSONsak.prodsak_id;
+    this.artikkeltype = somArtikkelType;
+    this.selection = mySelection;
+    // hvis saken inneholder undersak blir den skilt ut og importert for seg selv.
+    JSONsak = this.lagUndersak(JSONsak);
+    // finner skjema for å koble saker.
+    this.skjema = lagSkjema(this, this.selection, app.activeWindow.activeSpread);
+    this.bylineboksInnhold = this.artikkeltype.bylineboks ? [this.artikkeltype.temaord] : null;
+    this.gb = []; // topp, venstre, bunn, høyre, spalteantall, spaltebredde, spaltemellomrom
+    this.bilder = JSONsak.bilete || []; // Array av JSON-objekter for bildene.
     this.pageItems = {
       textFrames: [],
       rectangles: [],
@@ -524,10 +541,10 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
     if (this.trynebilde && mineBilder.length > 0) {
       minBildeFrame = mineBilder.pop().rectangle;
       minBildeFrame.contentType = ContentType.graphicType;
-        minBildeFrame.place(this.trynebilde);
-        minBildeFrame.fit(FitOptions.FILL_PROPORTIONALLY);
-        minBildeFrame.fit(FitOptions.CENTER_CONTENT);
-        minBildeFrame.label = "ignore";
+      minBildeFrame.place(this.trynebilde);
+      minBildeFrame.fit(FitOptions.FILL_PROPORTIONALLY);
+      minBildeFrame.fit(FitOptions.CENTER_CONTENT);
+      minBildeFrame.label = "ignore";
 
     }
 
@@ -573,28 +590,28 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
       caption = caption ? this.taGrep(caption): "BT: bildetekst"  ;
       if (mittBilde) {
         minBildeFrame.contentType = ContentType.graphicType;
-          minBildeFrame.place(mittBilde);
-          if (minBildeFrame.appliedObjectStyle.name === config.objektstiler.faksimile) { // faksimiler som anmeldelsesbildet står litt på skrå og skal ha et fast flateareal
-            var myRotation = minBildeFrame.rotationAngle; // vinkelen som faksimilen står på skrå
-            minBildeFrame.rotationAngle = 0;
-            var myBounds = [minBildeFrame.geometricBounds[0], minBildeFrame.geometricBounds[1], minBildeFrame.geometricBounds[2], minBildeFrame.geometricBounds[3]];
-            var mySize = (myBounds[2] - myBounds[0]) * (myBounds[3] - myBounds[1]); // arealet til faksmilien. Dette skal være fast og må tilpasses høyde/bredde-forholdet.
-            var width, height;
-            var ratio;
-            if (minBildeFrame.graphics.length === 1) {
-              ratio = (minBildeFrame.graphics[0].geometricBounds[2] - minBildeFrame.graphics[0].geometricBounds[0]) / (minBildeFrame.graphics[0].geometricBounds[3] - minBildeFrame.graphics[0].geometricBounds[1]);
-              width = Math.sqrt(mySize / ratio);
-              height = width * ratio;
-              myBounds[2] = myBounds[0] + height;
-              myBounds[3] = myBounds[1] + width;
-              minBildeFrame.geometricBounds = myBounds;
-              minBildeFrame.fit(FitOptions.FILL_PROPORTIONALLY);
-            }
-            minBildeFrame.rotationAngle = myRotation;
-          } else { // bilder som ikke skal inn i faksimile-stilen.
+        minBildeFrame.place(mittBilde);
+        if (minBildeFrame.appliedObjectStyle.name === config.objektstiler.faksimile) { // faksimiler som anmeldelsesbildet står litt på skrå og skal ha et fast flateareal
+          var myRotation = minBildeFrame.rotationAngle; // vinkelen som faksimilen står på skrå
+          minBildeFrame.rotationAngle = 0;
+          var myBounds = [minBildeFrame.geometricBounds[0], minBildeFrame.geometricBounds[1], minBildeFrame.geometricBounds[2], minBildeFrame.geometricBounds[3]];
+          var mySize = (myBounds[2] - myBounds[0]) * (myBounds[3] - myBounds[1]); // arealet til faksmilien. Dette skal være fast og må tilpasses høyde/bredde-forholdet.
+          var width, height;
+          var ratio;
+          if (minBildeFrame.graphics.length === 1) {
+            ratio = (minBildeFrame.graphics[0].geometricBounds[2] - minBildeFrame.graphics[0].geometricBounds[0]) / (minBildeFrame.graphics[0].geometricBounds[3] - minBildeFrame.graphics[0].geometricBounds[1]);
+            width = Math.sqrt(mySize / ratio);
+            height = width * ratio;
+            myBounds[2] = myBounds[0] + height;
+            myBounds[3] = myBounds[1] + width;
+            minBildeFrame.geometricBounds = myBounds;
             minBildeFrame.fit(FitOptions.FILL_PROPORTIONALLY);
-            minBildeFrame.fit(FitOptions.CENTER_CONTENT);
           }
+          minBildeFrame.rotationAngle = myRotation;
+        } else { // bilder som ikke skal inn i faksimile-stilen.
+          minBildeFrame.fit(FitOptions.FILL_PROPORTIONALLY);
+          minBildeFrame.fit(FitOptions.CENTER_CONTENT);
+        }
         this.pageItems.rectangles.push(minBildeFrame);
 
       } else if (this.bilder[q].bildefil) {
@@ -673,7 +690,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
         minStory.tables.everyItem().cells.everyItem().label = "";
       }
       if (! minTextframe.label)
-        setLabel(minTextframe, {prodsak_id: this.id}); 
+        setLabel(minTextframe, {prodsak_id: this.id});
       if (this.artikkeltype.opprydding(minTextframe)) { // type.opprydding kan fjerne tomme tekstrammer
         dokTools.avsnittSkift(minStory);
         applyItalic(minStory);
@@ -712,260 +729,241 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) { // det vikt
 
   };
   this.main(); // kjører main - en funksjon som kaller andre funksjoner i objektet
-  }
+}
 
-  function bokstavstiler(myCharacterStyles) { // bruker inDesigns GREP for å gi tekstbolker riktig bokstavstil i følge xtags
-    if (myCharacterStyles !== null) {
+function bokstavstiler(myCharacterStyles) { // bruker inDesigns GREP for å gi tekstbolker riktig bokstavstil i følge xtags
+  if (myCharacterStyles !== null) {
+    dokTools.clearSearch();
+    for (n = 0; n < myCharacterStyles.length; n++) {
+      var stil = myCharacterStyles[n];
+      app.findGrepPreferences.findWhat = "(?i)(?s)<@" + stil + ">(.+?)<@" + stil + ">";
+      app.changeGrepPreferences.changeTo = "$1";
+      app.changeGrepPreferences.appliedCharacterStyle = dokTools.velgStil(myDocument, "character", stil);
+      app.changeGrep();
       dokTools.clearSearch();
-      for (n = 0; n < myCharacterStyles.length; n++) {
-        var stil = myCharacterStyles[n];
-        app.findGrepPreferences.findWhat = "(?i)(?s)<@" + stil + ">(.+?)<@" + stil + ">";
-        app.changeGrepPreferences.changeTo = "$1";
-        app.changeGrepPreferences.appliedCharacterStyle = dokTools.velgStil(myDocument, "character", stil);
-        app.changeGrep();
-        dokTools.clearSearch();
-      }
     }
   }
+}
 
-  function applyItalic(myStory) { // applies Italics may take a story, else does it for the entire document (slower);
-    var mySelection = app.selection;
-    var myDocument = app.activeDocument;
-    var myRanges;
-    if (myStory) {
-      myRanges = myStory.textStyleRanges.everyItem().getElements();
-    } else {
-      myRanges = myDocument.stories.everyItem().textStyleRanges.everyItem().getElements(); // gets every textStyleRange in the document;
+function applyItalic(myStory) { // applies Italics may take a story, else does it for the entire document (slower);
+  var mySelection = app.selection;
+  var myDocument = app.activeDocument;
+  var myRanges;
+  if (myStory) {
+    myRanges = myStory.textStyleRanges.everyItem().getElements();
+  } else {
+    myRanges = myDocument.stories.everyItem().textStyleRanges.everyItem().getElements(); // gets every textStyleRange in the document;
+  }
+  var italicStyle = myDocument.characterStyles.itemByName(config.italicStyle); // this character styles has no attributes;
+  if (italicStyle === null) {
+    return;
+  }
+  var myRange;
+  var myFont;
+  var newStyle;
+  var newStyleName;
+  var n;
+  for (n = 0; n < myRanges.length; n++) {
+    myRange = myRanges[n];
+    if (myRange.appliedCharacterStyle === italicStyle) {
+      app.select(myRange);
+      app.menuActions.itemByID(119611).invoke(); // apply italics - same as [cmd]+[shift]+[i]
+      myFont = myRange.appliedFont;
+      newStyleName = "I " + myFont.fontStyleName;
+      newStyle = myDocument.characterStyles.itemByName(newStyleName); // if the style is created;
+      if (newStyle === null) {
+        newStyle = myDocument.characterStyles.add({
+          name: newStyleName,
+          fontStyle: myFont.fontStyleName
+        }); // if the style does not exist yet;
+      }
+      myRange.appliedCharacterStyle = newStyle;
     }
-    var italicStyle = myDocument.characterStyles.itemByName(config.italicStyle); // this character styles has no attributes;
-    if (italicStyle === null) {
-      return;
+  }
+  app.select(mySelection); // restores the original selection
+}
+
+
+function getScriptFolder() { // finner folderen som skriptet ligger i både når det kjøres fra InDesign og fra EST
+  var activeScript;
+  try {
+    activeScript = File(app.activeScript); // InDesign
+  } catch (e) {
+    activeScript = File(e.fileName); // EST
+  }
+  return activeScript.parent; // skriptfolderen
+}
+
+
+function lagSkjema(myLabel, mySelection, mySpread) {
+  // finner ut hvilke stiler og bilder som skal hvor ut i fra en selection som består av en gruppe eller tekstramme
+
+  var myDocument = mySpread.parent;
+  var myParagraphStyles;
+  var myText;
+  var findStyles = function(myParagraphs) {
+    var myParagraph;
+    var myStyles = [];
+    for (q = 0; q < myParagraphs.length; q++) {
+      myStyles[q] = myParagraphs[q].appliedParagraphStyle.name;
     }
-    var myRange;
-    var myFont;
-    var newStyle;
-    var newStyleName;
-    var n;
-    for (n = 0; n < myRanges.length; n++) {
-      myRange = myRanges[n];
-      if (myRange.appliedCharacterStyle === italicStyle) {
-        app.select(myRange);
-        app.menuActions.itemByID(119611).invoke(); // apply italics - same as [cmd]+[shift]+[i]
-        myFont = myRange.appliedFont;
-        newStyleName = "I " + myFont.fontStyleName;
-        newStyle = myDocument.characterStyles.itemByName(newStyleName); // if the style is created;
-        if (newStyle === null) {
-          newStyle = myDocument.characterStyles.add({
-            name: newStyleName,
-            fontStyle: myFont.fontStyleName
-          }); // if the style does not exist yet;
+    myStyles = dokTools.removeDuplicates(myStyles);
+    return myStyles;
+  };
+
+
+  var findGroup = function(minArtikkel, mySelection, mySpread) {
+    var myLabel = minArtikkel.artikkeltype.name;
+    var myFoundGroup;
+    if (mySelection.length > 0) {
+      while (mySelection.parent instanceof Group) {
+        mySelection = [mySelection.parent]; // en ny array som bare inneholder parent G
+      }
+    }
+
+    if (mySelection.length > 1) { // flere enn ett pageObject er selected av brukeren
+      myFoundGroup = mySpread.groups.add(mySelection); // lager et nytt gruppeobjekt
+    } else if (mySelection.length === 1) { // nøyaktig ett pageObject er selektert av brukeren
+      myFoundGroup = mySelection[0];
+      if (myFoundGroup instanceof TextFrame || myFoundGroup instanceof Group) {
+        var foundLabel = myFoundGroup.label.toLowerCase();
+        var myArtikkeltyper = artikkeltyper;
+        var foundArtikkeltype = artikkeltyper[foundLabel];
+        foundLabel = foundLabel.replace(/[\(\)\*\?\\\/]/g, ".");
+        if (!myLabel.toLowerCase().match(foundLabel) && foundArtikkeltype) {
+          if (!confirm("Sjekk sakstype\rMalen er tenkt for artikkeltypen " + foundArtikkeltype.name + ". Saken du importerer er av typen " + myLabel + ". Importer likevel?")) {
+            exit();
+          } else {
+            minArtikkel.artikkeltype = foundArtikkeltype;
+          }
         }
-        myRange.appliedCharacterStyle = newStyle;
+      } else { // selection er noe annet enn en TextFrame eller Group
+        myFoundGroup = null;
       }
     }
-    app.select(mySelection); // restores the original selection
-  }
-
-
-  function getScriptFolder() { // finner folderen som skriptet ligger i både når det kjøres fra InDesign og fra EST
-    var activeScript;
-    try {
-      activeScript = File(app.activeScript); // InDesign
-    } catch (e) {
-      activeScript = File(e.fileName); // EST
+    if (myFoundGroup === null) { // ingen gruppe er etablert
+      for (var n = 0; n < mySpread.pageItems.length; n++) {
+        if (mySpread.pageItems[n].label.toLowerCase() === myLabel.toLowerCase()) {
+          myFoundGroup = mySpread.pageItems[n].getElements()[0]; // et pageElement med riktig label
+          break;
+        }
+      }
     }
-    return activeScript.parent; // skriptfolderen
-  }
+    return myFoundGroup;
+  };
 
-
-  function lagSkjema(myLabel, mySelection, mySpread) { // finner ut hvilke stiler og bilder som skal hvor ut i fra en selection som består av en gruppe eller tekstramme
-    var mittSkjema = {
+  var findAllElements = function(group) {
+    var skjema = {
       pictures: [],
       stories: [],
       styles: {}
-    }; // alle bilde
-    var myDocument = mySpread.parent;
-    var myParagraphStyles;
-    var myText;
-    var findStyles = function(myParagraphs) {
-      var myParagraph;
-      var myStyles = [];
-      for (q = 0; q < myParagraphs.length; q++) {
-        myStyles[q] = myParagraphs[q].appliedParagraphStyle.name;
+    }; 
+    if (! group) return skjema;
+    var textFrames = group.textFrames.everyItem();
+    var tables = textFrames.tables.everyItem().getElements();
+    skjema.stories = textFrames.parentStory;
+    for (var i = 0; i < group.allPageItems.length; i++) {
+      var pageItem = group.allPageItems[i];
+      if (pageItem.contentType === ContentType.GRAPHIC_TYPE) 
+        skjema.pictures.push(pageItem);
+    }
+    for (var i=0; i < tables.length; i++) {
+      try {
+        var table = tables[i];
+        if (/bylineboks/.test(table.appliedTableStyle.name)) 
+          table.remove();
+      } catch(e) {
+        $.writeln(e)
       }
-      myStyles = dokTools.removeDuplicates(myStyles);
-      return myStyles;
-    };
-
-
-    var findGroup = function(minArtikkel, mySelection, mySpread) {
-      var myLabel = minArtikkel.artikkeltype.name;
-      var myFoundGroup;
-      if (mySelection.length > 0) {
-        while (mySelection.parent instanceof Group) {
-          mySelection = [mySelection.parent]; // en ny array som bare inneholder parent G
-        }
-      }
-
-      if (mySelection.length > 1) { // flere enn ett pageObject er selected av brukeren
-        myFoundGroup = mySpread.groups.add(mySelection); // lager et nytt gruppeobjekt
-      } else if (mySelection.length === 1) { // nøyaktig ett pageObject er selektert av brukeren
-        myFoundGroup = mySelection[0];
-        if (myFoundGroup instanceof TextFrame || myFoundGroup instanceof Group) {
-          var foundLabel = myFoundGroup.label.toLowerCase();
-          var myArtikkeltyper = artikkeltyper;
-          var foundArtikkeltype = artikkeltyper[foundLabel];
-          foundLabel = foundLabel.replace(/[\(\)\*\?\\\/]/g, ".");
-          if (!myLabel.toLowerCase().match(foundLabel) && foundArtikkeltype) {
-            if (!confirm("Sjekk sakstype\rMalen er tenkt for artikkeltypen " + foundArtikkeltype.name + ". Saken du importerer er av typen " + myLabel + ". Importer likevel?")) {
-              exit();
-            } else {
-              minArtikkel.artikkeltype = foundArtikkeltype;
-            }
-          }
-        } else { // selection er noe annet enn en TextFrame eller Group
-          myFoundGroup = null;
-        }
-      }
-      if (myFoundGroup === null) { // ingen gruppe er etablert
-        for (var n = 0; n < mySpread.pageItems.length; n++) {
-          if (mySpread.pageItems[n].label.toLowerCase() === myLabel.toLowerCase()) {
-            myFoundGroup = mySpread.pageItems[n].getElements()[0]; // et pageElement med riktig label
-            break;
-          }
-        }
-      }
-      return myFoundGroup;
-    };
-
-    var findAllElements = function(myGroup, mittSkjema) {
-      var findElements = function(myStory) {
-        var myItem;
-        //var myStory;
-        var myPicture;
-        mittSkjema.stories.push(myStory);
-        for (var m = 0; m < myStory.tables.length; m++) {
-          if (myStory.tables[m].appliedTableStyle.name.match("bylineboks")) {
-            myStory.tables[m].remove(); //sletter bylinebokser
-          } else {
-            for (var o = 0; o < myStory.tables[m].cells.length; o++) {
-              findElements(myStory.tables[m].cells[o]); // rekursiv kalling av funksjon!
-            }
-          }
-        }
-        for (var p = 0; p < myStory.pageItems.length; p++) {
-          myItem = myStory.pageItems[p].getElements()[0];
-          if (myItem.constructor.name === "TextFrame") {
-            findElements(myItem.parentStory); // rekursiv kalling av funksjon!
-          } else if (myItem.constructor.name === "Rectangle" && myItem.contentType === ContentType.GRAPHIC_TYPE) {
-            mittSkjema.pictures.push(myItem.id);
-          } else {
-            // et annet type element, som jeg gir blaffen i
-          }
-        }
-      };
-      if (myGroup instanceof Group) {
-        loop: for (var n = 0; n < myGroup.textFrames.length; n++) { // går gjennom alle textFrames i gruppa
-          for (var m = 0; m < n; m++) {
-            if (myGroup.textFrames[n].parentStory === myGroup.textFrames[m].parentStory) {
-              continue loop;
-            }
-          }
-          findElements(myGroup.textFrames[n].parentStory); // legger til eventuelle nested objects i elementet mittSkjema.
-        }
-        for (q = 0; q < myGroup.rectangles.length; q++) { // går gjennom alle rectangles (bilderammer) i gruppa
-          if (myGroup.rectangles[q].contentType === ContentType.GRAPHIC_TYPE) {
-            mittSkjema.pictures.push(myGroup.rectangles[q].id);
-          }
-        }
-        myGroup.ungroup();
-      } else if (myGroup instanceof TextFrame) {
-        findElements(myGroup.parentStory);
-      }
-      return mittSkjema;
-    };
-    var sorterStories = function(myStories) {
-      if (myStories.length > 0) {
-        var txtStory;
-        var myStory;
-
-        var sortByLength = function(a, b) {
-          return (b.story.contents.length - a.story.contents.length); // sorterer stories etter hvilken som har flest paragraphStyles i seg, eventuellt lengden på story
-        };
-        var sortByPosition = function(a, b) {
-          return (a.position - b.position); // sorterer stories etter deres posisjon
-        };
-        for (n = 0; n < myStories.length; n++) {
-          myStory = {};
-          myStory.maltekst = true;
-          myStory.story = myStories[n];
-          myStory.styles = findStyles(myStory.story.paragraphs);
-          myStory.position = dokTools.findPosition(myStory.story);
-          myStories[n] = myStory;
-        }
-        myStories.sort(sortByLength);
-        txtStory = myStories.splice(0, 1); // txtStory blir den storien med flest ulike ParagraphStyles;
-        myStories.sort(sortByPosition);
-        myStories = myStories.concat(txtStory); // txtStory blir plassert til slutt, uavhengig av posisjon
-        for (var n = myStories.length - 1; n > 0; n--) { // fjerner duplikater ER DETTE NØDVENDIG ?
-          if (myStories[n].story === myStories[n - 1].story) {
-            myStories.splice(n, 1);
-          }
-        }
-      }
-      return myStories;
-    };
-    var sorterPictures = function(myPictures) {
-      var myGB;
-      var myPicture;
-      myPictures = dokTools.removeDuplicates(myPictures);
-      for (n = 0; n < myPictures.length; n++) {
-        myPicture = {};
-        myPicture.rectangle = myDocument.pageItems.itemByID(myPictures[n]);
-        myGB = myPicture.rectangle.geometricBounds;
-        myPicture.size = (myGB[2] - myGB[0]) * (myGB[3] - myGB[1]);
-        myPictures[n] = myPicture; // bytter ut pekeren til rectangle med et objekt med flere greier på plass;
-      }
-      myPictures.sort(function(a, b) { // sorterer bilder
-        var resultat;
-        resultat = (Math.round(b.size - a.size)); // sorterer etter areal
-        if (resultat === 0) {
-          resultat = Math.round((a.rectangle.geometricBounds[0] - b.rectangle.geometricBounds[0])); // sorterer etter bildetopp
-        }
-        if (resultat === 0) {
-          resultat = Math.round((a.rectangle.geometricBounds[1] - b.rectangle.geometricBounds[1])); // sorterer etter venstre side av bilde
-        }
-        return resultat;
-      });
-      return myPictures;
-    };
-
-    var finnDefaultStyles = function(myStories, configStyles) {
-      var myStyleName;
-      var myStyles = {};
-      for (var styleName in configStyles) {
-        if (configStyles.hasOwnProperty(styleName)) {
-          myLoop: for (var n = 0; n < myStories.length; n++) {
-            for (var i = 0; i < myStories[n].styles.length; i++) {
-              myStyleName = myStories[n].styles[i];
-              if (myStyleName.match("\\b" + styleName)) {
-                myStyles[styleName] = myStyleName;
-                break myLoop;
-              }
-              myStyles[styleName] = "";
-            }
-          }
-        }
-      }
-      return myStyles;
-    };
-
-    var myGroup = findGroup(myLabel, mySelection, mySpread);
-    mittSkjema = findAllElements(myGroup, mittSkjema);
-    mittSkjema.stories = sorterStories(mittSkjema.stories);
-    mittSkjema.pictures = sorterPictures(mittSkjema.pictures);
-    mittSkjema.styles = finnDefaultStyles(mittSkjema.stories, config.overrideStyles);
-    return (mittSkjema);
+    }
+    group.ungroup();
+    return skjema;
   }
 
-  importPanel(importerSak);
+  var sorterStories = function(myStories) {
+    if (myStories.length > 0) {
+      var txtStory;
+      var myStory;
+
+      var sortByLength = function(a, b) {
+        return (b.story.contents.length - a.story.contents.length); // sorterer stories etter hvilken som har flest paragraphStyles i seg, eventuellt lengden på story
+      };
+      var sortByPosition = function(a, b) {
+        return (a.position - b.position); // sorterer stories etter deres posisjon
+      };
+      for (n = 0; n < myStories.length; n++) {
+        myStory = {};
+        myStory.maltekst = true;
+        myStory.story = myStories[n];
+        myStory.styles = findStyles(myStory.story.paragraphs);
+        myStory.position = dokTools.findPosition(myStory.story);
+        myStories[n] = myStory;
+      }
+      myStories.sort(sortByLength);
+      txtStory = myStories.splice(0, 1); // txtStory blir den storien med flest ulike ParagraphStyles;
+      myStories.sort(sortByPosition);
+      myStories = myStories.concat(txtStory); // txtStory blir plassert til slutt, uavhengig av posisjon
+      for (var n = myStories.length - 1; n > 0; n--) { // fjerner duplikater ER DETTE NØDVENDIG ?
+        if (myStories[n].story === myStories[n - 1].story) {
+          myStories.splice(n, 1);
+        }
+      }
+    }
+    return myStories;
+  };
+
+  var sorterPictures = function(myPictures) {
+    var myGB;
+    var myPicture;
+    myPictures = dokTools.removeDuplicates(myPictures);
+    for (n = 0; n < myPictures.length; n++) {
+      myPicture = {};
+      myPicture.rectangle = myPictures[n];
+      myGB = myPicture.rectangle.geometricBounds;
+      myPicture.size = (myGB[2] - myGB[0]) * (myGB[3] - myGB[1]);
+      myPictures[n] = myPicture; // bytter ut pekeren til rectangle med et objekt med flere greier på plass;
+    }
+    myPictures.sort(function(a, b) { // sorterer bilder
+      var resultat;
+      resultat = (Math.round(b.size - a.size)); // sorterer etter areal
+      if (resultat === 0) {
+        resultat = Math.round((a.rectangle.geometricBounds[0] - b.rectangle.geometricBounds[0])); // sorterer etter bildetopp
+      }
+      if (resultat === 0) {
+        resultat = Math.round((a.rectangle.geometricBounds[1] - b.rectangle.geometricBounds[1])); // sorterer etter venstre side av bilde
+      }
+      return resultat;
+    });
+    return myPictures;
+  };
+
+  var finnDefaultStyles = function(myStories, configStyles) {
+    var myStyleName;
+    var myStyles = {};
+    for (var styleName in configStyles) {
+      if (configStyles.hasOwnProperty(styleName)) {
+        myLoop: for (var n = 0; n < myStories.length; n++) {
+          for (var i = 0; i < myStories[n].styles.length; i++) {
+            myStyleName = myStories[n].styles[i];
+            if (myStyleName.match("\\b" + styleName)) {
+              myStyles[styleName] = myStyleName;
+              break myLoop;
+            }
+            myStyles[styleName] = "";
+          }
+        }
+      }
+    }
+    return myStyles;
+  };
+
+  var myGroup = findGroup(myLabel, mySelection, mySpread);
+  var mittSkjema = findAllElements(myGroup);
+  mittSkjema.stories = sorterStories(mittSkjema.stories);
+  mittSkjema.pictures = sorterPictures(mittSkjema.pictures);
+  mittSkjema.styles = finnDefaultStyles(mittSkjema.stories, config.overrideStyles);
+  return (mittSkjema);
+}
+
+importPanel(importerSak);
+// app.menuActions.item("$ID/Selection Tool").invoke();
