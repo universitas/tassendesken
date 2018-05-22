@@ -114,6 +114,24 @@ function logToFile(message, filename) {
   return successful;
 }
 
+// try to call function. Log errors to file
+function tryLogErrors(fn, args, logfile) {
+  try {
+    fn.apply(null, args)
+  } catch (error) {
+    logfile = logfile || 'error_' + new Date().valueOf() +'.log'
+    msg = {
+      func: fn.name,
+      args: args,
+      line: error.line,
+      message: error.message,
+      file: error.fileName,
+      time: new Date().toString(),
+    }
+    logToFile(msg, logfile)
+  }
+}
+
 // (String | Object, ?String) -> void
 function log(message, filename) {
   // log to extendscript console

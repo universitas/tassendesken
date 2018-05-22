@@ -1,10 +1,7 @@
 // vim: set ft=javascript:
 
 #includepath "../_includes";
-#includepath "../_includes";
-#include "index.jsxinc"; // diverse konfigurasjonsverdier
-#include "index.jsxinc"; // diverse konfigurasjonsverdier
-#include "dokTools.jsxinc";
+#include "index.jsxinc";
 #include "dokTools.jsxinc";
 
 testRunner();
