@@ -7,14 +7,14 @@
 #include "eksport.jsxinc"
 /* jshint ignore:end */
 
-config.DEBUG = true
+config.DEBUG = true;
 http.use_mock = function(request) {
-  return request.match(/^GET/) ? false : true
-}
+  return request.match(/^GET/) ? false : true;
+};
 try {
-  var dok = app.activeDocument
+  var dok = app.activeDocument;
 } catch (e) {
-  log('ERROR ' + e.message)
-  exit()
+  log("ERROR " + e.message);
+  exit();
 }
-eksportTilProdsys(dok)
+eksportTilProdsys(dok);

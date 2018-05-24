@@ -3,7 +3,6 @@
 /* jshint ignore:end */
 
 main();
-
 function main() {
   var new_scripts_folder = "SCRIPTS/indesign/";
   var old_scripts_folder = "UTTEGNER/SCRIPTS_CS55/";
@@ -47,16 +46,14 @@ function remove_indesign_menu(delete_this_name) {
 
 function make_event_handler(name, file) {
   return tryLogErrors(function() {
-    try {
-      app.doScript(
-        file,
-        ScriptLanguage.JAVASCRIPT,
-        [],
-        UndoModes.AUTO_UNDO,
-        name
-      );
-    } 
-  }) 
+    app.doScript(
+      file,
+      ScriptLanguage.JAVASCRIPT,
+      [],
+      UndoModes.ENTIRE_SCRIPT,
+      name
+    );
+  });
 }
 
 function add_indesign_menu(menu_name, script_path, menu_items) {

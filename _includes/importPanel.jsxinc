@@ -1,4 +1,4 @@
-﻿// vim: set ft=javascript:
+// vim: set ft=javascript:
 // Dette skriptet er brukergrensesnittet for import.jsx
 // Viser et fint panel i InDesign der man kan velge hvilke saker fra prodsys som skal importeres
 #include index.jsxinc
@@ -10,239 +10,239 @@ function sortProdsys(a, b) {
   // sorterer sakene etter produsertstatus og navn. Saker med status "Til Desk" havner øverst
   return a.produsert === b.produsert
     ? a.arbeidstittel > b.arbeidstittel
-    : a.produsert > b.produsert
+    : a.produsert > b.produsert;
 }
 
-var STATUS = config.api.STATUS
+var STATUS = config.api.STATUS;
 var statusOptions = {
-  '0 skisse': STATUS.draft,
-  '3 journalist': STATUS.toJournalist,
-  '4 mellomleder': STATUS.toSubeditor,
-  '5 redaktør': STATUS.toEditor,
-  '6 til desk': STATUS.toDesk,
-  '7 på desk': STATUS.atDesk,
-  '9 fra desk': STATUS.fromDesk,
-}
+  "0 skisse": STATUS.draft,
+  "3 journalist": STATUS.toJournalist,
+  "4 mellomleder": STATUS.toSubeditor,
+  "5 redaktør": STATUS.toEditor,
+  "6 til desk": STATUS.toDesk,
+  "7 på desk": STATUS.atDesk,
+  "9 fra desk": STATUS.fromDesk
+};
 
-var statusArray = objectKeys(statusOptions)
+var statusArray = objectKeys(statusOptions);
 
 function textToStatus(text) {
-  return statusOptions[text]
+  return statusOptions[text];
 }
 function statusToIndex(status) {
-  var index = 0
+  var index = 0;
   for (option in statusOptions) {
-    if (statusOptions[option] === status) return index
-    index++
+    if (statusOptions[option] === status) return index;
+    index++;
   }
-  return 0
+  return 0;
 }
 
 function importPanel(onImportClick) {
-  var panelSize = 10 // max antall saker som vises i menyen
-  var getStatus = [STATUS.toEditor, STATUS.toDesk, STATUS.atDesk]
-  var importButton = config.resources + '/import.png'
-  var windowTitle = 'Importer saker'
-  var win = new Window('palette', windowTitle, undefined) // Selve vinduet som GUI vises i
-  win.location = [60, 60] // hvor på skjermen paletten skal dukke opp
-  var smallFont = ScriptUI.newFont('Arial', 'bold', 9)
-  if (!$.os.match('Macintosh')) {
-    smallFont = ScriptUI.newFont('Arial', 'bold', 9) // litt mindre font enn standardstørrelsen
+  var panelSize = 10; // max antall saker som vises i menyen
+  var getStatus = [STATUS.toEditor, STATUS.toDesk, STATUS.atDesk];
+  var importButton = config.resources + "/import.png";
+  var windowTitle = "Importer saker";
+  var win = new Window("palette", windowTitle, undefined); // Selve vinduet som GUI vises i
+  win.location = [60, 60]; // hvor på skjermen paletten skal dukke opp
+  var smallFont = ScriptUI.newFont("Arial", "bold", 9);
+  if (!$.os.match("Macintosh")) {
+    smallFont = ScriptUI.newFont("Arial", "bold", 9); // litt mindre font enn standardstørrelsen
   }
-  var sakstyper = artikkeltyper.liste() // en array over de ulike sakstypene som artikkeltyper.jsxdev kjenner til
-  var minSak
-  var prodsysSaker = []
-  win.panel1 = win.add('panel')
-  win.panel1.orientation = 'row'
-  win.panel1.spacing = 0
-  win.panel1.margins = [2, 2, 2, 2]
-  var listePanel = win.panel1.add('panel', undefined, undefined, {
-    borderStyle: 'sunken',
-  })
-  listePanel.alignChildren = 'fill'
-  listePanel.margins = [0, 0, 0, 0]
-  listePanel.firstIndex = null
+  var sakstyper = artikkeltyper.liste(); // en array over de ulike sakstypene som artikkeltyper.jsxdev kjenner til
+  var minSak;
+  var prodsysSaker = [];
+  win.panel1 = win.add("panel");
+  win.panel1.orientation = "row";
+  win.panel1.spacing = 0;
+  win.panel1.margins = [2, 2, 2, 2];
+  var listePanel = win.panel1.add("panel", undefined, undefined, {
+    borderStyle: "sunken"
+  });
+  listePanel.alignChildren = "fill";
+  listePanel.margins = [0, 0, 0, 0];
+  listePanel.firstIndex = null;
 
   listePanel.sjekkProdsys = function() {
     // henter saker fra prodsys
-    var prodsysSaker = []
+    var prodsysSaker = [];
 
     var response = prodsys.list({
       status: getStatus,
-      limit: 50,
-    })
-    prodsysSaker = response.json.results || []
-    prodsysSaker.sort(sortProdsys)
-    listePanel.firstIndex = 0
+      limit: 50
+    });
+    prodsysSaker = response.json.results || [];
+    prodsysSaker.sort(sortProdsys);
+    listePanel.firstIndex = 0;
     for (var i = 0; i < prodsysSaker.length; i++) {
-      var minIndex = sakstyper.length - 1
-      var minSakstype, erTtype
-      minSak = prodsysSaker[i]
+      var minIndex = sakstyper.length - 1;
+      var minSakstype, erTtype;
+      minSak = prodsysSaker[i];
       for (var n = 0; n < sakstyper.length; n += 1) {
         minSakstype =
-          artikkeltyper[sakstyper[n].toLowerCase()] || artikkeltyper.annet
-        erType = minSakstype.erType(minSak)
+          artikkeltyper[sakstyper[n].toLowerCase()] || artikkeltyper.annet;
+        erType = minSakstype.erType(minSak);
         if (
           minSak.produsert == STATUS.toDesk &&
           listePanel.firstIndex === null &&
           prodsysSaker.length > panelSize
         ) {
-          listePanel.firstIndex = Math.min(i, prodsysSaker.length - panelSize)
+          listePanel.firstIndex = Math.min(i, prodsysSaker.length - panelSize);
         }
-        if (erType === 'mappe') {
+        if (erType === "mappe") {
           // gjetter hvilken sakstype det dreier seg om - se artikkeltyper.jsxinc Dette er nødvendig i tilfelle lista over sakstyper i produksjonssystemet ikke er oppdatert.
-          minIndex = n // foreløpig gjetting
+          minIndex = n; // foreløpig gjetting
         } else if (erType === true) {
-          minIndex = n // definitiv gjetting
-          break
+          minIndex = n; // definitiv gjetting
+          break;
         }
       }
-      minSak.sakstype = minIndex // sette hvilken artikkeltype som skal være valgt i rullegardinmenyen på forhånd
+      minSak.sakstype = minIndex; // sette hvilken artikkeltype som skal være valgt i rullegardinmenyen på forhånd
     }
-    return prodsysSaker
-  }
+    return prodsysSaker;
+  };
 
   listePanel.refresh = function() {
     // fjerner innholdet i panelet og lager et nytt - i tilfelle antall saker i prodsys er endra eller noe sånt.
     for (var linje = listePanel.children.length - 1; linje >= 0; linje--) {
-      listePanel.remove(listePanel.children[linje])
+      listePanel.remove(listePanel.children[linje]);
     }
-    listePanel.create()
-    win.layout.layout(true)
-    listePanel.update(listePanel.firstIndex)
-  }
+    listePanel.create();
+    win.layout.layout(true);
+    listePanel.update(listePanel.firstIndex);
+  };
 
   listePanel.create = function() {
-    prodsysSaker = listePanel.sjekkProdsys()
+    prodsysSaker = listePanel.sjekkProdsys();
     if (listePanel.scrollbar) {
-      win.panel1.remove(listePanel.scrollbar)
-      listePanel.scrollbar = undefined
+      win.panel1.remove(listePanel.scrollbar);
+      listePanel.scrollbar = undefined;
     }
-    var listSize
+    var listSize;
     if (prodsysSaker.length > panelSize) {
       // scrollbar hvis sakslista er for lang
       var myScrollbar = (listePanel.scrollbar = win.panel1.add(
-        'scrollbar',
+        "scrollbar",
         undefined,
         listePanel.firstIndex,
         0,
         prodsysSaker.length - panelSize
-      ))
-      myScrollbar.alignment = ['right', 'fill']
-      myScrollbar.preferredSize.width = 16
+      ));
+      myScrollbar.alignment = ["right", "fill"];
+      myScrollbar.preferredSize.width = 16;
       myScrollbar.onChanging = function() {
-        forsteSak = Math.floor(myScrollbar.value)
-        listePanel.update(forsteSak)
-      }
-      myScrollbar.stepdelta = Math.floor(panelSize / 2)
-      myScrollbar.jumpdelta = myScrollbar.stepdelta
-      listSize = panelSize
+        forsteSak = Math.floor(myScrollbar.value);
+        listePanel.update(forsteSak);
+      };
+      myScrollbar.stepdelta = Math.floor(panelSize / 2);
+      myScrollbar.jumpdelta = myScrollbar.stepdelta;
+      listSize = panelSize;
     } else {
-      listSize = prodsysSaker.length
+      listSize = prodsysSaker.length;
     }
     for (var linje = 0; linje < listSize; linje++) {
-      var minRad = listePanel.add('group')
-      minRad.prodsysSakerIndex = 0
-      minRad.spacing = 5 // regulerer hvor trangt det skal være mellom elementene i panelet
-      minRad.margins = [5, -5, 5, -5] // regulerer hvor trangt det skal være mellom elementene i panelet [venstre,topp,høyre,bunn]
+      var minRad = listePanel.add("group");
+      minRad.prodsysSakerIndex = 0;
+      minRad.spacing = 5; // regulerer hvor trangt det skal være mellom elementene i panelet
+      minRad.margins = [5, -5, 5, -5]; // regulerer hvor trangt det skal være mellom elementene i panelet [venstre,topp,høyre,bunn]
 
-      minRad.produsert = minRad.add('dropdownlist', undefined, statusArray) // produsert status
-      minRad.produsert.graphics.font = smallFont
-      minRad.produsert.alignment = ['right', 'top']
-      minRad.produsert.preferredSize = [90, 16]
-      minRad.produsert.helpTip = 'Flytt saken i prodsys'
+      minRad.produsert = minRad.add("dropdownlist", undefined, statusArray); // produsert status
+      minRad.produsert.graphics.font = smallFont;
+      minRad.produsert.alignment = ["right", "top"];
+      minRad.produsert.preferredSize = [90, 16];
+      minRad.produsert.helpTip = "Flytt saken i prodsys";
 
       minRad.tittel = minRad.add(
-        'statictext',
+        "statictext",
         undefined,
-        'arbeidstittel',
+        "arbeidstittel",
         undefined
-      ) // arbeidstittel
-      minRad.tittel.alignment = ['left', 'top']
-      minRad.tittel.preferredSize = [225, 16]
-      minRad.tittel.helpTip = ''
+      ); // arbeidstittel
+      minRad.tittel.alignment = ["left", "top"];
+      minRad.tittel.preferredSize = [225, 16];
+      minRad.tittel.helpTip = "";
 
-      minRad.mappe = minRad.add('dropdownlist', undefined, sakstyper) // sakstype
-      minRad.mappe.graphics.font = smallFont
-      minRad.mappe.alignment = ['left', 'top']
-      minRad.mappe.preferredSize = [120, 16]
-      minRad.mappe.helpTip = 'Velg sakstype før du importerer'
+      minRad.mappe = minRad.add("dropdownlist", undefined, sakstyper); // sakstype
+      minRad.mappe.graphics.font = smallFont;
+      minRad.mappe.alignment = ["left", "top"];
+      minRad.mappe.preferredSize = [120, 16];
+      minRad.mappe.helpTip = "Velg sakstype før du importerer";
 
-      minRad.button = minRad.add('iconbutton', undefined, importButton, {
-        name: 'importer',
-        style: 'toolbutton',
-      })
-      minRad.button.alignment = ['right', 'top']
-      minRad.button.preferredSize = [44, 16]
-      minRad.button.helpTip = 'importer saken'
+      minRad.button = minRad.add("iconbutton", undefined, importButton, {
+        name: "importer",
+        style: "toolbutton"
+      });
+      minRad.button.alignment = ["right", "top"];
+      minRad.button.preferredSize = [44, 16];
+      minRad.button.helpTip = "importer saken";
     }
-    listePanel.update()
-  }
+    listePanel.update();
+  };
 
   listePanel.update = function(firstIndex) {
     // firstIndex er indexen på første sak som skal vises i panelet
     listePanel.firstIndex =
-      firstIndex === undefined ? listePanel.firstIndex : firstIndex // hvis firstIndex er undefined blir ikke indexen endret
-    prodsysSaker.sort(sortProdsys)
+      firstIndex === undefined ? listePanel.firstIndex : firstIndex; // hvis firstIndex er undefined blir ikke indexen endret
+    prodsysSaker.sort(sortProdsys);
 
-    var sidetall
-    var minRad
-    var minSak
-    var backGroundColor
+    var sidetall;
+    var minRad;
+    var minSak;
+    var backGroundColor;
     for (var linje = 0; linje < listePanel.children.length; linje++) {
-      minRad = listePanel.children[linje]
-      minRad.prodsysSakerIndex = linje + listePanel.firstIndex
-      minSak = prodsysSaker[minRad.prodsysSakerIndex]
+      minRad = listePanel.children[linje];
+      minRad.prodsysSakerIndex = linje + listePanel.firstIndex;
+      minSak = prodsysSaker[minRad.prodsysSakerIndex];
       backGroundColor =
         minSak.produsert == STATUS.toDesk
           ? minRad.prodsysSakerIndex % 2 ? [0.95, 0.95, 0.7] : [1.0, 1.0, 0.65]
-          : minRad.prodsysSakerIndex % 2 ? [0.85, 0.85, 0.85] : [0.9, 0.9, 0.9]
+          : minRad.prodsysSakerIndex % 2 ? [0.85, 0.85, 0.85] : [0.9, 0.9, 0.9];
 
       minRad.graphics.backgroundColor = minRad.graphics.newBrush(
         minRad.graphics.BrushType.SOLID_COLOR,
         backGroundColor
-      )
+      );
 
       // minrad.tittel
-      sidetall = minSak.arbeidstittel.match(/side\s?(\d+)/i)
+      sidetall = minSak.arbeidstittel.match(/side\s?(\d+)/i);
       if (sidetall === null) {
-        minRad.tittel.text = minSak.arbeidstittel.substr(0, 35) // arbeidstittel
+        minRad.tittel.text = minSak.arbeidstittel.substr(0, 35); // arbeidstittel
       } else {
         minRad.tittel.text =
-          minSak.arbeidstittel.replace(/side\s?(\d+)/gi, '').substr(0, 26) +
-          ' SIDE ' +
-          sidetall[1] // arbeidstittel
+          minSak.arbeidstittel.replace(/side\s?(\d+)/gi, "").substr(0, 26) +
+          " SIDE " +
+          sidetall[1]; // arbeidstittel
       }
       minRad.tittel.helpTip = minSak.tekst
         .substr(0, 200)
-        .replace(/@[^:]+:/g, '')
-        .replace(/[\r\n]+/g, '\n')
+        .replace(/@[^:]+:/g, "")
+        .replace(/[\r\n]+/g, "\n");
 
       // minrad.mappe
-      minRad.mappe.enabled = minSak.produsert == STATUS.toDesk // knappen er ikke enabled hvis saken ikke er lagt til desk
-      minRad.mappe.onChange = null // skrur av funksjonen før seleksjonen i dropdownmenyen endres
-      minRad.mappe.selection = minSak.sakstype
+      minRad.mappe.enabled = minSak.produsert == STATUS.toDesk; // knappen er ikke enabled hvis saken ikke er lagt til desk
+      minRad.mappe.onChange = null; // skrur av funksjonen før seleksjonen i dropdownmenyen endres
+      minRad.mappe.selection = minSak.sakstype;
       minRad.mappe.onChange = (function(aktivSak, aktivRad) {
         return function() {
-          minSak.sakstype = aktivRad.mappe.selection.index
-        }
-      })(minSak, minRad)
+          minSak.sakstype = aktivRad.mappe.selection.index;
+        };
+      })(minSak, minRad);
 
       // minrad.produsert
-      minRad.produsert.onChange = null // skrur av funksjonen før seleksjonen i dropdownmenyen endres
-      minRad.produsert.selection = statusToIndex(minSak.produsert)
+      minRad.produsert.onChange = null; // skrur av funksjonen før seleksjonen i dropdownmenyen endres
+      minRad.produsert.selection = statusToIndex(minSak.produsert);
       minRad.produsert.onChange = (function(aktivSak, aktivRad) {
         return function() {
-          aktivSak.produsert = textToStatus(aktivRad.produsert.selection.text)
+          aktivSak.produsert = textToStatus(aktivRad.produsert.selection.text);
           response = prodsys.patch(aktivSak.prodsak_id, {
-            produsert: aktivSak.produsert,
-          })
-          listePanel.update()
-        }
-      })(minSak, minRad)
+            produsert: aktivSak.produsert
+          });
+          listePanel.update();
+        };
+      })(minSak, minRad);
 
       // minrad.button
-      minRad.button.enabled = minSak.produsert == STATUS.toDesk // knappen er ikke enabled hvis saken ikke er lagt til desk
+      minRad.button.enabled = minSak.produsert == STATUS.toDesk; // knappen er ikke enabled hvis saken ikke er lagt til desk
       minRad.button.onClick = (function(aktivSak, aktivRad) {
         // snedig innpakking av funksjonen for å oppnå "closure" hvis jeg har skjønt det riktig. Det funker i allefall.
         return function() {
@@ -250,50 +250,50 @@ function importPanel(onImportClick) {
           var artikkeltype =
             artikkeltyper[
               sakstyper[aktivRad.mappe.selection.index].toLowerCase()
-            ] // henter verdien fra rullegardinmenyen
-          var importImages = win.importerbilder.value
-          win.importerbilder.value = true
-          onImportClick(aktivSak, artikkeltype, importImages) // importerer saken og plasserer den på siden.
-          aktivSak.produsert = STATUS.atDesk
-          listePanel.update()
-        }
-      })(minSak, minRad) // kaller funksjonen som nettopp er laget - dette er så snedig at jeg ikke helt har skjønt hvordan det funker selv.
+            ]; // henter verdien fra rullegardinmenyen
+          var importImages = win.importerbilder.value;
+          win.importerbilder.value = true;
+          onImportClick(aktivSak, artikkeltype, importImages); // importerer saken og plasserer den på siden.
+          aktivSak.produsert = STATUS.atDesk;
+          listePanel.update();
+        };
+      })(minSak, minRad); // kaller funksjonen som nettopp er laget - dette er så snedig at jeg ikke helt har skjønt hvordan det funker selv.
     }
-  }
+  };
 
-  listePanel.create()
+  listePanel.create();
 
   win.gjenopprettSak = function() {
     // sjekker prodsys om det er noen saker som er klare for import
-    listePanel.refresh() // oppdaterer innholdet i listepanelet
-  }
+    listePanel.refresh(); // oppdaterer innholdet i listepanelet
+  };
 
-  win.panel2 = win.add('group', undefined, undefined) // gruppe med kontroller nederst i vinduet
+  win.panel2 = win.add("group", undefined, undefined); // gruppe med kontroller nederst i vinduet
 
   // importer bilder
   win.importerbilder_label = win.panel2.add(
-    'statictext',
+    "statictext",
     undefined,
-    'plasser bilder:'
-  )
-  win.importerbilder = win.panel2.add('checkbox')
-  win.importerbilder.value = true
+    "plasser bilder:"
+  );
+  win.importerbilder = win.panel2.add("checkbox");
+  win.importerbilder.value = true;
 
   // Knappen "Sjekk prodsys"
   win.hentSakerBtn = win.panel2.add(
-    'button',
+    "button",
     undefined,
-    'Sjekk prodsys',
+    "Sjekk prodsys",
     undefined
-  ) // en knapp
-  win.hentSakerBtn.helpTip = 'Oppdater sakslista fra prodsys'
-  win.hentSakerBtn.onClick = win.gjenopprettSak // spør prodsys etter nye saker til menyen
+  ); // en knapp
+  win.hentSakerBtn.helpTip = "Oppdater sakslista fra prodsys";
+  win.hentSakerBtn.onClick = win.gjenopprettSak; // spør prodsys etter nye saker til menyen
 
   // Knappen "Lukk"
-  win.lukkMegBtn = win.panel2.add('button', undefined, 'Lukk', undefined) // knapp som lukker vinduet.
-  win.lukkMegBtn.helpTip = 'Lukk dette vinduet'
+  win.lukkMegBtn = win.panel2.add("button", undefined, "Lukk", undefined); // knapp som lukker vinduet.
+  win.lukkMegBtn.helpTip = "Lukk dette vinduet";
   win.lukkMegBtn.onClick = function() {
-    win.close()
-  }
-  win.show() // viser vinduet i InDesign
+    win.close();
+  };
+  win.show(); // viser vinduet i InDesign
 }

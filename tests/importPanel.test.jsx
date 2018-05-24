@@ -1,6 +1,6 @@
 /* jshint ignore:start */
 #includepath "../_includes/"
-#include "importpanel.jsxinc"; 
+#include "importpanel.jsxinc";
 #include "prodsys.jsxinc";
 /* jshint ignore:end */
 
