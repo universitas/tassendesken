@@ -2,7 +2,7 @@
 #targetengine 'session'
 
 function make_event_handler(name, file) {
-  if (!file.exists) throw new Error("file " + file + " does not exist");
+  if (!file.exists) throw new Error('file ' + file + ' does not exist')
   return function() {
     app.doScript(
       file,
@@ -10,11 +10,11 @@ function make_event_handler(name, file) {
       [],
       UndoModes.FAST_ENTIRE_SCRIPT,
       name
-    );
-  };
+    )
+  }
 }
 
 var handler = make_event_handler(
-  "Importer fra prodsys",
-  File("../indesign/import.jsx")
-);
+  'Importer fra prodsys',
+  File('../indesign/import.jsx')
+)

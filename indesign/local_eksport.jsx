@@ -1,11 +1,11 @@
-var scriptFile = "eksportSider.jsx";
-var scriptFolder = "//platon/univ-desken/SCRIPTS/indesign/";
+var scriptFile = 'eksportSider.jsx'
+var scriptFolder = '//platon/univ-desken/SCRIPTS/indesign/'
 
 var myRunScript = function(scriptFile, scriptFolder) {
-  var myScript = File(scriptFolder + scriptFile);
+  var myScript = File(scriptFolder + scriptFile)
   if (myScript.exists) {
-    app.doScript(myScript);
+    app.doScript(myScript)
   }
-};
+}
 
-myRunScript(scriptFile, scriptFolder);
+myRunScript(scriptFile, scriptFolder)
