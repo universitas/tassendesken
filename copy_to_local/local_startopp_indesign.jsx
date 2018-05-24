@@ -1,5 +1,7 @@
 /* jshint ignore:start */
-#targetengine 'session'
+#targetengine session
+#includepath ../_includes
+#include utils.jsxinc
 /* jshint ignore:end */
 
 main()

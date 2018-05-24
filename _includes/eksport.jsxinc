@@ -44,16 +44,16 @@ var eksportTilProdsys = function(myDoc) {
     for (var n = 0; n < myDoc.stories.length; n++) {
       var myStory = myDoc.stories[n]
       if (myStory.paragraphs.length == 0) {
-        continue
+        continue;
       }
       if (dokTools.onPage(myStory) === false) {
-        continue
+        continue;
       }
       if (getLabel(myStory) == 'ignore') {
-        continue
+        continue;
       }
       if (isCaption(myStory)) {
-        continue
+        continue;
       }
 
       prodsak_id = getLabel(myStory, 'prodsak_id') // scripting label til første textFrame i storien
@@ -99,9 +99,9 @@ var eksportTilProdsys = function(myDoc) {
     var prodbilde_id
     for (var n = 0; n < myDoc.allGraphics.length; n++) {
       myImage = myDoc.allGraphics[n]
-      if (false === dokTools.onPage(myImage)) continue
-      if (null === myImage.itemLink.name.match(/jpg/)) continue
-      if ('ignore' === getLabel(myImage)) continue
+      if (false === dokTools.onPage(myImage)) continue;
+      if (null === myImage.itemLink.name.match(/jpg/)) continue;
+      if ('ignore' === getLabel(myImage)) continue;
       myBT = finnbildetekst(myImage.parent) || ''
       if (myBT) myBT = xtagsGrep(myBT.contents)
 
@@ -117,7 +117,7 @@ var eksportTilProdsys = function(myDoc) {
             prodbilde_id: prodbilde_id,
             bildetekst: myBT
           })
-          continue
+          continue;
         }
       }
       // her er et bilde som trolig skal være med på eksporten. Det gjelder
@@ -147,7 +147,7 @@ var eksportTilProdsys = function(myDoc) {
         btGB[0] < bildeGB[2] + btSone[2] &&
         btGB[1] < bildeGB[3] + btSone[3]
       ) {
-        if (myTextFrame.paragraphs.length == 0) continue
+        if (myTextFrame.paragraphs.length == 0) continue;
         if (isCaption(myTextFrame)) return myTextFrame.parentStory
       }
     }
@@ -661,7 +661,7 @@ var eksportTilProdsys = function(myDoc) {
           for (n = 0; n < myStory.images.length; n++) {
             setLabel(myStory.images[n].image, 'ignore')
           }
-          continue
+          continue;
         } else {
           myStory.xtags = getXtags(myStory.stories)
           myStory.xtags = xtagsGrep(myStory.xtags)

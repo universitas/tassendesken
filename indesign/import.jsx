@@ -63,6 +63,39 @@ function importerSak(JSONsak, somArtikkelType) {
   }
 }
 
+function taGrep(rotestring) {
+  // gjør diverse reglar expression-søk for å renske opp i artikkelen
+  rotestring = rotestring.replace(/^@li: */gm, '* ') // bullet i fakta
+  rotestring = rotestring.replace(/^@(box|image|pullquote):.*$/gm, '') // fjern disse
+  rotestring = rotestring.replace(/\s*[\r\n]+\s*/g, '\r') // fjerner tomme avsnitt og unødvendig luft på slutten og starten av avsnitt
+  rotestring = rotestring.replace(/<\/?b>/gi, '') //fjerner BOLD tag :)
+  rotestring = rotestring.replace(/ ?<rt> ?/gi, '<RIGHTTAB>') // fikser <rt>-tags
+
+  rotestring = rotestring.replace(/([:!;?])\b/g, '$1 ') // putter mellomrom etter kolon, utropstegn, spørsmålstegn osv.
+  rotestring = rotestring.replace(/\b,([a-å])/gi, ', $1') // Legger til mellomrom etter komma før bokstav
+  rotestring = rotestring.replace(/ {2,}/g, ' ') // fjerner overflødige mellomrom
+  rotestring = rotestring.replace(/\t{2,}/g, '\t') // fjerner overflødige tabulatortegn
+  rotestring = rotestring.replace(/\s+([?|,|.|:|!])/g, '$1') // fjerner mellomrom foran skilletegn
+  rotestring = rotestring.replace(/(@[^:]+:)\s+/g, '$1') // fjerner whitespace mellom @stil: og tekst
+  rotestring = rotestring.replace(/(@[^:]+:)(@[^:]+:)/g, '$2') // tomme avsnitt blir fjerna.
+  rotestring = rotestring.replace(/--/g, '–') //gjør om to bindestreker til tankestrek
+  rotestring = rotestring.replace(/^- ?/gm, '–') //gjør om bindestrek på starten av avsnitt til tankestrek
+  rotestring = rotestring.replace(/\B-\B/g, '–') //gjør om bindestrek med luft på begge sider til tankestrek
+  rotestring = rotestring.replace(/[”“"]\b/g, '«').replace(/\b[”“"]/g, '»') // sørger for riktige hermetegn
+  rotestring = rotestring.replace(
+    /@fakta:([^\r\n]+)[\r\n]+([^@])/gi,
+    '@fakta:$1\r@fak1:$2'
+  ) //sørger for riktig stiler i faktarammer
+  
+  rotestring = rotestring.replace(/^\s*(kilder?):/gim, '@fak2:kilde:') // sørger for riktig stil i kildehenvisning i faktaramme
+  rotestring = rotestring.replace(/<\/?(.)>/g, '<@$1>') // gjør om <I> og </I> til <@I> osv.
+  rotestring = rotestring.replace(/ÆTT/g, '@') // gjør om ÆTT til krøllalfa
+  rotestring = rotestring.replace(/@sitat:[«– ]*([^»\r]*)»?/g, '@sitat:«$1»') // legger til hermetegn på sitat hvis det trengs;
+
+  return rotestring
+}
+
+
 function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
   // det viktigste objektet i dette skriptet. Inneholder masse funksjoner og
   // verdier - opprettes på grunnlag av en string fra prod.sys
@@ -115,7 +148,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
       false
     ) // viser en framdriftsrapport på skjermen for brukeren
     this.progressBar.update('Importerer tekst')
-    this.pasteString = this.taGrep(JSONsak.tekst) // vasker teksten og gjør en rekke endringer. Retter bl.a opp vanlige feil som ekstra mellomrom eller feil hermetegn
+    this.pasteString = taGrep(JSONsak.tekst) // vasker teksten og gjør en rekke endringer. Retter bl.a opp vanlige feil som ekstra mellomrom eller feil hermetegn
 
     // TODO: gjør til subfunksjon
     this.bildetekster = this.pasteString.match(/@bt:([^\r]+)/g) || [] // finner alle bildetekstene som er skrevet rett inn i brødteksten i stedet for å være koblet til enkeltbilder i prodsys
@@ -300,45 +333,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
     return myByline
   }
 
-  this.taGrep = function(rotestring) {
-    // gjør diverse reglar expression-søk for å renske opp i artikkelen
-    rotestring = rotestring.replace(/\\+(['"])/g, '$1') // lureri med magic quotes. vekk med seg.
-    rotestring = rotestring.replace(/^\s+/, '') // fjerner whitespace i starten
-    rotestring = rotestring.replace(/\s+$/, '') // fjerner whitespace til slutt
-    rotestring = rotestring.replace(/\s*[\r\n]+\s*/g, '\r') // fjerner tomme avsnitt og unødvendig luft på slutten og starten av avsnitt
-    rotestring = rotestring.replace(/<\/?b>/gi, '') //fjerner BOLD tag :)
-    rotestring = rotestring.replace(/ ?<rt> ?/gi, '<RIGHTTAB>') // fikser <rt>-tags
-    rotestring = rotestring.replace(/\s*<\/?br\/? *>/gi, '\n') // bytter ut <br> med linjeskift
-    rotestring = rotestring.replace(
-      /@bl: ?(tekst:)? ?(.+)\u2022(.+)\( ?foto ?\)/gi,
-      '@bl:tekst: $2\rfoto:$3'
-    ) // tekst: og foto:
-    rotestring = rotestring.replace(/\u2022/gi, ' og ') // legger inn og i stedet for bullet
-    rotestring = rotestring.replace(/([:!;?])\b/g, '$1 ') // putter mellomrom etter kolon, utropstegn, spørsmålstegn osv.
-    rotestring = rotestring.replace(/\b,([a-å])/gi, ', $1') // Legger til mellomrom etter komma før bokstav
-    rotestring = rotestring.replace(/ {2,}/g, ' ') // fjerner overflødige mellomrom
-    rotestring = rotestring.replace(/\t{2,}/g, '\t') // fjerner overflødige tabulatortegn
-    rotestring = rotestring.replace(/\s+([?|,|.|:|!])/g, '$1') // fjerner mellomrom foran skilletegn
-    rotestring = rotestring.replace(/(@[^:]+:)\s+/g, '$1') // fjerner whitespace mellom @stil: og tekst
-    rotestring = rotestring.replace(/(@[^:]+:)(@[^:]+:)/g, '$2') // tomme avsnitt blir fjerna.
-    rotestring = rotestring.replace(/--/g, '–') //gjør om to bindestreker til tankestrek
-    rotestring = rotestring.replace(/^- ?/gm, '–') //gjør om bindestrek på starten av avsnitt til tankestrek
-    rotestring = rotestring.replace(/\B-\B/g, '–') //gjør om bindestrek med luft på begge sider til tankestrek
-    rotestring = rotestring.replace(/[”“"]\b/g, '«').replace(/\b[”“"]/g, '»') // sørger for riktige hermetegn
-    rotestring = rotestring.replace(
-      /@fakta:([^\r]+)\r([^@])/gi,
-      '@fakta:$1\r@fak1:$2'
-    ) //sørger for riktig stiler i faktarammer
-    rotestring = rotestring.replace(/^\s*(kilder?):/gim, '@fak2:kilde:') // sørger for riktig stil i kildehenvisning i faktaramme
-    rotestring = rotestring.replace(/<\/?(.)>/g, '<@$1>') // gjør om <I> og </I> til <@I> osv.
-    rotestring = rotestring.replace(/ÆTT/g, '@') // gjør om ÆTT til krøllalfa
-    rotestring = rotestring.replace(/@sitat:[«– ]*([^»\r]*)»?/g, '@sitat:«$1»') // legger til hermetegn på sitat hvis det trengs;
-    rotestring = rotestring.replace(
-      /^(@\w+:)?(<\S+>)?([\w.]+@[\w.]+)(<\S+>)?$/m,
-      '@epost:$3'
-    ) // gjør epostadresse om til epostbyline, fjerner eventuell kursiv
-    return rotestring
-  }
+
 
   this.finnEpost = function(myByline) {
     // finner riktig epostadresse ved å slå opp byline i en tabell over navn og epostadresser
@@ -450,7 +445,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
         while (!(minTextframe instanceof TextFrame)) {
           minTextframe = minTextframe.parent
           if (minTextframe instanceof Application) {
-            break
+            break;
           }
         }
         this.pageItems.textFrames.push(minTextframe)
@@ -512,7 +507,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
             tit_ramme.applyObjectStyle(myObjectstyle)
             this.pageItems.textFrames.push(tit_ramme)
             mittAvsnitt.targetStory = tit_ramme.parentStory
-            break
+            break;
 
           case 'ingress':
             if (ing_ramme === undefined) {
@@ -532,7 +527,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
               this.pageItems.textFrames.push(ing_ramme)
             }
             mittAvsnitt.targetStory = ing_ramme.parentStory
-            break
+            break;
 
           case 'sitat':
             sitat_ramme = mySpread.textFrames.add() // ny for hvert sitat
@@ -550,7 +545,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
             sitat_ramme.applyObjectStyle(myObjectstyle)
             this.pageItems.textFrames.push(sitat_ramme)
             mittAvsnitt.targetStory = sitat_ramme.parentStory
-            break
+            break;
 
           case 'sitatbyline':
             if (!sitat_ramme) {
@@ -570,7 +565,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
               this.pageItems.textFrames.push(sitat_ramme)
             }
             mittAvsnitt.targetStory = sitat_ramme.parentStory
-            break
+            break;
 
           case 'faktatit':
             fakta_ramme = mySpread.textFrames.add() // ny for hvert faktatit
@@ -588,12 +583,12 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
             fakta_ramme.applyObjectStyle(myObjectstyle)
             this.pageItems.textFrames.push(fakta_ramme)
             mittAvsnitt.targetStory = fakta_ramme.parentStory
-            break
+            break;
 
           case 'faktatxt':
           case 'faktaliste':
             mittAvsnitt.targetStory = fakta_ramme.parentStory
-            break
+            break;
 
           default:
             // alle andre stiler
@@ -757,7 +752,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
         mineBilder[q].rectangle.bringToFront()
         mineBilder[q].bt = btRamme
       }
-      caption = caption ? this.taGrep(caption) : 'BT: bildetekst'
+      caption = caption ? taGrep(caption) : 'BT: bildetekst'
       if (mittBilde) {
         minBildeFrame.contentType = ContentType.graphicType
         minBildeFrame.place(mittBilde)
@@ -1088,7 +1083,7 @@ function lagSkjema(myLabel, mySelection, mySpread) {
           mySpread.pageItems[n].label.toLowerCase() === myLabel.toLowerCase()
         ) {
           myFoundGroup = mySpread.pageItems[n].getElements()[0] // et pageElement med riktig label
-          break
+          break;
         }
       }
     }

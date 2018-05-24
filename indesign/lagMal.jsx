@@ -30,7 +30,8 @@ if (addToLibrary) {
 }
 
 if (!alleGrupper) {
-  mekkMalGeo(app.selection, promptforLabel)
+  tryLogErrors(mekkMalGeo, [app.selection, promptforLabel])();
+  //mekkMalGeo(app.selection, promptforLabel)
 } else {
   clearReports(myDok, myObjectStyle)
   var myItem

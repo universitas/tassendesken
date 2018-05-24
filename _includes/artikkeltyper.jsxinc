@@ -82,7 +82,7 @@ artikkeltyper.nyBylineBoks = function(targetStory, seksjon, tabellInnhold) {
           }
         }
       }
-      break
+      break;
 
     case 'leserbrev':
       targetStory.insertionPoints[0].contents = '\r'
@@ -135,7 +135,7 @@ artikkeltyper.nyBylineBoks = function(targetStory, seksjon, tabellInnhold) {
         trynebilde.geometricBounds[0] + tryneCell.height,
         trynebilde.geometricBounds[1] + tryneCell.width - mellomlegg
       ]
-      break
+      break;
 
     case 'kommentar':
     case 'kulturkommentar':
@@ -195,7 +195,7 @@ artikkeltyper.nyBylineBoks = function(targetStory, seksjon, tabellInnhold) {
         trynebilde.geometricBounds[0] + trynesize.height,
         trynebilde.geometricBounds[1] + tryneCell.width
       ]
-      break
+      break;
 
     case 'signatur':
       var avsnittstil = dokTools.velgStil(myDocument, 'paragraph', 'A signatur')
@@ -205,10 +205,10 @@ artikkeltyper.nyBylineBoks = function(targetStory, seksjon, tabellInnhold) {
         targetStory.insertionPoints[-1].contents = '\r' + tabellInnhold[1]
         targetStory.paragraphs[-1].appliedParagraphStyle = avsnittstil
       }
-      break
+      break;
 
     default:
-      break
+      break;
   }
   return trynebilde
 }

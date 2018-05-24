@@ -15,5 +15,5 @@ function test_logFail() {
   function failFunction(because) {
     throw new Error('this fails ' + because)
   }
-  tryLogErrors(failFunction, ['just because'], 'test.log')()
+  tryLogErrors(failFunction, ['just because'])()
 }

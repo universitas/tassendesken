@@ -38,7 +38,8 @@ function get_folders() {
     },
     server: {
       libraries: SERVER + 'UTTEGNER/MALER/',
-      repo: SERVER + 'SCRIPTS/copy_to_local/'
+      repo: SERVER + 'SCRIPTS/copy_to_local/',
+      includes: SERVER + 'SCRIPTS/_includes/'
     }
   }
 
@@ -57,6 +58,11 @@ var files_to_copy = [
     filename: '*.joboptions', // pdf joboptions indesign
     localfolder: folders.local.job_options,
     remotefolder: folders.server.repo
+  },
+  {
+    filename: 'utils.jsxinc', // utils
+    localfolder: folders.local.startup_scripts,
+    remotefolder: folders.server.includes
   },
   {
     filename: 'local_startopp_indesign.jsx', // indesign startup script

@@ -94,8 +94,9 @@ function serializeObject(obj) {
 }
 
 // Object -> String
-function jsonify(obj) {
-  return JSON.stringify(serializeObject(obj), null, config.DEBUG ? 2 : 0)
+function jsonify(obj, indent) {
+  indent = indent || config.DEBUG ? 2 : 0;
+  return JSON.stringify(serializeObject(obj), null, indent)
 }
 
 // (String | Object, ?String) -> void
@@ -107,7 +108,7 @@ function logToFile(message, filename) {
   fp.encoding = 'UTF-8'
   fp.lineFeed = 'Unix'
   if (typeof message !== 'string') {
-    message = jsonify(message)
+    message = jsonify(message, 2)
   }
   var successful = fp.write(message)
   fp.close()
@@ -120,16 +121,18 @@ function tryLogErrors(fn, args, logfile) {
     try {
       fn.apply(null, args || [])
     } catch (error) {
-      logfile = logfile || 'error_' + new Date().valueOf() + '.log'
+      var time = new Date()
+      var filename = logfile || 'error_' + time.valueOf() + '.log'
       msg = {
         func: fn.name,
         args: args,
         line: error.line,
         message: error.message,
         file: error.fileName,
-        time: new Date().toString()
+        time: time.toString()
       }
-      logToFile(msg, logfile)
+      logToFile(jsonify(msg, 2), filename)
+      alert('Noe gikk galt med ' + error.fileName + '\nFeilmeldingen blir lagret her: ' + filename, 'Feil')
     }
   }
 }
