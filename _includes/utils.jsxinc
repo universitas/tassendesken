@@ -47,9 +47,9 @@ function toUnicode(theString) {
   function charToUnicode(letter) {
     var charCode = ('0000' +
       letter
-    .charCodeAt(0)
-    .toString(16)
-    .toUpperCase()
+        .charCodeAt(0)
+        .toString(16)
+        .toUpperCase()
     ).substr(-4, 4)
     return '\\u' + charCode
   }
@@ -95,7 +95,7 @@ function serializeObject(obj) {
 
 // Object -> String
 function jsonify(obj, indent) {
-  indent = indent || config.DEBUG ? 2 : 0;
+  indent = indent || config.DEBUG ? 2 : 0
   return JSON.stringify(serializeObject(obj), null, indent)
 }
 
@@ -118,11 +118,15 @@ function logToFile(message, filename) {
 // log error object to file
 function logError(error, data, logfile) {
   var time = new Date()
-  var filename = logfile || (
-    'ERROR.'
-    + error.fileName.replace(/.*SCRIPTS/, '') + '.'
-    + time.toString().replace(/.GMT.*/, '')
-  ).replace(/\W+/g, '-').toLowerCase() + '.json'
+  var filename =
+    logfile ||
+    ('ERROR.' +
+      error.fileName.replace(/.*SCRIPTS/, '') +
+      '.' +
+      time.toString().replace(/.GMT.*/, '')
+    )
+      .replace(/\W+/g, '-')
+      .toLowerCase() + '.json'
   var msg = {
     message: error.message,
     line: error.line,
@@ -135,18 +139,21 @@ function logError(error, data, logfile) {
 }
 
 // try to call function. Log errors to file
-function tryLogErrors(fn, args, rethrow) {
+function tryLogErrors(fn, rethrow) {
   return function() {
-    var filename, timestamp, data
+    var args = arguments
     try {
-      return fn.apply(null, args || [])
+      return fn.apply(null, args)
     } catch (error) {
-      data = {'function': fn.name, 'arguments': args, 'stacktrace': $.stack}
-      filename = logError(error, data)
+      var data = { function: fn.name, arguments: args, stacktrace: $.stack }
+      var filename = logError(error, data)
       alert(
-        'Noe gikk galt med ' + error.fileName + '\n' +
-        'Feilmeldingen blir lagret her: ' + filename,
-        'Feil'
+        'Noe gikk galt med ' +
+          error.fileName +
+          '\n' +
+          'Feilmeldingen blir lagret her: ' +
+          filename,
+        'Feil',
       )
       if (rethrow) throw error
     }
@@ -196,4 +203,3 @@ function testRunner() {
 function assert(bool, msg) {
   if (!bool) throw new Error('ASSERTION ERROR: ' + (msg || 'no message'))
 }
-

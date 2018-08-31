@@ -47,7 +47,7 @@ function remove_indesign_menu(delete_this_name) {
 }
 
 function make_event_handler(name, file) {
-  return tryLogErrors(function() {
+  function menuHandler() {
     app.doScript(
       file,
       ScriptLanguage.JAVASCRIPT,
@@ -55,7 +55,9 @@ function make_event_handler(name, file) {
       UndoModes.ENTIRE_SCRIPT,
       name
     )
-  })
+  }
+  menuHandler.name = 'menu_handler_' + name
+  return tryLogErrors(menuHandler, true)
 }
 
 function add_indesign_menu(menu_name, script_path, menu_items) {

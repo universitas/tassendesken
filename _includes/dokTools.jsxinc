@@ -6,12 +6,11 @@ dokTools.velgStil = function(myDocument, stiltype, stilnavn) {
   minStil = myDocument[stiltype + 'Styles'].itemByName(stilnavn)
   if (minStil == null) {
     minStil = myDocument[stiltype + 'Styles'].add({
-      name: stilnavn
+      name: stilnavn,
     })
   }
   return minStil
 }
-
 
 dokTools.sjekkOverlapp = function(mySpread, GB) {
   // return true hvis objektet eller GB (array av fire tall) overlapper et annet pageItem
@@ -31,10 +30,10 @@ dokTools.sjekkOverlapp = function(mySpread, GB) {
     if (
       !(
         GB[0] > itemGB[2] ||
-          GB[1] > itemGB[3] ||
-          GB[2] < itemGB[0] ||
-          GB[3] < itemGB[1] ||
-          isNaN(itemGB[0])
+        GB[1] > itemGB[3] ||
+        GB[2] < itemGB[0] ||
+        GB[3] < itemGB[1] ||
+        isNaN(itemGB[0])
       )
     ) {
       if (item != myObject) {
@@ -55,6 +54,7 @@ dokTools.avsnittSkift = function(myStory) {
   try {
     var nextStyle = stil1.nextStyle
   } catch (e) {
+    // sørger for at det finnes et åpent dokument og avslutter skriptet hvis ikke
     // stil1 er no style
     nextStyle = stil1
   }
@@ -226,13 +226,13 @@ dokTools.finnLedigPlass = function(mySpread, spalter) {
         spalteGuides = [right]
         for (var i = 0; i < sidespalter; i++) {
           spalteGuides.push(
-            spalteGuides[0] + spaltebredde * (i + 1) + spaltemellomrom * i
+            spalteGuides[0] + spaltebredde * (i + 1) + spaltemellomrom * i,
           )
           if (i < sidespalter) {
             spalteGuides.push(
               spalteGuides[0] +
                 spaltebredde * (i + 1) +
-                spaltemellomrom * (i + 1)
+                spaltemellomrom * (i + 1),
             )
           }
         }
@@ -248,7 +248,7 @@ dokTools.finnLedigPlass = function(mySpread, spalter) {
       myGB = [
         spreadbounds[0],
         venstrekant,
-        spreadbounds[0] + speilhoyde / 2 - 5
+        spreadbounds[0] + speilhoyde / 2 - 5,
       ] //øverste halvdel av speilet på "side"
       for (o = 0; o < sidespalter - spalteantall + 1; o += 1) {
         myGB[1] = venstrekant + spalteGuides[o * 2]
@@ -282,7 +282,7 @@ dokTools.parseCSV = function(filePath) {
   eval(
     "result=[['" +
       fileContent.replace(/,/g, "','").replace(/\n/g, "'],['") +
-      "']];"
+      "']];",
   )
   return result
 }
@@ -334,9 +334,9 @@ dokTools.onPage = function(item) {
   while (item && 'parent' in item && !(item instanceof Application)) {
     if (
       item.constructor.name == 'Page' &&
-        item.parent.constructor.name == 'Spread'
+      item.parent.constructor.name == 'Spread'
     )
-    return true // ligger ikke i pasteboard eller på en master spread.
+      return true // ligger ikke i pasteboard eller på en master spread.
     if ('parentPage' in item) item = item.parentPage
     else item = item.parent
   }
@@ -361,15 +361,15 @@ dokTools.progressBar = function(myTitle, myText, myNumberofStages, canCancel) {
     'progressbar',
     [12, 12, 350, 24],
     0,
-    myNumberofStages
+    myNumberofStages,
   )
   myProgress.staticText = myProgress.window.add(
     'statictext',
     [0, 0, 340, 20],
     myText,
     {
-      alignment: 'left'
-    }
+      alignment: 'left',
+    },
   )
   myProgress.update = function(updateText, newValue) {
     this.progressBar.value = newValue || this.progressBar.value + 1
@@ -398,7 +398,7 @@ dokTools.findPosition = function(myStory) {
       myPage = myStory.textContainers[0]
     } else if (
       myPage.hasOwnProperty('parentTextFrames') &&
-        myPage.parentTextFrames.length > 0
+      myPage.parentTextFrames.length > 0
     ) {
       myPage = myPage.parentTextFrames[0]
     } else {
@@ -450,7 +450,7 @@ dokTools.findOverflows = function(myPage) {
         overflowLength -= myStory.textContainers[i].contents.length
       }
       myContents = myStory.contents.substring(
-        myStory.contents.length - overflowLength
+        myStory.contents.length - overflowLength,
       )
       myOverflows.push(myContents)
     }
@@ -470,14 +470,14 @@ dokTools.errorAlert = function(message, title) {
     readonly: false,
     borderless: false,
     multiline: true,
-    scrollable: true
+    scrollable: true,
   })
   d.rom.graphics.font = ScriptUI.newFont(f.name, f.style, f.size - 2)
   d.rom.preferredSize = [300, 300]
   d.rom.alignment = 'fill'
   d.rom.active = true
   d.ok = d.add('button', undefined, 'OK', {
-    name: 'ok'
+    name: 'ok',
   })
   d.ok.alignment = 'right'
   d.show()

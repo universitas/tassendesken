@@ -12,8 +12,7 @@ var epostMatrix = dokTools.parseCSV(config.epostCSV) // tabell over navn og epos
 var feilmeldingsBoks = [5, 5, 40, 40] // størrelsen på feilmeldingsboks når man ikke får limt inn bilder
 var bildemax = [80, 80] // max størrelse på bilder som legges i pasteboard
 
-function finnUtgaveMappe() {
-  // Returnerer mappe som matcher regex /^\d+$/ dvs. inneholder kun tall
+function finnUtgaveMappe() { // Returnerer mappe som matcher regex /^\d+$/ dvs. inneholder kun tall
   // Leter helt til rota, eller returnerer mappa som dokumentet ligger i
   docMappe = app.activeDocument.filePath
   while (docMappe) {
@@ -44,16 +43,14 @@ function importerSak(JSONsak, somArtikkelType) {
     MeasurementUnits.MILLIMETERS
   ]) // sørger for at millimeter er standard enhet - hvis det er noe annet, lagres det i objektet originalenheter.
   var data = prodsys.get(JSONsak.prodsak_id).json
-  var func = tryLogErrors(function() {
-    new artikkel(data, artikkelType, mySpread, app.selection)
-  }, [])
+  var doImport = tryLogErrors(artikkel, false)(data, artikkelType, mySpread, app.selection)
   if (config.DEBUG) {
     // uten doScript
-    func()
+    doImport()
   } else {
     // app.doScript gjor undo mulig
     app.doScript(
-      func,
+      doImport,
       ScriptLanguage.JAVASCRIPT,
       [],
       UndoModes.ENTIRE_SCRIPT,
@@ -830,6 +827,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
       }
     }
   }
+
   this.opprydding = function() {
     var ryddOppTekst = function(myText, minEpost) {
       app.findGrepPreferences.findWhat = '<RIGHTTAB>' // høyrejustert tabulator
