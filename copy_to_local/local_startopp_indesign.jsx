@@ -56,7 +56,6 @@ function make_event_handler(name, file) {
       name
     )
   }
-  menuHandler.name = 'menu_handler_' + name
   return tryLogErrors(menuHandler, true)
 }
 

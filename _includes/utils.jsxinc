@@ -145,7 +145,7 @@ function tryLogErrors(fn, rethrow) {
     try {
       return fn.apply(null, args)
     } catch (error) {
-      var data = { function: fn.name, arguments: args, stacktrace: $.stack }
+      var data = { 'function': fn.name, arguments: args, stacktrace: $.stack }
       var filename = logError(error, data)
       alert(
         'Noe gikk galt med ' +
