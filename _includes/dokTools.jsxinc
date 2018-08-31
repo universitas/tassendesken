@@ -3,7 +3,6 @@ var dokTools = {}
 
 dokTools.velgStil = function(myDocument, stiltype, stilnavn) {
   //velger en paragraph-, cell-, table-, eller characterStyle, og oppretter en ny hvis den ikke finnes
-  var minStil
   minStil = myDocument[stiltype + 'Styles'].itemByName(stilnavn)
   if (minStil == null) {
     minStil = myDocument[stiltype + 'Styles'].add({
@@ -12,6 +11,7 @@ dokTools.velgStil = function(myDocument, stiltype, stilnavn) {
   }
   return minStil
 }
+
 
 dokTools.sjekkOverlapp = function(mySpread, GB) {
   // return true hvis objektet eller GB (array av fire tall) overlapper et annet pageItem
@@ -31,10 +31,10 @@ dokTools.sjekkOverlapp = function(mySpread, GB) {
     if (
       !(
         GB[0] > itemGB[2] ||
-        GB[1] > itemGB[3] ||
-        GB[2] < itemGB[0] ||
-        GB[3] < itemGB[1] ||
-        isNaN(itemGB[0])
+          GB[1] > itemGB[3] ||
+          GB[2] < itemGB[0] ||
+          GB[3] < itemGB[1] ||
+          isNaN(itemGB[0])
       )
     ) {
       if (item != myObject) {
@@ -334,9 +334,9 @@ dokTools.onPage = function(item) {
   while (item && 'parent' in item && !(item instanceof Application)) {
     if (
       item.constructor.name == 'Page' &&
-      item.parent.constructor.name == 'Spread'
+        item.parent.constructor.name == 'Spread'
     )
-      return true // ligger ikke i pasteboard eller på en master spread.
+    return true // ligger ikke i pasteboard eller på en master spread.
     if ('parentPage' in item) item = item.parentPage
     else item = item.parent
   }
@@ -398,7 +398,7 @@ dokTools.findPosition = function(myStory) {
       myPage = myStory.textContainers[0]
     } else if (
       myPage.hasOwnProperty('parentTextFrames') &&
-      myPage.parentTextFrames.length > 0
+        myPage.parentTextFrames.length > 0
     ) {
       myPage = myPage.parentTextFrames[0]
     } else {

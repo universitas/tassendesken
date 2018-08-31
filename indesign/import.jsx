@@ -84,9 +84,9 @@ function taGrep(rotestring) {
   rotestring = rotestring.replace(/[”“"]\b/g, '«').replace(/\b[”“"]/g, '»') // sørger for riktige hermetegn
   rotestring = rotestring.replace(
     /@fakta:([^\r\n]+)[\r\n]+([^@])/gi,
-    '@fakta:$1\r@fak1:$2'
+  '@fakta:$1\r@fak1:$2'
   ) //sørger for riktig stiler i faktarammer
-  
+
   rotestring = rotestring.replace(/^\s*(kilder?):/gim, '@fak2:kilde:') // sørger for riktig stil i kildehenvisning i faktaramme
   rotestring = rotestring.replace(/<\/?(.)>/g, '<@$1>') // gjør om <I> og </I> til <@I> osv.
   rotestring = rotestring.replace(/ÆTT/g, '@') // gjør om ÆTT til krøllalfa
@@ -129,8 +129,8 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
 
     if (
       !JSONsak.tekst.match(/@tema:/) &&
-      this.artikkeltype.temaord &&
-      !this.artikkeltype.bylineboks
+        this.artikkeltype.temaord &&
+        !this.artikkeltype.bylineboks
     ) {
       //hvis journalisten har glemt temaord
       JSONsak.tekst = JSONsak.tekst + '\r@tema:' + this.artikkeltype.temaord // legger inn generisk temaord
@@ -266,7 +266,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
 
     if (
       JSONsak.tekst.match(/@tit:/) &&
-      JSONsak.tekst.match(/@tit:/g).length > 1
+        JSONsak.tekst.match(/@tit:/g).length > 1
     ) {
       // er det mer enn én @tit - tag ?
       //mekk undersak
@@ -319,9 +319,9 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
         .replace(/(.*) ([^ ]+?$)/, '$2_$1')
         .replace(/ /g, '_')
         .toUpperCase() + '.jpg' // lager filnavn i formatet ETTERNAVN_FORNAVN.jpg
-    fil = mappe.getFiles(navn)
-    fil = fil.length > 0 ? new File(fil[0]) : null // finner fila hvis den eksisterer
-    return fil
+      fil = mappe.getFiles(navn)
+      fil = fil.length > 0 ? new File(fil[0]) : null // finner fila hvis den eksisterer
+      return fil
   }
 
   this.finnByline = function(pasteString) {
@@ -617,8 +617,10 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
 
   this.liminn = function() {
     // limer inn hvert avsnitt i sin tekstramme
+    var myDocument = app.activeDocument
     for (var j = 0; j < this.paragraphs.length; j++) {
       var avsnitt = this.paragraphs[j]
+      if (!avsnitt.contents) continue;
       var targetStory = avsnitt.targetStory
       var avsnittstil = dokTools.velgStil(
         myDocument,
@@ -627,9 +629,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
       )
       targetStory.insertionPoints[-1].appliedCharacterStyle =
         myDocument.characterStyles[0]
-      if (j > 0) {
-        targetStory.insertionPoints[-1].contents = '\r'
-      }
+      if (j > 0) targetStory.insertionPoints[-1].contents = '\r'
       targetStory.insertionPoints[-1].contents = avsnitt.contents
       targetStory.paragraphs[-1].appliedParagraphStyle = avsnittstil
       dokTools.removeWhiteSpace(targetStory)
@@ -758,7 +758,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
         minBildeFrame.place(mittBilde)
         if (
           minBildeFrame.appliedObjectStyle.name ===
-          config.objektstiler.faksimile
+            config.objektstiler.faksimile
         ) {
           // faksimiler som anmeldelsesbildet står litt på skrå og skal ha et fast flateareal
           var myRotation = minBildeFrame.rotationAngle // vinkelen som faksimilen står på skrå
@@ -776,8 +776,8 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
             ratio =
               (minBildeFrame.graphics[0].geometricBounds[2] -
                 minBildeFrame.graphics[0].geometricBounds[0]) /
-              (minBildeFrame.graphics[0].geometricBounds[3] -
-                minBildeFrame.graphics[0].geometricBounds[1])
+            (minBildeFrame.graphics[0].geometricBounds[3] -
+              minBildeFrame.graphics[0].geometricBounds[1])
             width = Math.sqrt(mySize / ratio)
             height = width * ratio
             myBounds[2] = myBounds[0] + height
@@ -903,7 +903,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
       }
       if (
         minTextframe.parent instanceof Page ||
-        minTextframe.parent instanceof Spread
+          minTextframe.parent instanceof Spread
       ) {
         app.select(minTextframe, SelectionOptions.ADD_TO)
       }
@@ -938,7 +938,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
       mittBilde = this.pageItems.rectangles[q]
       if (
         mittBilde.parent instanceof Page ||
-        mittBilde.parent instanceof Spread
+          mittBilde.parent instanceof Spread
       ) {
         app.select(mittBilde, SelectionOptions.ADD_TO)
       }
@@ -1098,19 +1098,29 @@ function lagSkjema(myLabel, mySelection, mySpread) {
     }
     if (!group) return skjema
     var textFrames = group.textFrames.everyItem()
-    var tables = textFrames.tables.everyItem().getElements()
+    var tables
+    try {
+      tables = textFrames.tables.everyItem().getElements()
+    } catch(e) {
+      logError(e, {textFrames: textFrames, group: group, that: this})
+      tables = []
+    }
     skjema.stories = textFrames.parentStory
     for (var i = 0; i < group.allPageItems.length; i++) {
       var pageItem = group.allPageItems[i]
-      if (pageItem.contentType === ContentType.GRAPHIC_TYPE)
-        skjema.pictures.push(pageItem)
+      try {
+        if (pageItem.contentType === ContentType.GRAPHIC_TYPE)
+          skjema.pictures.push(pageItem)
+      } catch(e) {
+        logError(e, {pageItem: pageItem, group: group, that: this})
+      }
     }
     for (var i = 0; i < tables.length; i++) {
       try {
         var table = tables[i]
         if (/bylineboks/.test(table.appliedTableStyle.name)) table.remove()
       } catch (e) {
-        $.writeln(e)
+        logError(e , {table: table, group: group, that: this})
       }
     }
     group.ungroup()

@@ -47,9 +47,9 @@ function toUnicode(theString) {
   function charToUnicode(letter) {
     var charCode = ('0000' +
       letter
-        .charCodeAt(0)
-        .toString(16)
-        .toUpperCase()
+    .charCodeAt(0)
+    .toString(16)
+    .toUpperCase()
     ).substr(-4, 4)
     return '\\u' + charCode
   }
@@ -115,24 +115,40 @@ function logToFile(message, filename) {
   return successful
 }
 
+// log error object to file
+function logError(error, data, logfile) {
+  var time = new Date()
+  var filename = logfile || (
+    'ERROR.'
+    + error.fileName.replace(/.*SCRIPTS/, '') + '.'
+    + time.toString().replace(/.GMT.*/, '')
+  ).replace(/\W+/g, '-').toLowerCase() + '.json'
+  var msg = {
+    message: error.message,
+    line: error.line,
+    file: error.fileName,
+    time: time.toString(),
+    data: data,
+  }
+  logToFile(jsonify(msg, 2), filename)
+  return filename
+}
+
 // try to call function. Log errors to file
-function tryLogErrors(fn, args, logfile) {
+function tryLogErrors(fn, args, rethrow) {
   return function() {
+    var filename, timestamp, data
     try {
-      fn.apply(null, args || [])
+      return fn.apply(null, args || [])
     } catch (error) {
-      var time = new Date()
-      var filename = logfile || 'error_' + time.valueOf() + '.log'
-      msg = {
-        func: fn.name,
-        args: args,
-        line: error.line,
-        message: error.message,
-        file: error.fileName,
-        time: time.toString()
-      }
-      logToFile(jsonify(msg, 2), filename)
-      alert('Noe gikk galt med ' + error.fileName + '\nFeilmeldingen blir lagret her: ' + filename, 'Feil')
+      data = {'function': fn.name, 'arguments': args, 'stacktrace': $.stack}
+      filename = logError(error, data)
+      alert(
+        'Noe gikk galt med ' + error.fileName + '\n' +
+        'Feilmeldingen blir lagret her: ' + filename,
+        'Feil'
+      )
+      if (rethrow) throw error
     }
   }
 }
@@ -180,3 +196,4 @@ function testRunner() {
 function assert(bool, msg) {
   if (!bool) throw new Error('ASSERTION ERROR: ' + (msg || 'no message'))
 }
+
