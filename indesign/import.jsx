@@ -43,7 +43,9 @@ function importerSak(JSONsak, somArtikkelType) {
     MeasurementUnits.MILLIMETERS
   ]) // sørger for at millimeter er standard enhet - hvis det er noe annet, lagres det i objektet originalenheter.
   var data = prodsys.get(JSONsak.prodsak_id).json
-  var doImport = tryLogErrors(artikkel, false)(data, artikkelType, mySpread, app.selection)
+  function doImport() {
+    tryLogErrors(artikkel, false)(data, artikkelType, mySpread, app.selection)
+  }
   if (config.DEBUG) {
     // uten doScript
     doImport()
