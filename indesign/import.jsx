@@ -86,6 +86,7 @@ function taGrep(rotestring) {
 
   rotestring = rotestring.replace(/^\s*(kilder?):/gim, '@fak2:kilde:') // sørger for riktig stil i kildehenvisning i faktaramme
   rotestring = rotestring.replace(/<\/?(.)>/g, '<@$1>') // gjør om <I> og </I> til <@I> osv.
+  rotestring = rotestring.replace(/_/g, '<@I>') // gjør om underscore til <@I>
   rotestring = rotestring.replace(/ÆTT/g, '@') // gjør om ÆTT til krøllalfa
   rotestring = rotestring.replace(/@sitat:[«– ]*([^»\r]*)»?/g, '@sitat:«$1»') // legger til hermetegn på sitat hvis det trengs;
 
