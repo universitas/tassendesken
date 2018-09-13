@@ -16,3 +16,8 @@ Desktop.ini
 # Secret passwords and stuff
 config_user.jsxinc
 amazon_web_service.conf
+
+# these scripting guides are compressed
+# extract them with `tar -zxf scripting.guides.tar.gz`
+adobeBridgeScripting/
+adobeIndesignScripting/
