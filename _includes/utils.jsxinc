@@ -68,28 +68,32 @@ function toUnicode(theString) {
 // Object -> Object
 function serializeObject(obj) {
   // make object serializable
-  var pt = Object.prototype.toString.call(obj)
-  switch (pt) {
-    case '[object global]':
-    case '[object String]':
-    case '[object Number]':
-    case '[object Boolean]':
-      return obj
-    case '[object Object]':
-    case '[object Error]':
-      var obj2 = {}
-      for (var key in obj) obj2[key] = serializeObject(obj[key])
-      return obj2
-    case '[object Array]':
-      var newarr = []
-      for (var i = 0; i < obj.length; i++) newarr[i] = serializeObject(obj[i])
-      return newarr
-    case '[object Story]':
-      return '[Story id:' + obj.id + ' ' + obj.contents.substr(0, 100) + ']'
-    case '[object Image]':
-      return '[Image id:' + obj.id + ' ' + obj.itemLink.name + ']'
-    default:
-      return pt
+  try {
+    var pt = Object.prototype.toString.call(obj)
+    switch (pt) {
+      case '[object global]':
+      case '[object String]':
+      case '[object Number]':
+      case '[object Boolean]':
+        return obj
+      case '[object Object]':
+      case '[object Error]':
+        var obj2 = {}
+        for (var key in obj) obj2[key] = serializeObject(obj[key])
+        return obj2
+      case '[object Array]':
+        var newarr = []
+        for (var i = 0; i < obj.length; i++) newarr[i] = serializeObject(obj[i])
+        return newarr
+      case '[object Story]':
+        return '[Story id:' + obj.id + ' ' + obj.contents.substr(0, 100) + ']'
+      case '[object Image]':
+        return '[Image id:' + obj.id + ' ' + obj.itemLink.name + ']'
+      default:
+        return pt
+    }
+  } catch(e) {
+    return obj ? obj.toSource() : typeof obj
   }
 }
 

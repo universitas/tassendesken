@@ -202,10 +202,14 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
 
     if (this.artikkeltype.bylineboks) {
       // skal denne artikkeltypen ha bylineboks?
+      try {
       var trynebilde = this.artikkeltype.lagBylineboks(
         this.bylineBoksStory,
         this.bylineboksInnhold
       ) // lager bylineboks og returnerer bilderammen der et eventuellt trynebilde skal være (brukes for kommentarer og lignende)
+      } catch (e) {
+        var trynebilde = null
+      }
       if (trynebilde) {
         this.skjema.pictures.push({
           rectangle: trynebilde
@@ -1099,13 +1103,7 @@ function lagSkjema(myLabel, mySelection, mySpread) {
     }
     if (!group) return skjema
     var textFrames = group.textFrames.everyItem()
-    var tables
-    try {
-      tables = textFrames.tables.everyItem().getElements()
-    } catch(e) {
-      logError(e, {textFrames: textFrames, group: group, that: this})
-      tables = []
-    }
+    var tables = textFrames.tables.length ? textFrames.tables.everyItem().getElements() : []
     skjema.stories = textFrames.parentStory
     for (var i = 0; i < group.allPageItems.length; i++) {
       var pageItem = group.allPageItems[i]
@@ -1113,7 +1111,7 @@ function lagSkjema(myLabel, mySelection, mySpread) {
         if (pageItem.contentType === ContentType.GRAPHIC_TYPE)
           skjema.pictures.push(pageItem)
       } catch(e) {
-        logError(e, {pageItem: pageItem, group: group, that: this})
+        logError(e, {pageItem: pageItem, group: group})
       }
     }
     for (var i = 0; i < tables.length; i++) {
@@ -1121,10 +1119,10 @@ function lagSkjema(myLabel, mySelection, mySpread) {
         var table = tables[i]
         if (/bylineboks/.test(table.appliedTableStyle.name)) table.remove()
       } catch (e) {
-        logError(e , {table: table, group: group, that: this})
+        //logError(e , {table: table, group: group, that: this})
       }
     }
-    group.ungroup()
+    group.hasOwnProperty('ungroup') && group.ungroup()
     return skjema
   }
 
