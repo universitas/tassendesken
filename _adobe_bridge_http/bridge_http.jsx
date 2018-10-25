@@ -1,3 +1,6 @@
+// Using Adobe Bridge to do http
+// experimental
+
 if (!ExternalObject.webaccesslib) {
   ExternalObject.webaccesslib = new ExternalObject('lib:webaccesslib')
 }
