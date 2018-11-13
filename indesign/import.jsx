@@ -355,7 +355,7 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
 
   this.finnavsnittstiler = function(pasteString) {
     // lager en liste over avsnittstiler i bruk i artikkelen
-    var myParagraphStyles = pasteString.match(/^@[^>:]+:/gm) //En array aver tags
+    var myParagraphStyles = pasteString.match(/^@[^>:]+:/gm) || []//En array aver tags
     myParagraphStyles = dokTools.removeDuplicates(myParagraphStyles)
     for (var n = 0; n < myParagraphStyles.length; n += 1) {
       myParagraphStyles[n] = myParagraphStyles[n].slice(1, -1).toLowerCase() //  fjerner "@" og ":"
@@ -572,25 +572,26 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
             break;
 
           case 'faktatit':
-            fakta_ramme = mySpread.textFrames.add() // ny for hvert faktatit
-            fakta_ramme.geometricBounds = [
-              this.gb[2] - 60,
-              this.gb[3] - this.gb[5],
-              this.gb[2],
-              this.gb[3]
-            ]
-            myObjectstyle = dokTools.velgStil(
-              myDocument,
-              'object',
-              config.objektstiler.fakta
-            )
-            fakta_ramme.applyObjectStyle(myObjectstyle)
-            this.pageItems.textFrames.push(fakta_ramme)
-            mittAvsnitt.targetStory = fakta_ramme.parentStory
-            break;
-
+            fakta_ramme = undefined;
+            // fallthrough
           case 'faktatxt':
           case 'faktaliste':
+            if (!fakta_ramme) {
+              fakta_ramme = mySpread.textFrames.add() // ny for hvert faktatit
+              fakta_ramme.geometricBounds = [
+                this.gb[2] - 60,
+                this.gb[3] - this.gb[5],
+                this.gb[2],
+                this.gb[3]
+              ]
+              myObjectstyle = dokTools.velgStil(
+                myDocument,
+                'object',
+                config.objektstiler.fakta
+              )
+              fakta_ramme.applyObjectStyle(myObjectstyle)
+              this.pageItems.textFrames.push(fakta_ramme)
+            }
             mittAvsnitt.targetStory = fakta_ramme.parentStory
             break;
 
