@@ -1,49 +1,39 @@
-/* jshint ignore:start */
 #target "indesign";
 #targetengine "session";
 #includepath "../_includes/";
-#include "index.jsxinc"; // imports!
+#include "index.jsxinc";
 #include "eksport.jsxinc"; // brukergrensesnittet
-/* jshint ignore:end */
-
-// config.DEBUG = true;
-
-try {
-  var dok = app.activeDocument
-} catch (e) {
-  alert('Åpne et dokument')
-  exit()
-}
 
 var pdfSideDefault = false
 var eksporterDefault = true
-var endreSidetallDefault = false
-var utgave = utgave()
-var nestefredag = nestefredag()
-dok.pages[0].appliedSection.sectionPrefix = ''
+// doc.pages[0].appliedSection.sectionPrefix = ''
 
-if (!dok.saved) {
-  // hvis dokumentet er "untitled"
-  alert(
-    'Kan ikke opprette PDF\rLagre dokumentet før du lager kan eksportere en pdf'
-  ) // setter inn sidetall og lager filnavn
-} else {
-  // hvis siden er lagret og har filnavn
-  lagPDF(dok) // eksporterer PDF
+function getDocument() {
+  var doc, errorMsg
+  try { 
+    doc = app.activeDocument 
+    if (doc.saved) 
+      return doc
+    errorMsg =  
+      'Kan ikke opprette PDF\r' +
+      'Lagre dokumentet før du lager kan eksportere en pdf'
+  } catch (e) { 
+    errorMsg = 'Åpne et dokument' 
+  }
+  alert(errorMsg)
+  exit()
 }
 
-function lagPDF(dok) {
-  var myName = 'UNI11VER' + nestefredag
-  var myPath = dok.filePath.path + '/PDF/'
-  var PDFmappe = new Folder(myPath)
-  if (!PDFmappe.exists) {
-    // finnes PDF-folderen?
-    PDFmappe.create()
-  }
-  if (dok.name.match(/UNI11VER/)) {
-    //hvis dokumentet har et filnavn som inneholder "UNI11VER" så tar man utgangspunkt i det.
-    myName = dok.name.slice(0, -10)
-  }
+function main() {
+  var doc = getDocument()
+  var outputDirectory = doc.filePath.path + '/PDF/'
+  var PDFmappe = new Folder(outputDirectory)
+  if (!PDFmappe.exists) PDFmappe.create()
+
+  var fileNameRoot = doc.name.match(/UNI11VER/)
+    ? doc.name.slice(0, -10)
+    : 'UNI11VER' + nextFriday()
+    
   var eksportliste = []
   var myDialog = app.dialogs.add({
     name: 'Eksporter til PDF',
@@ -51,20 +41,16 @@ function lagPDF(dok) {
   })
   var myColumn = myDialog.dialogColumns.add()
   myColumn.staticTexts.add({
-    staticLabel: 'Eksporter til mappe: ' + myPath
+    staticLabel: 'Eksporter til mappe: ' + outputDirectory
   })
   var dialogbokser = []
-  for (var i = 0; i < dok.pages.length; i += 1) {
-    var myPage = dok.pages[i]
-    var pageNumber = myPage.name
-    if (pageNumber < 10) {
-      pageNumber = '0' + pageNumber
-    }
+  for (var i = 0; i < doc.pages.length; i += 1) {
+    var myPage = doc.pages[i]
     eksportliste.push({
       page: myPage,
       pageNumber: myPage.name,
-      filnavn: myName + pageNumber + '000.pdf',
-      path: myPath
+      filnavn: fileNameRoot + zeroPad(2)(myPage.name) + '000.pdf',
+      path: outputDirectory
     })
   }
   for (i = 0; i < eksportliste.length; i += 1) {
@@ -85,114 +71,62 @@ function lagPDF(dok) {
   })
   var myResult = myDialog.show()
   if (myResult) {
-    if (dok.modified) {
+    if (doc.modified) {
       // lagrer dokumentet hvis det er gjort endringer
-      dok.save()
+      doc.save()
     }
-    dok.sections.everyItem().sectionPrefix = ''
+    doc.sections.everyItem().sectionPrefix = ''
     var myProgressBar = dokTools.progressBar(
       'Lager PDF',
       '',
-      dok.pages.length + 1,
+      doc.pages.length + 1,
       false
     )
     for (i = 0; i < dialogbokser.length; i += 1) {
       if (dialogbokser[i][0].checkedState) {
-        fjern = true
-        minEksportSide = eksportliste[i]
-        myProgressBar.update(
-          'Eksporterer side ' +
-            minEksportSide.pageNumber +
-            ' til pdf\n' +
-            minEksportSide.filnavn,
-          i + 1
-        )
-        minEksportSide.filnavn = dialogbokser[i][1].editContents
-        minEksportSide.path = new File(myPath + minEksportSide.filnavn)
-        try {
-          eksportPDF(minEksportSide.pageNumber, minEksportSide.path)
-        } catch (myError) {
-          // pdf-fila er åpen i acrobat
-          var slettmeg = new File(myPath + 'slettmeg.pdf')
-          if (slettmeg.exists) {
-            slettmeg.remove()
-          }
-          minEksportSide.path.rename('slettmeg.pdf')
-          minEksportSide.path = new File(myPath + minEksportSide.filnavn)
-          eksportPDF(minEksportSide.pageNumber, minEksportSide.path)
-        }
+        var pg = eksportliste[i]
+        var message = 'Eksporterer side ' + pg.pageNumber + ' til pdf\n' + pg.filnavn
+        myProgressBar.update(message, i + 1)
+        pg.filnavn = dialogbokser[i][1].editContents
+        pg.path = new File(outputDirectory + pg.filnavn)
+        exportPage(doc, pg.pageNumber, pg.path)
       }
     }
     myProgressBar.close()
-    if (tilProdsys.checkedState) {
-      eksportTilProdsys(dok)
-    }
+    if (tilProdsys.checkedState) eksportTilProdsys(doc)
   }
 }
 
-function eksportPDF(page, path) {
-  var myOverflows, svar
-  myOverflows = dokTools.findOverflows(dok.pages.itemByName(page))
-  if (myOverflows.length > 0) {
-    myOverflows = myOverflows.join('\r\r')
-    myOverflows =
-      myOverflows.length > 1000
-        ? myOverflows.substr(0, 1000) + '[...]'
-        : myOverflows
-    svar = confirm(
-      'Tekst flyter over, eksporter likevel?\rDet finnes tekst på side ' +
-        page +
-        ' som ikke kommer med:\r\r' +
-        myOverflows
-    )
-    if (svar === false) {
-      return
-    }
-  }
-  var myPDFpref = app.pdfExportPresets.itemByName('UNIVERSITAS')
+function exportPage(doc, page, path) {
+  var preset = app.pdfExportPresets.itemByName('UNIVERSITAS')
   app.pdfExportPreferences.viewPDF = false
   app.pdfExportPreferences.pageRange = page  
-  dok.exportFile(ExportFormat.pdfType, path, false, myPDFpref, '', true)
+  doc.exportFile(ExportFormat.pdfType, path, false, preset, '', true)
 }
 
-function utgave() {
-  // Finner kommende utgave av avisa ved å lete etter mappe med høyest tall.
-  var path = config.rotMappe // TODO fjern hardkoding
-  var nummer
-  var myFile
-  for (i = 50; i > 0; i--) {
-    if (i < 10) {
-      nummer = '0' + i
-    } else {
-      nummer = i
-    }
-    myFile = Folder(path + nummer)
-    if (myFile.exists) {
-      break // har funnet riktig utgave
-    }
+function zeroPad(width, fillchar) {
+  // zeroPad(5)(42) -> '00042'
+  var padding = Array(width + 1).join(fillchar || '0')
+  return function(n) {
+    var digits = '' + n
+    return digits.length < width
+      ? (padding + digits).slice(-width)
+      : digits
   }
-  return i
 }
 
-function nestefredag() {
-  var idag = new Date()
-  var ukedag = idag.getDay()
-  var fredag = new Date()
-  var resultat = ''
-  fredag.setDate(idag.getDate() + (5 - ukedag))
-  resultat = fredag
-    .getFullYear()
-    .toString()
-    .slice(2)
-  if (fredag.getMonth() + 1 < 10) {
-    resultat += '0' + (fredag.getMonth() + 1)
-  } else {
-    resultat += fredag.getMonth() + 1
-  }
-  if (fredag.getDate() < 10) {
-    resultat += '0' + fredag.getDate()
-  } else {
-    resultat += fredag.getDate()
-  }
-  return resultat
+function currentIssue(root) {
+  // Finner kommende currentIssue av avisa ved å lete etter mappe med høyest tall.
+  for (var i = 50; i > 0; i--) 
+    if (Folder(path + zeroPad(2)(i)).exists) return i;
+  throw new Error('could not find folder')
+}
+
+function nextFriday() {
+  var now = new Date()
+  now.setDate(now.getDate() + (5 - now.getDay()))
+  var year = then.getFullYear().toString().slice(-2)
+  var month = zeroPad(2)(then.getMonth())
+  var day = zeroPad(2)(then.getDate())
+  return year + month + day
 }

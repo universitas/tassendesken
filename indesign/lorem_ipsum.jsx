@@ -17,16 +17,14 @@ function loremIpsumize(myText) {
   }
   myStory.label = ''
   if (myText instanceof Story || myText instanceof TextFrame) {
-    for (var n = myStory.textFrames.length - 1; n >= 0; n--) {
-      loremIpsumize(myStory.textFrames[n]) // clever recurson
-    }
+    for (var n = myStory.textFrames.length - 1; n >= 0; n--) 
+      loremIpsumize(myStory.textFrames[n]) 
   }
   if (myText.hasOwnProperty('paragraphs') && myText.paragraphs.length > 1) {
     // The script returns better looking results when one Paragraph is processed at a time
     var myParagraphs = myText.paragraphs.everyItem().getElements()
-    for (var m = myParagraphs.length - 1; m >= 0; m--) {
-      loremIpsumize(myParagraphs[m]) // clever recurson
-    }
+    for (var m = myParagraphs.length - 1; m >= 0; m--) 
+      loremIpsumize(myParagraphs[m]) 
   } else if (myText.contents !== '') {
     app.findGrepPreferences = NothingEnum.nothing
     app.changeGrepPreferences = NothingEnum.nothing
@@ -35,25 +33,19 @@ function loremIpsumize(myText) {
 
     var storyLineNumber = myStory.lines.length // remembers how many lines the story has, and tries to make the new text the same number of lines
     var myWordMatches = myText.findGrep() // an array of Word references that fit the grep
-    for (var i = myWordMatches.length - 1; i >= 0; i--) {
+    for (var i = myWordMatches.length - 1; i >= 0; i--) 
       myWordMatches[i].contents = loremipsumWord(myWordMatches[i].contents) // changes the word into a random latin-sounding one
-    }
     fineTuneText(storyLineNumber)
   }
 
   function fineTuneText(targetNumberOfLines) {
     // tries to make the text the correct number of lines by adding or subtracting one letter at a time
     var myNumberOfCharacters
-    var newWord
-    var myWord
     while (targetNumberOfLines !== myStory.lines.length) {
       myNumberOfCharacters = myText.characters.length
-      for (
-        var changeWord = myWordMatches.length - 1;
-        changeWord >= 0;
-        changeWord--
-      ) {
-        myWord = myWordMatches[changeWord]
+      for ( var i = myWordMatches.length - 1; i >= 0; i--) {
+        var myWord = myWordMatches[i]
+        var newWord
         if (targetNumberOfLines > myStory.lines.length) {
           newWord = loremipsumWord(myWord.contents + 'a') // adds a letter
         } else if (targetNumberOfLines < myStory.lines.length) {
