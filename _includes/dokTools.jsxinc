@@ -6,7 +6,7 @@ dokTools.velgStil = function(myDocument, stiltype, stilnavn) {
   minStil = myDocument[stiltype + 'Styles'].itemByName(stilnavn)
   if (minStil == null) {
     minStil = myDocument[stiltype + 'Styles'].add({
-      name: stilnavn,
+      name: stilnavn
     })
   }
   return minStil
@@ -27,9 +27,9 @@ dokTools.sjekkOverlapp = function(mySpread, GB) {
   for (i = 0; i < pageItems.length; i += 1) {
     item = pageItems[i]
     try {
-    itemGB = item.geometricBounds
+      itemGB = item.geometricBounds
     } catch (e) {
-        continue
+      continue;
     }
     if (
       !(
@@ -230,13 +230,13 @@ dokTools.finnLedigPlass = function(mySpread, spalter) {
         spalteGuides = [right]
         for (var i = 0; i < sidespalter; i++) {
           spalteGuides.push(
-            spalteGuides[0] + spaltebredde * (i + 1) + spaltemellomrom * i,
+            spalteGuides[0] + spaltebredde * (i + 1) + spaltemellomrom * i
           )
           if (i < sidespalter) {
             spalteGuides.push(
               spalteGuides[0] +
                 spaltebredde * (i + 1) +
-                spaltemellomrom * (i + 1),
+                spaltemellomrom * (i + 1)
             )
           }
         }
@@ -252,7 +252,7 @@ dokTools.finnLedigPlass = function(mySpread, spalter) {
       myGB = [
         spreadbounds[0],
         venstrekant,
-        spreadbounds[0] + speilhoyde / 2 - 5,
+        spreadbounds[0] + speilhoyde / 2 - 5
       ] //øverste halvdel av speilet på "side"
       for (o = 0; o < sidespalter - spalteantall + 1; o += 1) {
         myGB[1] = venstrekant + spalteGuides[o * 2]
@@ -286,7 +286,7 @@ dokTools.parseCSV = function(filePath) {
   eval(
     "result=[['" +
       fileContent.replace(/,/g, "','").replace(/\n/g, "'],['") +
-      "']];",
+      "']];"
   )
   return result
 }
@@ -371,15 +371,15 @@ dokTools.progressBar = function(myTitle, myText, myNumberofStages, canCancel) {
     'progressbar',
     [12, 12, 350, 24],
     0,
-    myNumberofStages,
+    myNumberofStages
   )
   myProgress.staticText = myProgress.window.add(
     'statictext',
     [0, 0, 340, 20],
     myText,
     {
-      alignment: 'left',
-    },
+      alignment: 'left'
+    }
   )
   myProgress.update = function(updateText, newValue) {
     this.progressBar.value = newValue || this.progressBar.value + 1
@@ -430,7 +430,7 @@ dokTools.findPosition = function(myStory) {
     for (var n = myColumns.length - 1; n >= 0; n--) {
       if (firstchar.horizontalOffset > myColumns[n]) {
         myPosition = myPosition + 1000 * n
-        break
+        break;
       }
     }
     pageNumber = myPage.name.match(/\d+/)
@@ -460,7 +460,7 @@ dokTools.findOverflows = function(myPage) {
         overflowLength -= myStory.textContainers[i].contents.length
       }
       myContents = myStory.contents.substring(
-        myStory.contents.length - overflowLength,
+        myStory.contents.length - overflowLength
       )
       myOverflows.push(myContents)
     }
@@ -480,14 +480,14 @@ dokTools.errorAlert = function(message, title) {
     readonly: false,
     borderless: false,
     multiline: true,
-    scrollable: true,
+    scrollable: true
   })
   d.rom.graphics.font = ScriptUI.newFont(f.name, f.style, f.size - 2)
   d.rom.preferredSize = [300, 300]
   d.rom.alignment = 'fill'
   d.rom.active = true
   d.ok = d.add('button', undefined, 'OK', {
-    name: 'ok',
+    name: 'ok'
   })
   d.ok.alignment = 'right'
   d.show()

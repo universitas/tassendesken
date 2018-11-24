@@ -203,7 +203,7 @@ var eksportTilProdsys = function(myDoc) {
                   myGB[i].geometricBounds[3],
                   myFrame.geometricBounds[3]
                 ) //utvider myGB hvis denne tekstrammen er til høyre
-                break
+                break;
               }
             }
             if (i == myGB.length) {
@@ -510,7 +510,7 @@ var eksportTilProdsys = function(myDoc) {
           } else {
             myRow.visArtikkelButton.enabled = false
           }
-          break
+          break;
         }
       }
 

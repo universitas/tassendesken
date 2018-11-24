@@ -45,7 +45,8 @@ function trim(str) {
 function toUnicode(theString) {
   // lager unicode-entiteter av vanskelige bokstaver, tar en string og returnerer en string
   function charToUnicode(letter) {
-    var charCode = ('0000' +
+    var charCode = (
+      '0000' +
       letter
         .charCodeAt(0)
         .toString(16)
@@ -92,7 +93,7 @@ function serializeObject(obj) {
       default:
         return pt
     }
-  } catch(e) {
+  } catch (e) {
     return obj ? obj.toSource() : typeof obj
   }
 }
@@ -124,7 +125,8 @@ function logError(error, data, logfile) {
   var time = new Date()
   var filename =
     logfile ||
-    ('ERROR.' +
+    (
+      'ERROR.' +
       error.fileName.replace(/.*SCRIPTS/, '') +
       '.' +
       time.toString().replace(/.GMT.*/, '')
@@ -136,7 +138,7 @@ function logError(error, data, logfile) {
     line: error.line,
     file: error.fileName,
     time: time.toString(),
-    data: data,
+    data: data
   }
   logToFile(jsonify(msg, 2), filename)
   return filename
@@ -149,7 +151,7 @@ function tryLogErrors(fn, rethrow) {
     try {
       return fn.apply(null, args)
     } catch (error) {
-      var data = { 'function': fn.name, arguments: args, stacktrace: $.stack }
+      var data = { function: fn.name, arguments: args, stacktrace: $.stack }
       var filename = logError(error, data)
       alert(
         'Noe gikk galt med ' +
@@ -157,7 +159,7 @@ function tryLogErrors(fn, rethrow) {
           '\n' +
           'Feilmeldingen blir lagret her: ' +
           filename,
-        'Feil',
+        'Feil'
       )
       if (rethrow) throw error
     }
@@ -191,7 +193,7 @@ function timeIt(fn) {
     var retval = fn.apply(null, arguments)
     var d1 = new Date()
     $.writeln('timeit ', fn.name, ' ', d1 - d0, 'ms')
-  } 
+  }
 }
 
 // Test runner
