@@ -185,6 +185,15 @@ function objectKeys(obj) {
   return result
 }
 
+function timeIt(fn) {
+  return function() {
+    var d0 = new Date()
+    var retval = fn.apply(null, arguments)
+    var d1 = new Date()
+    $.writeln('timeit ', fn.name, ' ', d1 - d0, 'ms')
+  } 
+}
+
 // Test runner
 function testRunner() {
   config.DEBUG = true

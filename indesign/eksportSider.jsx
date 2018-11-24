@@ -151,12 +151,8 @@ function eksportPDF(page, path) {
   }
   var myPDFpref = app.pdfExportPresets.itemByName('UNIVERSITAS')
   app.pdfExportPreferences.viewPDF = false
-  app.pdfExportPreferences.pageRange = page
-  try {
-    dok.exportFile(ExportFormat.pdfType, path, false, myPDFpref, '', true)
-  } catch (e) {
-    throw e
-  }
+  app.pdfExportPreferences.pageRange = page  
+  dok.exportFile(ExportFormat.pdfType, path, false, myPDFpref, '', true)
 }
 
 function utgave() {

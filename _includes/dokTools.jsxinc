@@ -291,6 +291,12 @@ dokTools.parseCSV = function(filePath) {
   return result
 }
 
+dokTools.zoomOut = function() {
+  // går til side 1 og zoomer ut
+  app.activeWindow.activePage = app.activeDocument.pages.firstItem()
+  app.activeWindow.zoom(ZoomOptions.SHOW_PASTEBOARD)
+}
+
 dokTools.zoomTo = function(myObj) {
   // snedig måte å zoome til et objekt på siden som har geometricBounds.
   var marg = 10 // ekstra luft i mm på arket

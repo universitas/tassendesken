@@ -4,11 +4,11 @@
 #include ../_includes/index.jsxinc
 /* jshint ignore:end */
 
-var avismal = File(config.mal_avis) // malfil for avisa
 var smallFont = config.smallFont
 
 var mekkfilerPanel = {
   visDialog: function() {
+    var myDoc = app.activeDocument
     var panelSize = 24 // max antall sider som vises i menyen
     var myPages = myDoc.pages.everyItem().getElements()
     var utgaveNr = utgave()
@@ -357,7 +357,6 @@ mekkfilerPanel.mekkSider = function(sideArray, myFolder) {
 
   if (sideArray.length > 0) {
     myFile = File(myFolder + sideArray[0].filename)
-    $.writeln(myFile)
     myDoc.save(myFile)
     myDoc.close()
     app.documents.add()
@@ -412,11 +411,18 @@ mekkfilerPanel.mekkSider = function(sideArray, myFolder) {
   }
 }
 
+function openNewspaperTemplate() {
+  var avismal = File(config.mal_avis) // malfil for avisa
+  app.open(avismal)
+  dokTools.zoomOut()
+}
+
+
 if (app.documents.length == 1) {
   var myDoc = app.activeDocument
   mekkfilerPanel.visDialog()
 } else if (app.documents.length === 0) {
-  app.open(avismal)
+  openNewspaperTemplate()
 } else {
   alert(
     'Opprett sider\rKan ikke opprette sider når du har mer enn ett dokument åpent'
