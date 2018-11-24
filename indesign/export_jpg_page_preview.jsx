@@ -4,7 +4,6 @@
 #include ../_includes/index.jsxinc
 /* jshint ignore:end */
 
-
 function exportToFile(doc, page, format) {
   var directory = new Folder(doc.filePath.path + '/PREVIEW/')
   directory.exists || directory.create()
@@ -19,15 +18,15 @@ function export_all_pages_as_pdf(doc, syncronous) {
     var page = doc.pages[i]
     var file = exportToFile(doc, page.name, 'pdf')
     app.pdfExportPreferences.pageRange = page.name
-    if (syncronous) doc.exportFile(ExportFormat.PDF_TYPE, file, false, preset);
-    else doc.asynchronousExportFile(ExportFormat.PDF_TYPE, file, false, preset);
+    if (syncronous) doc.exportFile(ExportFormat.PDF_TYPE, file, false, preset)
+    else doc.asynchronousExportFile(ExportFormat.PDF_TYPE, file, false, preset)
   }
   preset.remove()
-}  
+}
 
 function export_all_pages_as_jpeg(doc) {
   var expPrefs = app.jpegExportPreferences
-  expPrefs.jpegQuality = JPEGOptionsQuality.MEDIUM  
+  expPrefs.jpegQuality = JPEGOptionsQuality.MEDIUM
   expPrefs.jpegExportRange = ExportRangeOrAllPages.EXPORT_RANGE
   expPrefs.useDocumentBleeds = true
   expPrefs.exportingSpread = false
@@ -36,7 +35,7 @@ function export_all_pages_as_jpeg(doc) {
     var page = doc.pages[i]
     var file = exportToFile(doc, page.name, 'jpg')
     expPrefs.pageString = page.name
-    doc.exportFile(ExportFormat.JPG, file , false)
+    doc.exportFile(ExportFormat.JPG, file, false)
   }
 }
 

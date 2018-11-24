@@ -1,13 +1,16 @@
 // vim: set ft=javascript:
-// Denne fila inneholder instrukser for hvordan diverse artikkeltyper skal importeres fra prodsys til Indesign.
-// Hvis det legges til nye seksjoner eller artikkeltyper må det opprettes nye objekter i dette skriptet.
+// Denne fila inneholder instrukser for hvordan diverse artikkeltyper skal
+// importeres fra prodsys til Indesign.  Hvis det legges til nye seksjoner
+// eller artikkeltyper må det opprettes nye objekter i dette skriptet.
 
-var artikkelTypeArray = dokTools.parseCSV(config.importCSV) // lager en array fra importfila
+var artikkelTypeArray = dokTools.parseCSV(config.importCSV)
 var artikkeltyper = {}
 var minArtikkeltype = {}
 
 artikkeltyper.liste = function() {
-  // returnerer et objekt som inneholder en array over artikkeltypenavn og en array av selve artikkeltype-objektet. Brukes for å lage rullegardinmenyer i dialogboksen i import.jsx
+  // returnerer et objekt som inneholder en array over artikkeltypenavn og en
+  // array av selve artikkeltype-objektet. Brukes for å lage rullegardinmenyer
+  // i dialogboksen i import.jsx
   var resultat = []
   for (var element in this) {
     // this = objektet artikkeltyper
@@ -224,13 +227,20 @@ var Artikkeltype = function() {
   this.undersak = 'Annet' // sakstypen for undersak
   this.erType = function(myJSON) {
     return this.mappe === myJSON.mappe ? 'mappe' : false
-  } // returns true hvis myString trolig er denne artikkeltypen. Denne metoden kan være nyttig hvis prodsys sine artikkeltyper ("mapper") ikke stemmer helt overens med de som faktisk brukes i avisa.
+  }
+  // returns true hvis myString trolig er denne artikkeltypen. Denne metoden
+  // kan være nyttig hvis prodsys sine artikkeltyper ("mapper") ikke stemmer
+  // helt overens med de som faktisk brukes i avisa.
   this.taGrep = function(myString) {
     return myString
-  } // gjør diverse GREP (regular expressions/søk og erstatt og lignende) med råteksten
+  }
+  // gjør diverse GREP (regular expressions/søk og erstatt og lignende) med
+  // råteksten
   this.gjorKlar = function(minArtikkel) {
     return true
-  } // funksjon som gjør siden klar for å plassere artikkelen (trengs kun for noen spesielle sakstyper)
+  }
+  // funksjon som gjør siden klar for å plassere artikkelen (trengs kun for
+  // noen spesielle sakstyper)
   this.opprydding = function(minPageItem) {
     // funksjon som rydder opp hver enkel tekstramme i en sak
     if (this.autolayout == 'TRUE') {

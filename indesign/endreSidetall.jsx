@@ -126,7 +126,7 @@ function nestefredag(idag) {
   var FREDAG = 5 //Fredag
   var UKESTART = 3 //Onsdag
   fredag.setDate(
-    idag.getDate() + FREDAG + UKESTART - (idag.getDay() + UKESTART) % UKE
+    idag.getDate() + FREDAG + UKESTART - ((idag.getDay() + UKESTART) % UKE)
   )
   var YY = fredag
     .getFullYear()

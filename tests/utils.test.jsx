@@ -13,10 +13,8 @@ function test_jsonify() {
 
 function test_logFail() {
   function failFunction(because) {
-    if (because) 
-      throw new Error('this fails ' + because)
-    else
-      return 'OK'
+    if (because) throw new Error('this fails ' + because)
+    else return 'OK'
   }
   tryLogErrors(failFunction)('just because')
   assert(tryLogErrors(failFunction)() == 'OK')

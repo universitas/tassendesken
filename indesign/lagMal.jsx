@@ -17,7 +17,9 @@ function main() {
 }
 
 function mekkMalGeo(selection) {
-  if (selection.length === 0) { return }
+  if (selection.length === 0) {
+    return
+  }
   var myPrompt = selection[0].label
   var sakstype = myPrompt
 
@@ -82,7 +84,6 @@ function mekkMalGeo(selection) {
 
   myReport = tagReport(selection, sakstype)
 
-
   var myName = myReport.split('\r')[0].replace(/\s/g, ' ')
   if (addToLibrary && myLibrary.itemByName(myName) === null) {
     var myAsset = myGroup.store(myLibrary)
@@ -120,9 +121,11 @@ function summaryOnPage(report, templateGroup) {
 
   myGB = [
     myGB[0],
-    (templateGroup.geometricBounds[1] + templateGroup.geometricBounds[3]) / 2 - myGB[3] / 2,
+    (templateGroup.geometricBounds[1] + templateGroup.geometricBounds[3]) / 2 -
+      myGB[3] / 2,
     myGB[2],
-    (templateGroup.geometricBounds[1] + templateGroup.geometricBounds[3]) / 2 + myGB[3] / 2
+    (templateGroup.geometricBounds[1] + templateGroup.geometricBounds[3]) / 2 +
+      myGB[3] / 2
   ]
   app.select(myGroup)
 
@@ -134,7 +137,7 @@ function summaryOnPage(report, templateGroup) {
   while (myReportTextFrame.overflows) {
     myGB[2] += 5
     if (myGB[2] - myGB[0] > 100) {
-      break
+      break;
     }
     myReportTextFrame.geometricBounds = myGB
   }
@@ -326,4 +329,3 @@ function tagReport(myTextFrames, sakstype) {
   }
   return makeReport()
 }
-

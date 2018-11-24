@@ -21,7 +21,7 @@ function taGrep(rotestring) {
     /@fakta:([^\r\n]+)[\r\n]+([^@])/gi,
     '@fakta:$1\r@fak1:$2'
   ) //sørger for riktig stiler i faktarammer
-  
+
   rotestring = rotestring.replace(/^\s*(kilder?):/gim, '@fak2:kilde:') // sørger for riktig stil i kildehenvisning i faktaramme
   rotestring = rotestring.replace(/<\/?(.)>/g, '<@$1>') // gjør om <I> og </I> til <@I> osv.
   rotestring = rotestring.replace(/ÆTT/g, '@') // gjør om ÆTT til krøllalfa

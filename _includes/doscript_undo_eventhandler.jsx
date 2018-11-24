@@ -1,3 +1,5 @@
+// vim: set ft=javascript:
+
 #target 'indesign'
 #targetengine 'session'
 

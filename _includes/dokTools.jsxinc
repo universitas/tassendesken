@@ -1,20 +1,17 @@
 // vim: set ft=javascript:
 var dokTools = {}
 
-dokTools.velgStil = function(myDocument, stiltype, stilnavn) {
-  //velger en paragraph-, cell-, table-, eller characterStyle, og oppretter en ny hvis den ikke finnes
-  minStil = myDocument[stiltype + 'Styles'].itemByName(stilnavn)
-  if (minStil == null) {
-    minStil = myDocument[stiltype + 'Styles'].add({
-      name: stilnavn
-    })
-  }
-  return minStil
+dokTools.velgStil = function(doc, type, name) {
+  // velger en paragraph-, cell-, table-, eller characterStyle, og oppretter en
+  // ny hvis den ikke finnes
+  var styles = doc[type + 'Style']
+  return styles.itemByName(name) || styles.add({ name: name })
 }
 
-dokTools.sjekkOverlapp = function(mySpread, GB) {
-  // return true hvis objektet eller GB (array av fire tall) overlapper et annet pageItem
-  var pageItems = mySpread.allPageItems
+dokTools.sjekkOverlapp = function(spread, GB) {
+  // return true hvis objektet eller GB (array av fire tall) overlapper et
+  // annet pageItem
+  var pageItems = spread.allPageItems
   var myObject
   try {
     if (GB && GB.geometricBounds) {
@@ -160,7 +157,7 @@ dokTools.finnFil = function(root, filename) {
   return null
 }
 
-dokTools.finnLedigPlass = function(mySpread, spalter) {
+dokTools.finnLedigPlass = function(spread, spalter) {
   // finner ledig plass til å lime inn minArtikkel returnerer geometricBounds eller false
   var spalteantall
   var spaltebredde
@@ -168,10 +165,10 @@ dokTools.finnLedigPlass = function(mySpread, spalter) {
   var myGB // [topp, venstre, bunn, høyre, spalteantall, spaltebredde, spaltemellomrom]
   var spreadbounds = []
 
-  spreadbounds[0] = mySpread.pages[0].marginPreferences.top // topp
-  spreadbounds[1] = mySpread.pages[0].bounds[1] // venstre
-  spreadbounds[2] = mySpread.pages[0].bounds[2] // bunn
-  spreadbounds[3] = mySpread.pages[-1].bounds[3] // høyre
+  spreadbounds[0] = spread.pages[0].marginPreferences.top // topp
+  spreadbounds[1] = spread.pages[0].bounds[1] // venstre
+  spreadbounds[2] = spread.pages[0].bounds[2] // bunn
+  spreadbounds[3] = spread.pages[-1].bounds[3] // høyre
 
   var speilhoyde = spreadbounds[2] - spreadbounds[0]
   var move = spreadbounds[3] - spreadbounds[1] + 20
@@ -207,8 +204,8 @@ dokTools.finnLedigPlass = function(mySpread, spalter) {
     var venstrekant
     var sidespalter
     var spalteGuides
-    for (n = 0; n < mySpread.pages.length; n += 1) {
-      side = mySpread.pages[n]
+    for (n = 0; n < spread.pages.length; n += 1) {
+      side = spread.pages[n]
       spalteantall = Math.min(side.marginPreferences.columnCount, spalter)
       venstrekant = spreadbounds[1] + side.bounds[1]
       if (side.name % 2 == 0) {
@@ -257,13 +254,13 @@ dokTools.finnLedigPlass = function(mySpread, spalter) {
       for (o = 0; o < sidespalter - spalteantall + 1; o += 1) {
         myGB[1] = venstrekant + spalteGuides[o * 2]
         myGB[3] = venstrekant + spalteGuides[(spalteantall + o) * 2 - 1]
-        if (dokTools.sjekkOverlapp(mySpread, myGB) == false) {
+        if (dokTools.sjekkOverlapp(spread, myGB) == false) {
           //sjekker øvre halvdel av speilet
           return myGB
         }
         myGB[0] = myGB[2] + 10
         myGB[2] = spreadbounds[2]
-        if (dokTools.sjekkOverlapp(mySpread, myGB) == false) {
+        if (dokTools.sjekkOverlapp(spread, myGB) == false) {
           //sjekker nedre halvdel av speilet
           return myGB
         }

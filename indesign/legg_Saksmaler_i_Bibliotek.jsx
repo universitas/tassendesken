@@ -63,7 +63,7 @@ if (!alleGrupper) {
   for (i = myPageItems.length - 1; i > -1; i--) {
     myProgressBar.update('teller grupper')
     myItem = myPageItems[i]
-    if (! dokTools.onPage(myItem) ) continue;
+    if (!dokTools.onPage(myItem)) continue;
     mySpread = myItem
     if (myItem instanceof Group || myItem instanceof TextFrame) {
       while (
@@ -92,11 +92,11 @@ if (!alleGrupper) {
     myPage = myItems[i][0]
     app.select(myItem)
     dokTools.zoomTo(myItem)
-    
+
     if (myItem.label !== '') {
       var svar = mekkMalGeo([myItem], false)
       if (svar === undefined) {
-        continue
+        continue;
       }
       myItem = svar[0]
       itemName = svar[1].split('\r')[0].replace(/\s/g, ' ')
@@ -112,7 +112,7 @@ if (!alleGrupper) {
         myAsset.label = myReport
       }
     } else {
-      dokTools.zoomTo(myItem)      
+      dokTools.zoomTo(myItem)
       itemName = prompt('Malnavn? ')
       // itemName = '[' + myItem.constructor.name + '] id# ' + myItem.id
       myProgressBar.update('side ' + myPage.name + '  ' + itemName)

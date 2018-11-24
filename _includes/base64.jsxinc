@@ -29,7 +29,7 @@ var Base64 = {
         enc4 = 64
       }
 
-      output =
+      output +=
         output +
         Base64._keyStr.charAt(enc1) +
         Base64._keyStr.charAt(enc2) +

@@ -10,15 +10,14 @@ var eksporterDefault = true
 
 function getDocument() {
   var doc, errorMsg
-  try { 
-    doc = app.activeDocument 
-    if (doc.saved) 
-      return doc
-    errorMsg =  
+  try {
+    doc = app.activeDocument
+    if (doc.saved) return doc
+    errorMsg =
       'Kan ikke opprette PDF\r' +
       'Lagre dokumentet før du lager kan eksportere en pdf'
-  } catch (e) { 
-    errorMsg = 'Åpne et dokument' 
+  } catch (e) {
+    errorMsg = 'Åpne et dokument'
   }
   alert(errorMsg)
   exit()
@@ -33,7 +32,7 @@ function main() {
   var fileNameRoot = doc.name.match(/UNI11VER/)
     ? doc.name.slice(0, -10)
     : 'UNI11VER' + nextFriday()
-    
+
   var eksportliste = []
   var myDialog = app.dialogs.add({
     name: 'Eksporter til PDF',
@@ -85,7 +84,8 @@ function main() {
     for (i = 0; i < dialogbokser.length; i += 1) {
       if (dialogbokser[i][0].checkedState) {
         var pg = eksportliste[i]
-        var message = 'Eksporterer side ' + pg.pageNumber + ' til pdf\n' + pg.filnavn
+        var message =
+          'Eksporterer side ' + pg.pageNumber + ' til pdf\n' + pg.filnavn
         myProgressBar.update(message, i + 1)
         pg.filnavn = dialogbokser[i][1].editContents
         pg.path = new File(outputDirectory + pg.filnavn)
@@ -100,7 +100,7 @@ function main() {
 function exportPage(doc, page, path) {
   var preset = app.pdfExportPresets.itemByName('UNIVERSITAS')
   app.pdfExportPreferences.viewPDF = false
-  app.pdfExportPreferences.pageRange = page  
+  app.pdfExportPreferences.pageRange = page
   doc.exportFile(ExportFormat.pdfType, path, false, preset, '', true)
 }
 
@@ -109,23 +109,23 @@ function zeroPad(width, fillchar) {
   var padding = Array(width + 1).join(fillchar || '0')
   return function(n) {
     var digits = '' + n
-    return digits.length < width
-      ? (padding + digits).slice(-width)
-      : digits
+    return digits.length < width ? (padding + digits).slice(-width) : digits
   }
 }
 
 function currentIssue(root) {
   // Finner kommende currentIssue av avisa ved å lete etter mappe med høyest tall.
-  for (var i = 50; i > 0; i--) 
-    if (Folder(path + zeroPad(2)(i)).exists) return i;
+  for (var i = 50; i > 0; i--) if (Folder(path + zeroPad(2)(i)).exists) return i
   throw new Error('could not find folder')
 }
 
 function nextFriday() {
   var now = new Date()
   now.setDate(now.getDate() + (5 - now.getDay()))
-  var year = then.getFullYear().toString().slice(-2)
+  var year = then
+    .getFullYear()
+    .toString()
+    .slice(-2)
   var month = zeroPad(2)(then.getMonth())
   var day = zeroPad(2)(then.getDate())
   return year + month + day

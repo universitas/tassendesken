@@ -157,10 +157,8 @@ var mekkfilerPanel = {
         minRad.filename.helpTip = 'Filnavn'
         minRad.filename.onChange = (function(aktivRad) {
           return function() {
-            aktivRad.filename.text = (aktivRad.filename.text.replace(
-              /[^a-z0-9.]+/gi,
-              '_'
-            ) + '.'
+            aktivRad.filename.text = (
+              aktivRad.filename.text.replace(/[^a-z0-9.]+/gi, '_') + '.'
             ).replace(/\..*/, '.indd')
             pageArray[aktivRad.pageArrayIndex].filename = aktivRad.filename.text
           }
@@ -416,7 +414,6 @@ function openNewspaperTemplate() {
   app.open(avismal)
   dokTools.zoomOut()
 }
-
 
 if (app.documents.length == 1) {
   var myDoc = app.activeDocument

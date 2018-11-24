@@ -17,6 +17,7 @@ var http = {}
 http.use_mock = function() {
   return false
 }
+
 http.dummy_connect = function(request) {
   log('DUMMY REQUEST')
   log(request)
@@ -27,6 +28,7 @@ http.dummy_connect = function(request) {
     request: request
   }
 }
+
 http.connect = function(request, encoding, host, port) {
   if (this.use_mock(request)) return this.dummy_connect(request)
   var hostString = host + ':' + port

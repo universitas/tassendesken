@@ -1,3 +1,5 @@
+// vim: set ft=javascript:
+
 function toArray(collection) {
   if (collection instanceof Array) return collection
   if (collection.hasOwnProperty('everyItem'))
