@@ -2,6 +2,11 @@
 // endringer skal kunne gjøres i denne fila.  Oppstartskriptene bruker ikke
 // denne config-fila, så de må endres for seg.
 
+// OBS: pass på at ikke passord etc blir lagt inn i git
+// bruk denne kommandoen for å ignorere endringer:
+// 
+// git update-index --skip-worktree config_local.jsxinc
+
 config.DEBUG = true
 config.api.PORT = 0
 config.api.ENDPOINT = "SECRET"
