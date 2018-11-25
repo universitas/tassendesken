@@ -1,8 +1,22 @@
+#target "indesign";
+#targetengine "session";
+#includepath "../_includes/";
+#include "index.jsxinc";
+
+function main() {
+  app.scriptPreferences.enableRedraw = false
+  try {
+    map(loremIpsumize)(app.selection)
+  } finally {
+    app.scriptPreferences.enableRedraw = true
+  }
+}
+
 function loremIpsumize(myText) {
   // myText could be a TextFrame, Story, InsertionPoint, Word, Text etc...
 
   var myStory // the parent Story of myText
-
+  
   if (myText instanceof Story) {
     myStory = myText
   } else if (myText instanceof InsertionPoint) {
@@ -40,14 +54,15 @@ function loremIpsumize(myText) {
   function fineTuneText(targetNumberOfLines) {
     // tries to make the text the correct number of lines by adding or subtracting one letter at a time
     var myNumberOfCharacters
-    while (targetNumberOfLines !== myStory.lines.length) {
+    while (true) {
+      var actualLength = myStory.lines.length
       myNumberOfCharacters = myText.characters.length
       for (var i = myWordMatches.length - 1; i >= 0; i--) {
         var myWord = myWordMatches[i]
         var newWord
-        if (targetNumberOfLines > myStory.lines.length) {
+        if (targetNumberOfLines > actualLength) {
           newWord = loremipsumWord(myWord.contents + 'a') // adds a letter
-        } else if (targetNumberOfLines < myStory.lines.length) {
+        } else if (targetNumberOfLines < actualLength) {
           newWord =
             myWord.contents.length > 1
               ? loremipsumWord(myWord.contents.slice(0, -1))
@@ -98,349 +113,6 @@ function loremIpsumize(myText) {
 }
 
 var loremIpsumDictionary = [
-  [''], // this is the dictionary of words sorted by number of letters. The words are taken from InDesigns "fill with placeholder text"-feature
-  ['a', 'e', 'y'],
-  [
-    'el',
-    'si',
-    'em',
-    'se',
-    'an',
-    'er',
-    'do',
-    're',
-    'te',
-    'at',
-    'os',
-    'od',
-    'to',
-    'et',
-    'eu',
-    'ud',
-    'na',
-    'ex',
-    'ed',
-    'ut',
-    'ad',
-    'il',
-    'in',
-    'la',
-    'it',
-    'is',
-    'ip',
-    'am',
-    'ea'
-  ],
-  [
-    'ing',
-    'lam',
-    'vel',
-    'lan',
-    'lis',
-    'lor',
-    'ute',
-    'ver',
-    'con',
-    'lum',
-    'lut',
-    'ibh',
-    'del',
-    'unt',
-    'min',
-    'mod',
-    'feu',
-    'nim',
-    'nis',
-    'nit',
-    'non',
-    'nos',
-    'bla',
-    'eum',
-    'eui',
-    'num',
-    'aut',
-    'dio',
-    'odo',
-    'wis',
-    'tis',
-    'tio',
-    'pis',
-    'pit',
-    'qui',
-    'ate',
-    'tin',
-    'tie',
-    'ese',
-    'tet',
-    'tem',
-    'dip',
-    'rat',
-    'ero',
-    'ril',
-    'rit',
-    'ros',
-    'dit'
-  ],
-  [
-    'duis',
-    'alit',
-    'dunt',
-    'ecte',
-    'sisi',
-    'elis',
-    'elit',
-    'enim',
-    'enis',
-    'enit',
-    'sent',
-    'wisl',
-    'erat',
-    'amet',
-    'tate',
-    'alis',
-    'erci',
-    'erit',
-    'wisi',
-    'eros',
-    'esed',
-    'esse',
-    'essi',
-    'dion',
-    'atem',
-    'atet',
-    'acil',
-    'esto',
-    'atio',
-    'quis',
-    'atue',
-    'etue',
-    'quip',
-    'ting',
-    'etum',
-    'atum',
-    'quat',
-    'quam',
-    'diat',
-    'euip',
-    'prat'
-  ],
-  [
-    'lorem',
-    'ispum',
-    'magna',
-    'ulput',
-    'lutem',
-    'minci',
-    'minis',
-    'lummy',
-    'commy',
-    'adiat',
-    'minit',
-    'conse',
-    'lorer',
-    'lorem',
-    'ullum',
-    'adiam',
-    'lobor',
-    'modip',
-    'modit',
-    'lenit',
-    'lenim',
-    'laore',
-    'cipit',
-    'molor',
-    'utpat',
-    'velis',
-    'iusto',
-    'iusci',
-    'iurem',
-    'molum',
-    'velit',
-    'ullan',
-    'ullam',
-    'nisci'
-  ],
-  [
-    'mconse',
-    'magnit',
-    'mincip',
-    'magnis',
-    'magnim',
-    'minisi',
-    'minisl',
-    'lutpat',
-    'wissis',
-    'wissim',
-    'acidui',
-    'modiat',
-    'commod',
-    'luptat',
-    'wiscip',
-    'wiscin',
-    'lumsan',
-    'wiscil',
-    'molent',
-    'cinibh',
-    'lortio',
-    'vulput',
-    'molore',
-    'lortin',
-    'lortie',
-    'vullut',
-    'vullan',
-    'vullam',
-    'ncidui',
-    'volute',
-    'lorper'
-  ],
-  [
-    'feuisci',
-    'sustrud',
-    'ationse',
-    'feuisis',
-    'feuisit',
-    'feuguer',
-    'feuismo',
-    'feugiat',
-    'feummod',
-    'feugiam',
-    'hendiam',
-    'feugait',
-    'dolorem',
-    'andreet',
-    'suscipi',
-    'hendrem',
-    'hendrer',
-    'facipit',
-    'heniamc',
-    'amconul',
-    'atuerat',
-    'facipis',
-    'dolorer',
-    'facinim',
-    'tetummy',
-    'facinim',
-    'delesto'
-  ],
-  [
-    'dolortis',
-    'vendreet',
-    'vullutat',
-    'consequi',
-    'niatuero',
-    'eugiamet',
-    'nismodit',
-    'adignibh',
-    'eugiatet',
-    'zzriusto',
-    'doluptat',
-    'veliquat',
-    'nonsecte',
-    'veliquam',
-    'velestis',
-    'dolortio',
-    'nonsenim',
-    'velessim',
-    'dolortin',
-    'dolortie',
-    'velenibh',
-    'nonsequi',
-    'veleniat',
-    'conullam',
-    'eraessit'
-  ],
-  [
-    'iriliquis',
-    'blandipis',
-    'quismolor',
-    'irillamet',
-    'consequis',
-    'iriuscing',
-    'blaorerit',
-    'iriustrud',
-    'etuerosto',
-    'nissectet',
-    'vendiamet',
-    'volestisl',
-    'dionsenim',
-    'digniamet',
-    'eniatisit',
-    'quamcommy',
-    'iurerosto',
-    'ionsequat',
-    'ptatueros',
-    'consequat',
-    'duiscipit',
-    'scillummy',
-    'veliquisl'
-  ],
-  [
-    'loremipsum',
-    'exeriurero',
-    'nummodolor',
-    'ullamcommy',
-    'veriliquat',
-    'conulputat',
-    'uismodolor',
-    'exeraessit',
-    'exerostrud',
-    'nullaortis',
-    'tisiscipis',
-    'nullaoreet',
-    'nullandrem',
-    'odigniamet',
-    'nullandiat',
-    'verciduisi',
-    'erciduisit',
-    'faciduisim',
-    'lummolessi',
-    'facincipit',
-    'voloreetum'
-  ],
-  [
-    'dolortionum',
-    'veliquiscil',
-    'euguerostie',
-    'veliquamcon',
-    'aciliquisim',
-    'eummolestin',
-    'adionsequat',
-    'adipsustrud',
-    'vercincinis',
-    'dolorpercin',
-    'exeraestrud',
-    'ullaorperit',
-    'wismolobore',
-    'amconsequis',
-    'essequating',
-    'facipsustio',
-    'doloreetuer',
-    'elesequisim',
-    'augiametuer'
-  ],
-  [
-    'dolutatueros',
-    'adigniamcore',
-    'velesequipit',
-    'adigniscipis',
-    'eummolortion',
-    'dolorperiure',
-    'dolorpercing',
-    'ulputpatetue',
-    'uipsuscidunt',
-    'aliquipsusci',
-    'tumsandionse',
-    'tionsequisim',
-    'facilismolut',
-    'facillametum',
-    'atueraestrud',
-    'sustionsenim',
-    'iliquatiniat',
-    'dolenismodit'
-  ]
-]
-
-loremIpsumDictionary = [
   [''], // Gangsta!
   ['i', 'a'],
   [
@@ -725,4 +397,14 @@ loremIpsumDictionary = [
     'fermentizzle'
   ]
 ]
+
+if (ifMain($.fileName)) app.doScript(
+        main,
+        ScriptLanguage.JAVASCRIPT,
+        [],
+        UndoModes.ENTIRE_SCRIPT,
+        'loremipsum'
+    )
+
+
 // vi: ft=javascript

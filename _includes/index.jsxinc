@@ -1,7 +1,8 @@
-#include "json2.jsxinc"
 #include "base64.jsxinc"
 #include "functional_programming.jsxinc"
 #include "utils.jsxinc"
 #include "dokTools.jsxinc"
 #include "config.jsxinc"
+#include "json2.jsxinc"
+
 // vi: ft=javascript

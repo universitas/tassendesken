@@ -59,6 +59,15 @@ function map(fn) {
   }
 }
 
+function find(fn) {
+  // (a -> bool) -> [a] -> a|null
+  return function(arr) {
+    for (var i = 0; i < arr.length; i++) 
+      if (fn(arr[i])) return arr[i]
+    return null
+  }
+}
+
 function filter(fn) {
   // filter
   // (a -> bool) -> [a] -> [a]
@@ -99,6 +108,13 @@ function complement(fn) {
   // (* -> bool) -> (* -> bool)
   return function() {
     return !fn.apply(this, arguments)
+  }
+}
+
+function bind(fn, args) {
+  // bind function arguments
+  return function() {
+    return fn.apply(this, args)
   }
 }
 

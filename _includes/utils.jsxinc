@@ -1,9 +1,12 @@
 // Helper functions for logging, testing and page element manipulation
 
-function ifMain(){
-  var topOfStack = $.stack.replace(/[\[\]\s]/g, '') 
-  var currentFile = $.fileName.replace(/^.*\//, '')
-  return currentFile == topOfStack
+function ifMain(filename){
+  if (typeof filename == 'undefined')  
+    throw new Error('you must pass in file name `ifMain($.fileName)`')
+
+  var topOfStack = $.stack.split('\n')[0].replace(/[\[\]\s]/g, '')
+  var currentFile = filename.replace(/^.*\//, '')
+  return currentFile === topOfStack
 }
 
 function zeroPad(width, fillchar) {
@@ -22,17 +25,17 @@ function currentIssue(root) {
 }
 
 function nextFriday() {
-  var now = new Date()
-  now.setDate(now.getDate() + (5 - now.getDay()))
-  var year = then
+  var dt = new Date()
+  dt.setDate(dt.getDate() + (5 - dt.getDay()))
+  var year = dt
     .getFullYear()
     .toString()
     .slice(-2)
-  var month = zeroPad(2)(then.getMonth())
-  var day = zeroPad(2)(then.getDate())
+  var month = zeroPad(2)(dt.getMonth())
+  var day = zeroPad(2)(dt.getDate())
   return year + month + day
 }
- 
+
 // Image -> Number
 function getImageSize(image) {
   var bounds = image.parent.geometricBounds
@@ -82,10 +85,10 @@ function toUnicode(theString) {
   function charToUnicode(letter) {
     var charCode = (
       '0000' +
-      letter
-        .charCodeAt(0)
-        .toString(16)
-        .toUpperCase()
+        letter
+      .charCodeAt(0)
+      .toString(16)
+      .toUpperCase()
     ).substr(-4, 4)
     return '\\u' + charCode
   }
@@ -136,7 +139,12 @@ function serializeObject(obj) {
 // Object -> String
 function jsonify(obj, indent) {
   // jsonify any object, including errors and indesign native objects
-  indent = indent || config.DEBUG ? 2 : 0
+  if (typeof indent == 'undefined') indent == config.DEBUG ? 2 : 0
+  // workaround for indent bug for empty object and array
+  if (obj && typeof obj == 'object') {
+      if (obj && obj.toSource() == '({})') return '{}'
+      if (obj && obj.toSource() == '[]' ) return '[]'    
+  }
   return JSON.stringify(serializeObject(obj), null, indent)
 }
 
@@ -161,18 +169,18 @@ function logError(error, data, logfile) {
   var datestamp = JSON.stringify(new Date()).substr(0,20)
   var scriptfile = error.fileName.replace(/.*SCRIPTS/, '')
   var filename =
-    logfile || ('ERROR.' + datestamp + '.' + scriptfile)
+    logfile || ('ERROR.' + datestamp + '.') + scriptfile
       .replace(/\W+/g, '-')
       .toLowerCase() + '.json'
-  var msg = {
-    message: error.message,
-    line: error.line,
-    file: scriptfile,
-    time: datestamp,
-    data: data
-  }
-  logToFile(jsonify(msg, 2), filename)
-  return filename
+    var msg = {
+      message: error.message,
+      line: error.line,
+      file: scriptfile,
+      time: datestamp,
+      data: data
+    }
+    log(jsonify(msg, 2), filename)
+    return filename
 }
 
 // try to call function. Log errors to file
@@ -184,14 +192,9 @@ function tryLogErrors(fn, rethrow) {
     } catch (error) {
       var data = { functionName: fn.name, arguments: args, stacktrace: $.stack }
       var filename = logError(error, data)
-      alert(
-        'Noe gikk galt med ' +
-          error.fileName +
-          '\n' +
-          'Feilmeldingen blir lagret her: ' +
-          filename,
-        'Feil'
-      )
+      var msg = ['Noe gikk galt med ', error.fileName, '\n' ,
+        'Feilmeldingen blir lagret her: ', filename].join('')
+      if (!config.DEBUG) alert(msg, 'Feil')
       if (rethrow) throw error
     }
   }
@@ -200,12 +203,12 @@ function tryLogErrors(fn, rethrow) {
 // (String | Object, ?String) -> void
 function log(message, filename) {
   if (config.DEBUG || filename == '$') {
-    if (! typeof message === 'string')
+    if (typeof message !== 'string')
       message = jsonify(message, 2)
     // log to extendscript console
     $.writeln(message)
-  } else if (filename) 
-    logToFile(message, filename)
+  } else if (filename)
+  logToFile(message, filename)
 }
 
 // Object -> [String]
@@ -228,27 +231,48 @@ function timeIt(fn) {
   }
 }
 
+
+
 // Test runner
-function testRunner() {
+function testRunner(raise) {
   config.DEBUG = true
   $.level = 2 // full debug mode
   for (name in $.global) {
     if (/test_/.test(name)) {
       fn = $.global[name]
+      if (raise) {
+        fn()
+      } else {
       try {
-        $.write('running tests:' + name)
+        $.write('running tests: ' + name)
         fn()
         $.write(' Ok\n')
-      } catch (error) {
-        log('\n' + error.fileName + ':' + error.line + '\n' + error.message)
+      } catch (err) {
+        log('\n' + err.fileName + ':' + err.line + '\n' + err.message)
       }
+    }
     }
   }
 }
 
 // Test assertions
 function assert(bool, msg) {
-  if (!bool) throw new Error('ASSERTION ERROR: ' + (msg || 'no message'))
+  if (!bool) {
+    $.writeln($.stack)
+    throw new Error('ASSERTION ERROR: ' + (msg || 'no message'))
+  }
+}
+
+function assertEqual(a, b) {
+  if (a === b) return true
+  msg = 'expected ' + jsonify(b) + ' got ' + jsonify(a)
+  throw new Error('ASSERTION ERROR: ' + msg)
+}
+
+function assertRaises(fn, msg) {
+  try { fn() } catch (e) { return }
+  $.writeln($.stack)
+  throw new Error('ASSERTION ERROR: ' + (msg || 'no message'))
 }
 
 // vi: ft=javascript
