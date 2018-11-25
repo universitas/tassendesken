@@ -1,4 +1,3 @@
-// vim: set ft=javascript:
 // Denne fila inneholder instrukser for hvordan diverse artikkeltyper skal
 // importeres fra prodsys til Indesign.  Hvis det legges til nye seksjoner
 // eller artikkeltyper må det opprettes nye objekter i dette skriptet.
@@ -406,3 +405,4 @@ with (artikkeltyper['magasin']) {
     return myString
   }
 }
+// vi: ft=javascript

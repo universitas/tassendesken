@@ -1,7 +1,5 @@
-/* jshint ignore:start */
 #includepath "../_includes/"
 #include "prodsys.jsxinc"
-/* jshint ignore:end */
 
 var artikkeltyper = {
   // Hvilken mappe skal bildefilene lagres i? Dette objektet BØR oppdateres hvis det skjer endringer i prodsys.
@@ -544,3 +542,4 @@ function utgave() {
   }
   return 0
 }
+// vi: ft=javascript

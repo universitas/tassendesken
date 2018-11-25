@@ -1,8 +1,6 @@
-/* jshint ignore:start */
 #includepath "../_includes/"
 #include "importpanel.jsxinc";
 #include "prodsys.jsxinc";
-/* jshint ignore:end */
 
 function onImportClick(aktivSak, artikkeltype, importImages) {
   log(aktivSak)
@@ -16,3 +14,4 @@ importPanel(onImportClick)
 //~   log(response.error ? response.error.message : response.json.results.length);
 //~   log(response.body.length);
 //~ }
+// vi: ft=javascript

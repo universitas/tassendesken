@@ -1,9 +1,10 @@
-#vim:ft=bash:
-
-function prettify() {
+# bash function to use prettier with extendscript syntax
+function pretty() {
   if [[ $# ]]; then files=$@; else files=*.js*; fi
   sed -i 's|^#|//#|' $files
   prettier --parser babylon --write $files
   sed -i 's|^//#|#|' $files
   sed -i 's/\(continue\|break\)$/\1;/' $files
 }
+
+# vi:ft=sh

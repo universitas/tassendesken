@@ -1,4 +1,3 @@
-// vim: set ft=javascript:
 /*
   json2.js
   2014-02-04
@@ -486,3 +485,4 @@ if (typeof JSON !== 'object') {
     }
   }
 })()
+// vi: ft=javascript

@@ -1,5 +1,3 @@
-// vim: set ft=javascript:
-
 var Base64 = {
   // http://stackoverflow.com/a/6740027/1977847
   // private property
@@ -125,3 +123,4 @@ var Base64 = {
     return string
   }
 }
+// vi: ft=javascript

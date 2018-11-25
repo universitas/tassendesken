@@ -51,3 +51,4 @@ findTables(app.selection[0])
 //~   UndoModes.ENTIRE_SCRIPT,
 //~   'doscript',
 //~ );
+// vi: ft=javascript

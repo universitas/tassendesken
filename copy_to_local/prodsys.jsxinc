@@ -1,5 +1,3 @@
-// vim: set ft=javascript:
-
 function importerSak(sak, artikkeltype) {
   // placeholder som skal erstattes med en annen funksjon i skriptet import.jsx
   try {
@@ -134,3 +132,4 @@ prodsys.request = function(method, pk, payload, attrs) {
   }
   return response
 }
+// vi: ft=javascript

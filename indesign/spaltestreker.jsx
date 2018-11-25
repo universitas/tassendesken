@@ -50,3 +50,4 @@ function addGutterLines(textFrame) {
     line.paths[0].pathPoints[1].anchor = [x, bounds[2]]
   }
 }
+// vi: ft=javascript

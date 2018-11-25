@@ -1,4 +1,3 @@
-// vim: set ft=javascript:
 #include "../_includes/index.jsxinc"; // diverse konfigurasjonsverdier
 #include "../_includes/index.jsxinc"; // diverse konfigurasjonsverdier
 
@@ -58,3 +57,4 @@ function test_http_methods() {
     'expected http status 404 NOT FOUND, got ' + response.status
   )
 }
+// vi: ft=javascript

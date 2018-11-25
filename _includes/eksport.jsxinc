@@ -1,4 +1,3 @@
-// vim: set ft=javascript:
 #include "prodsys.jsxinc"
 
 // Story | TextFrame -> Boolean
@@ -911,3 +910,4 @@ if ($.stack.replace(/[\[\]\s]/g, '') == $.fileName.replace(/^.*\//, '')) {
 
   eksportTilProdsys(app.activeDocument)
 }
+// vi: ft=javascript

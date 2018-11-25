@@ -14,3 +14,4 @@ function get(url, headers) {
 
 data = get('http://universitas.no/api/legacy/')
 $.writeln(data.substr(0, 500))
+// vi: ft=javascript

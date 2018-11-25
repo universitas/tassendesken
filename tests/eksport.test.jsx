@@ -1,11 +1,9 @@
-/* jshint ignore:start */
 #target "indesign"
 #targetengine "session"
 #includepath "../_includes/"
 #include "prodsys.jsxinc"
 #include "dokTools.jsxinc"
 #include "eksport.jsxinc"
-/* jshint ignore:end */
 
 config.DEBUG = true
 http.use_mock = function(request) {
@@ -18,3 +16,4 @@ try {
   exit()
 }
 eksportTilProdsys(dok)
+// vi: ft=javascript

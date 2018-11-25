@@ -1,8 +1,6 @@
-/* jshint ignore:start */
 #targetengine session
 #includepath ../_includes
 #include utils.jsxinc
-/* jshint ignore:end */
 
 main()
 function main() {
@@ -126,3 +124,4 @@ function open_indesign_libraries(folder) {
     app.open(myLibraries[i])
   }
 }
+// vi: ft=javascript

@@ -9,3 +9,4 @@ var myRunScript = function(scriptFile, scriptFolder) {
 }
 
 myRunScript(scriptFile, scriptFolder)
+// vi: ft=javascript

@@ -60,3 +60,4 @@ if ($.os.match('Windows')) {
     alert(e)
   }
 }
+// vi: ft=javascript

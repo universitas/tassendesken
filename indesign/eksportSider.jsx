@@ -23,6 +23,13 @@ function getDocument() {
   exit()
 }
 
+function exportPage(doc, page, path) {
+  var preset = app.pdfExportPresets.itemByName('UNIVERSITAS')
+  app.pdfExportPreferences.viewPDF = false
+  app.pdfExportPreferences.pageRange = page
+  doc.exportFile(ExportFormat.pdfType, path, false, preset, '', true)
+}
+
 function main() {
   var doc = getDocument()
   var outputDirectory = doc.filePath.path + '/PDF/'
@@ -97,36 +104,4 @@ function main() {
   }
 }
 
-function exportPage(doc, page, path) {
-  var preset = app.pdfExportPresets.itemByName('UNIVERSITAS')
-  app.pdfExportPreferences.viewPDF = false
-  app.pdfExportPreferences.pageRange = page
-  doc.exportFile(ExportFormat.pdfType, path, false, preset, '', true)
-}
-
-function zeroPad(width, fillchar) {
-  // zeroPad(5)(42) -> '00042'
-  var padding = Array(width + 1).join(fillchar || '0')
-  return function(n) {
-    var digits = '' + n
-    return digits.length < width ? (padding + digits).slice(-width) : digits
-  }
-}
-
-function currentIssue(root) {
-  // Finner kommende currentIssue av avisa ved å lete etter mappe med høyest tall.
-  for (var i = 50; i > 0; i--) if (Folder(path + zeroPad(2)(i)).exists) return i
-  throw new Error('could not find folder')
-}
-
-function nextFriday() {
-  var now = new Date()
-  now.setDate(now.getDate() + (5 - now.getDay()))
-  var year = then
-    .getFullYear()
-    .toString()
-    .slice(-2)
-  var month = zeroPad(2)(then.getMonth())
-  var day = zeroPad(2)(then.getDate())
-  return year + month + day
-}
+// vi: ft=javascript

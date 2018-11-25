@@ -1,8 +1,6 @@
-/* jshint ignore:start */
 #target "indesign"
 #targetengine "session"
 #include ../_includes/index.jsxinc
-/* jshint ignore:end */
 
 var smallFont = config.smallFont
 
@@ -425,3 +423,4 @@ if (app.documents.length == 1) {
     'Opprett sider\rKan ikke opprette sider når du har mer enn ett dokument åpent'
   )
 }
+// vi: ft=javascript

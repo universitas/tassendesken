@@ -2,11 +2,9 @@
 // Legger malgrupper til i et bibliotek og oppretter MAL_AVIS.indt
 // Skrevet av Håken Lid 2011
 
-/* jshint ignore:start */
 #target "indesign"
 #targetengine "session"
 #include ../_includes/index.jsxinc
-/* jshint ignore:end */
 dokTools.clearSearch()
 
 var alleGrupper = true // hvis true finner alle grupper i dokumentet og lager malgeometri, hvis false, kun den gruppen som er valgt
@@ -192,3 +190,4 @@ function lagNyAvisMal() {
   $.sleep(1000)
   myProgressBar.close()
 }
+// vi: ft=javascript

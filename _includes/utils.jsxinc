@@ -1,5 +1,38 @@
-// vim: set ft=javascript:
+// Helper functions for logging, testing and page element manipulation
 
+function ifMain(){
+  var topOfStack = $.stack.replace(/[\[\]\s]/g, '') 
+  var currentFile = $.fileName.replace(/^.*\//, ''))
+  return currentFile == topOfStack
+}
+
+function zeroPad(width, fillchar) {
+  // zeroPad(5)(42) -> '00042'
+  var padding = Array(width + 1).join(fillchar || '0')
+  return function(n) {
+    var digits = '' + n
+    return digits.length < width ? (padding + digits).slice(-width) : digits
+  }
+}
+
+function currentIssue(root) {
+  // Finner kommende currentIssue av avisa ved å lete etter mappe med høyest tall.
+  for (var i = 50; i > 0; i--) if (Folder(path + zeroPad(2)(i)).exists) return i
+  throw new Error('could not find folder')
+}
+
+function nextFriday() {
+  var now = new Date()
+  now.setDate(now.getDate() + (5 - now.getDay()))
+  var year = then
+    .getFullYear()
+    .toString()
+    .slice(-2)
+  var month = zeroPad(2)(then.getMonth())
+  var day = zeroPad(2)(then.getDate())
+  return year + month + day
+}
+ 
 // Image -> Number
 function getImageSize(image) {
   var bounds = image.parent.geometricBounds
@@ -8,6 +41,7 @@ function getImageSize(image) {
 
 // Image | Story -> String
 function getLabel(item, key) {
+  // get scripting label for indesign dom element
   var label, value, match
   if (item instanceof Image) item = item.parent
   if (item instanceof Story) item = item.textContainers[0]
@@ -28,6 +62,7 @@ function getLabel(item, key) {
 
 // (Image | Story, String | Object) -> void
 function setLabel(item, label) {
+  // set scripting label for indesign dom element
   if (typeof label !== 'string') label = jsonify(label)
   if (item instanceof Story) item = item.textContainers[0]
   if (item instanceof Image) item = item.parent
@@ -100,13 +135,14 @@ function serializeObject(obj) {
 
 // Object -> String
 function jsonify(obj, indent) {
+  // jsonify any object, including errors and indesign native objects
   indent = indent || config.DEBUG ? 2 : 0
   return JSON.stringify(serializeObject(obj), null, indent)
 }
 
 // (String | Object, ?String) -> void
 function logToFile(message, filename) {
-  // if (!config.DEBUG) return
+  // log message to file
   if (!filename) filename = 'default.log'
   var fp = File(config.logfiles + filename)
   fp.open('w')
@@ -122,22 +158,17 @@ function logToFile(message, filename) {
 
 // log error object to file
 function logError(error, data, logfile) {
-  var time = new Date()
+  var datestamp = JSON.stringify(new Date()).substr(0,20)
+  var scriptfile = error.fileName.replace(/.*SCRIPTS/, '')
   var filename =
-    logfile ||
-    (
-      'ERROR.' +
-      error.fileName.replace(/.*SCRIPTS/, '') +
-      '.' +
-      time.toString().replace(/.GMT.*/, '')
-    )
+    logfile || ('ERROR.' + datestamp + '.' + scriptfile)
       .replace(/\W+/g, '-')
       .toLowerCase() + '.json'
   var msg = {
     message: error.message,
     line: error.line,
-    file: error.fileName,
-    time: time.toString(),
+    file: scriptfile,
+    time: datestamp,
     data: data
   }
   logToFile(jsonify(msg, 2), filename)
@@ -168,31 +199,32 @@ function tryLogErrors(fn, rethrow) {
 
 // (String | Object, ?String) -> void
 function log(message, filename) {
-  // log to extendscript console
-  if (filename) {
+  if (config.DEBUG || filename == '$') {
+    if (! typeof message === 'string')
+      message = jsonify(message, 2)
+    // log to extendscript console
+    $.writeln(message)
+  } else if (filename) 
     logToFile(message, filename)
-  }
-  if (config.DEBUG)
-    $.writeln(typeof message === 'string' ? message : jsonify(message))
-  // else
-  //   $.writeln('config.DEBUG = ' + config.DEBUG)
 }
 
 // Object -> [String]
 function objectKeys(obj) {
   var result = []
-  for (key in obj) {
-    result.push(key)
-  }
+  for (key in obj) result.push(key)
   return result
 }
 
+// Debugging decorator for functions
+// Function -> Function
 function timeIt(fn) {
   return function() {
-    var d0 = new Date()
-    var retval = fn.apply(null, arguments)
-    var d1 = new Date()
-    $.writeln('timeit ', fn.name, ' ', d1 - d0, 'ms')
+    var t0 = new Date()
+    var retval = fn.apply(this, arguments)
+    var time = new Date() - t0
+    var msg='time: ' + fn.name + '(' + jsonify(arguments) + ') ' + time + 'ms'
+    $.writeln(msg)
+    return retval
   }
 }
 
@@ -218,3 +250,5 @@ function testRunner() {
 function assert(bool, msg) {
   if (!bool) throw new Error('ASSERTION ERROR: ' + (msg || 'no message'))
 }
+
+// vi: ft=javascript

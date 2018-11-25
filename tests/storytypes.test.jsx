@@ -1,4 +1,3 @@
-// vim: set ft=javascript:
 #includepath "../_includes/"
 #include "index.jsxinc"
 #include "artikkeltyper.jsxinc"
@@ -28,3 +27,4 @@ function test_story_types() {
   var storytypes = dokTools.parseCSV(config.importCSV) // lager en array fra importfila
   assert(storytypes.length == 40, 'should have correct length')
 }
+// vi: ft=javascript

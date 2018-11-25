@@ -1,4 +1,3 @@
-/* jshint ignore:start */
 #target "indesign"
 #targetengine "session"
 #includepath "../_includes/"
@@ -6,7 +5,6 @@
 #include "artikkeltyper.jsxinc"
 #include "prodsys.jsxinc"
 #include "importpanel.jsxinc"
-/* jshint ignore:end */
 
 var epostMatrix = dokTools.parseCSV(config.epostCSV) // tabell over navn og epostadresser
 var feilmeldingsBoks = [5, 5, 40, 40] // størrelsen på feilmeldingsboks når man ikke får limt inn bilder
@@ -1223,3 +1221,4 @@ function lagSkjema(myLabel, mySelection, mySpread) {
 
 importPanel(importerSak)
 app.menuActions.item('$ID/Selection Tool').invoke()
+// vi: ft=javascript

@@ -1,9 +1,7 @@
-/* jshint ignore:start */
 #target "indesign"
 #targetengine "session"
 #include ../_includes/index.jsxinc
 #include ./loremipsum.jsx
-/* jshint ignore:end */
 
 main()
 
@@ -329,3 +327,4 @@ function tagReport(myTextFrames, sakstype) {
   }
   return makeReport()
 }
+// vi: ft=javascript

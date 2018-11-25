@@ -1,5 +1,3 @@
-// vim: set ft=javascript:
-
 #includepath "../_includes";
 #include "index.jsxinc";
 #include "dokTools.jsxinc";
@@ -37,3 +35,4 @@ function utgave() {
     }
   }
 }
+// vi: ft=javascript

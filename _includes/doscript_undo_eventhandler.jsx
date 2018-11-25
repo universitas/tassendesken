@@ -1,5 +1,3 @@
-// vim: set ft=javascript:
-
 #target 'indesign'
 #targetengine 'session'
 
@@ -20,3 +18,4 @@ var handler = make_event_handler(
   'Importer fra prodsys',
   File('../indesign/import.jsx')
 )
+// vi: ft=javascript

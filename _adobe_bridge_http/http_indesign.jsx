@@ -27,3 +27,4 @@ function get(url, callback) {
 get('http://universitas.no/api/', function(ev) {
   $.writeln(ev.body)
 })
+// vi: ft=javascript

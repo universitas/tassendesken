@@ -112,7 +112,7 @@ function copyFiles(localFolder, serverFolder, fileName) {
   for (var j = 0; myFiles.length > j; j++) {
     var myFile = myFiles[j]
     if (myFile.name.substr(0, 2) == '._') {
-      continue
+      continue;
     }
     var funker = false
     var target = new File(localFolder + '/' + myFile.name)
@@ -139,3 +139,4 @@ function deleteFiles(folderName, fileName) {
 }
 
 main()
+// vi: ft=javascript

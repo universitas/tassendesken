@@ -1,5 +1,3 @@
-// vim: set ft=javascript:
-
 function checkPreflight(document, profile) {
   // Check if there's any preflight errors
   if (!document) document = app.activeDocument
@@ -19,3 +17,4 @@ function checkPreflight(document, profile) {
   doc.preflightOptions.preflightOff = preflightOff
   return true
 }
+// vi: ft=javascript

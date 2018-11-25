@@ -1,8 +1,6 @@
-/* jshint ignore:start */
 #target "indesign"
 #targetengine "session"
 #include ../_includes/index.jsxinc
-/* jshint ignore:end */
 
 var dok = app.activeDocument
 var gammeltDok = new File(dok.fullName)
@@ -136,3 +134,4 @@ function nestefredag(idag) {
   var DD = ('0' + fredag.getDate()).slice(-2)
   return YY + MM + DD
 }
+// vi: ft=javascript

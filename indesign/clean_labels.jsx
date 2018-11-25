@@ -10,3 +10,4 @@ for (var i = 0; i < length; i++) {
     // item.label = '';
   }
 }
+// vi: ft=javascript

@@ -76,3 +76,4 @@ function mount_desken_osx(localpath, remotepath) {
 }
 
 main()
+// vi: ft=javascript

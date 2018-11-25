@@ -1,8 +1,6 @@
-/* jshint ignore:start */
 #target "indesign"
 #targetengine "session"
 #include ../_includes/index.jsxinc
-/* jshint ignore:end */
 
 function exportToFile(doc, page, format) {
   var directory = new Folder(doc.filePath.path + '/PREVIEW/')
@@ -52,3 +50,4 @@ function postSaveExport(event) {
 // timeIt(export_all_pages_as_jpeg)(app.activeDocument)
 timeIt(export_all_pages_as_pdf)(app.activeDocument, true)
 // export_all_pages_as_jpeg(app.activeDocument)
+// vi: ft=javascript

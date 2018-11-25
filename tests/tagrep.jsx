@@ -35,3 +35,4 @@ file.open()
 var text = file.read()
 file.close()
 taGrep(text)
+// vi: ft=javascript

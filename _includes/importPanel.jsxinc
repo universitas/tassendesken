@@ -1,4 +1,3 @@
-// vim: set ft=javascript:
 // Dette skriptet er brukergrensesnittet for import.jsx
 // Viser et fint panel i InDesign der man kan velge hvilke saker fra prodsys som skal importeres
 #include index.jsxinc
@@ -301,3 +300,4 @@ function importPanel(onImportClick) {
   }
   win.show() // viser vinduet i InDesign
 }
+// vi: ft=javascript

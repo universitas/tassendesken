@@ -1,5 +1,3 @@
-// vim: set ft=javascript:
-
 #includepath "../_includes";
 #include "index.jsxinc";
 #include "dokTools.jsxinc";
@@ -19,3 +17,4 @@ function test_logFail() {
   tryLogErrors(failFunction)('just because')
   assert(tryLogErrors(failFunction)() == 'OK')
 }
+// vi: ft=javascript
