@@ -2,7 +2,7 @@
 
 function ifMain(){
   var topOfStack = $.stack.replace(/[\[\]\s]/g, '') 
-  var currentFile = $.fileName.replace(/^.*\//, ''))
+  var currentFile = $.fileName.replace(/^.*\//, '')
   return currentFile == topOfStack
 }
 
@@ -182,7 +182,7 @@ function tryLogErrors(fn, rethrow) {
     try {
       return fn.apply(null, args)
     } catch (error) {
-      var data = { function: fn.name, arguments: args, stacktrace: $.stack }
+      var data = { functionName: fn.name, arguments: args, stacktrace: $.stack }
       var filename = logError(error, data)
       alert(
         'Noe gikk galt med ' +

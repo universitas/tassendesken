@@ -1,4 +1,3 @@
-//
 // Ramda.js inspired functional programming utilities for extendscript
 
 function arrayFrom(sequence) {
