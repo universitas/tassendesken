@@ -1,9 +1,8 @@
-#target "indesign"
-#targetengine "session"
-#includepath "../_includes/"
+#include "test_runner.jsxinc";
 #include "prodsys.jsxinc"
 #include "dokTools.jsxinc"
 #include "eksport.jsxinc"
+#include "dokTools.jsxinc";
 
 config.DEBUG = true
 http.use_mock = function(request) {

@@ -1,4 +1,6 @@
-#include "../_includes/index.jsxinc";
+#includepath "../_includes";
+#include "test_runner.jsxinc"
+#include "utils.jsxinc"
 
 testRunner(false)
 
@@ -17,8 +19,8 @@ function test_ifMain() {
 
 function test_zeroPad() {
   var zp = zeroPad(4)
-  assertEqual(zp(6) , '0006')
-  assertEqual(zp(66666) , '66666')
+  assertEqual(zp(6), '0006')
+  assertEqual(zp(66666), '66666')
 }
 
 function test_currentIssue() {
@@ -34,8 +36,8 @@ function test_jsonify() {
   var cases = {
     '{}': {},
     '[]': [],
-    'null': null,
-    '[1,2,3]' : [1,2,3]
+    null: null,
+    '[1,2,3]': [1, 2, 3]
   }
   for (var c in cases) {
     var val = cases[c]

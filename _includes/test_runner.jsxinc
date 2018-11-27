@@ -1,0 +1,48 @@
+#include ./utils.jsxinc;
+
+// Test runner
+function testRunner(raise) {
+  config.DEBUG = true
+  $.level = 2 // full debug mode
+  for (name in $.global) {
+    if (/test_/.test(name)) {
+      fn = $.global[name]
+      if (raise) {
+        fn()
+      } else {
+        try {
+          $.write('running tests: ' + name)
+          fn()
+          $.write(' Ok\n')
+        } catch (err) {
+          log('\n' + err.fileName + ':' + err.line + '\n' + err.message)
+        }
+      }
+    }
+  }
+}
+
+// Test assertions
+function assert(bool, msg) {
+  if (!bool) {
+    throw new Error('ASSERTION ERROR: ' + (msg || 'no message'))
+  }
+}
+
+function assertEqual(a, b) {
+  if (a === b) return true
+  msg = 'expected ' + jsonify(b) + ' got ' + jsonify(a)
+  throw new Error('ASSERTION ERROR: ' + msg)
+}
+
+function assertRaises(fn, msg) {
+  try {
+    fn()
+  } catch (e) {
+    return
+  }
+  $.writeln($.stack)
+  throw new Error('ASSERTION ERROR: ' + (msg || 'no message'))
+}
+
+// vi: ft=javascript

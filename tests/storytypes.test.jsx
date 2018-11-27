@@ -1,5 +1,5 @@
 #includepath "../_includes/"
-#include "index.jsxinc"
+#include "test_runner.jsxinc"
 #include "artikkeltyper.jsxinc"
 
 main()

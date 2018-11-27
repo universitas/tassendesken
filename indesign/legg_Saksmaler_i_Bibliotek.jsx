@@ -7,25 +7,16 @@
 #include ../_includes/index.jsxinc
 dokTools.clearSearch()
 
-var alleGrupper = true // hvis true finner alle grupper i dokumentet og lager malgeometri, hvis false, kun den gruppen som er valgt
-var LoremIpsumizeMe = false // endrer tekst til loremipsum hvis true, tar litt tid.
-var addToLibrary = true // Legger til saksmaler i Library
-var promptforLabel = true // Skriptet spør etter Label for hver saksmal
 var lagreOverAvismal = true // lagrer også ny MAL_AVIS
-var lagRapport = false // lager rapport i en gul boks
 
 var myLibrary = File(config.saksmalLibrary) // Biblioteket som saksmalene skal legges til
-var backupLibrary = File(config.backupLibrary) // Backup tas før skriptet kjøres
 var lagreSom = File(config.mal_avis) // Avismalen
-var backupMal = File(config.backupMal) // Backup tas før fila blir overskrevet
 
-var myDok = app.activeDocument
-var myWindow = myDok.layoutWindows[0]
-var myGroup
-var myReport = ''
-var myObjectStyle = dokTools.velgStil(myDok, 'object', 'beskjed')
-var parStyle1 = dokTools.velgStil(myDok, 'paragraph', 'A 5påplassen navn')
-var parStyle2 = dokTools.velgStil(myDok, 'paragraph', 'A 5påplassen')
+var doc = app.activeDocument
+var win = doc.layoutWindows[0]
+var annotation = dokTools.velgStil(doc, 'object', 'beskjed')
+var parStyle1 = dokTools.velgStil(doc, 'paragraph', 'A 5påplassen navn')
+var parStyle2 = dokTools.velgStil(doc, 'paragraph', 'A 5påplassen')
 var myReportTextFrame
 
 if (!alleGrupper) {
@@ -37,7 +28,7 @@ if (!alleGrupper) {
   )
 ) {
   if (addToLibrary && myLibrary.exists) {
-    myWindow.zoom(ZoomOptions.fitSpread)
+    win.zoom(ZoomOptions.fitSpread)
     myProgressBar = dokTools.progressBar(
       'Legger maler til ' + myLibrary.name,
       'Gjør klar',
@@ -45,17 +36,17 @@ if (!alleGrupper) {
       false
     )
     app.libraries.everyItem().close()
-    myLibrary.copy(backupLibrary)
+    backupFile(myLibrary)
     myLibrary = app.open(myLibrary)
     app.panels.itemByName('Saksmaler').visible = false
     myLibrary.assets.everyItem().remove()
   }
-  clearReports(myDok, myObjectStyle)
+  clearReports(doc, annotation)
   var myItem
   var mySpread
   var itemName
   myProgressBar.update('teller grupper', 10)
-  var myPageItems = myDok.pageItems.everyItem().getElements()
+  var myPageItems = doc.pageItems.everyItem().getElements()
   var myItems = []
   var myPage
   for (i = myPageItems.length - 1; i > -1; i--) {
@@ -120,7 +111,7 @@ if (!alleGrupper) {
   }
   myLibrary.close()
   myProgressBar.close()
-  myWindow.activePage = app.activeDocument.pages[0]
+  win.activePage = app.activeDocument.pages[0]
 }
 
 if (lagreOverAvismal) {
@@ -135,10 +126,10 @@ if (lagreOverAvismal) {
   }
 }
 
-function lagNyAvisMal() {
+function lagNyAvisMal(doc) {
   var avismal = config.avismal
   var myMasterPage
-  if (!myDok.name.match(/saksmaler/i)) {
+  if (!doc.name.match(/saksmaler/i)) {
     alert('feil fil', 'Kan bare lage avismal fra saksmaler.indd')
     return
   }
@@ -148,44 +139,44 @@ function lagNyAvisMal() {
     2 + avismal.length,
     false
   )
-  myDok.save(undefined, false, undefined, true)
-  clearReports(myDok, myObjectStyle)
+  doc.save(undefined, false, undefined, true)
+  clearReports(doc, annotation)
 
   for (var n = 0; n < avismal.length; n++) {
     myProgressBar.update('Lager oppslag: ' + (n + 1) + ' ' + avismal[n].master)
-    if (myDok.spreads[n] !== null) {
-      myWindow.activePage = myDok.spreads[n].pages[-1]
+    if (doc.spreads[n] !== null) {
+      win.activePage = doc.spreads[n].pages[-1]
     } else {
-      myWindow.activePage = myDok.spreads[-1].pages[-1]
+      win.activePage = doc.spreads[-1].pages[-1]
     }
     $.sleep(100)
-    myMasterPage = myDok.masterSpreads.itemByName(avismal[n].master)
+    myMasterPage = doc.masterSpreads.itemByName(avismal[n].master)
     if (myMasterPage === null) {
-      myMasterPage = myDok.masterSpreads[0]
+      myMasterPage = doc.masterSpreads[0]
     }
     if (avismal[n].tomside === false) {
       try {
         while (
-          myDok.spreads[n].appliedMaster !== myMasterPage &&
-          myDok.spreads[n] !== null
+          doc.spreads[n].appliedMaster !== myMasterPage &&
+          doc.spreads[n] !== null
         ) {
-          myDok.spreads[n].remove()
+          doc.spreads[n].remove()
         }
       } catch (e) {
-        myDok.spreads.add()
-        myDok.spreads[-1].appliedMaster = myMasterPage
+        doc.spreads.add()
+        doc.spreads[-1].appliedMaster = myMasterPage
       }
     } else {
-      myDok.spreads.add(LocationOptions.BEFORE, myDok.spreads[n])
-      myDok.spreads[n].appliedMaster = myMasterPage
+      doc.spreads.add(LocationOptions.BEFORE, doc.spreads[n])
+      doc.spreads[n].appliedMaster = myMasterPage
     }
   }
   myProgressBar.update('Tar backup av AVIS_MAL.indt')
-  myWindow.activePage = myDok.pages[0]
-  lagreSom.copy(backupMal)
+  win.activePage = doc.pages[0]
+  backupFile(lagreSom)
   myProgressBar.update('Lagrer ny AVIS_MAL.indt')
-  myDok.save(lagreSom, true, '', true)
-  app.activeDocument.close()
+  doc.save(lagreSom, true, '', true)
+  doc.close()
   myProgressBar.update('Ferdig!')
   $.sleep(1000)
   myProgressBar.close()

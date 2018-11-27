@@ -1,4 +1,5 @@
 #includepath "../_includes/"
+#include "test_runner.jsxinc";
 #include "importpanel.jsxinc";
 #include "prodsys.jsxinc";
 

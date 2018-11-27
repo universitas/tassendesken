@@ -1,15 +1,15 @@
 // Ramda.js inspired functional programming utilities for extendscript
 
-function arrayFrom(sequence) {
+function arrayFrom(seq) {
   // convert indesign collection specifier or other iterable to Array
   // [*] -> [*]
-  if (sequence instanceof Array) return sequence
+  if (seq instanceof Array) return seq
   // resolve collection specifier
-  if (sequence.hasOwnProperty('everyItem')) sequence = sequence.everyItem()
-  if (sequence.hasOwnProperty('getElements')) sequence = sequence.getElements()
+  if (seq.hasOwnProperty('everyItem')) seq = seq.everyItem()
+  if (seq.hasOwnProperty('getElements')) seq = seq.getElements()
   var rv = [],
-    n = sequence.length
-  while (n--) rv[n] = sequence[n]
+    n = seq.length
+  while (n--) rv[n] = seq[n]
   return rv
 }
 
@@ -22,18 +22,42 @@ function tap(fn) {
   }
 }
 
+function isNil(obj) {
+  // * -> bool
+  return obj === undefined || obj === null
+}
+
+
+function defaultTo(val0) {
+  // a -> b? -> b|a
+  return function(val1) {
+    return val1 === undefined ? val0 : val1
+  }
+}
+
+function withDefault(fn, val) {
+  // (* -> b?, a) -> * -> b|a
+  return pipe(fn, defaultTo(val))
+}
+
 function has(name) {
   // object has property `name`
   // str -> obj -> bool
-  return function(obj) {
-    return Object.prototype.hasOwnProperty.call(obj, name)
-  }
+  if (isNil(obj)) return false
+  if (obj instanceof Object) {
+    if (obj.hasOwnProperty('isValid')) // is indesign dom object
+      return obj.hasOwnProperty(name)
+    else // is javascript object
+      return obj.hasOwnProperty(name) || obj[name] !== undefined
+  // strings, numbers
+  return obj.constructor.prototype[name] !== undefined
 }
 
 function is(type) {
   // object is instance of constructor `type`
   // type -> ob -> bool
   return function(obj) {
+    // taken from ramda implementation
     return (obj != null && obj.constructor === type) || obj instanceof type
   }
 }
@@ -51,8 +75,8 @@ function join(sep) {
 function map(fn) {
   // map
   // (a -> b) -> [a] -> [b]
-  return function(sequence) {
-    var arr = arrayFrom(sequence),
+  return function(seq) {
+    var arr = arrayFrom(seq),
       rv = []
     for (var i = 0; i < arr.length; i++) rv.push(fn(arr[i]))
     return rv
@@ -62,8 +86,7 @@ function map(fn) {
 function find(fn) {
   // (a -> bool) -> [a] -> a|null
   return function(arr) {
-    for (var i = 0; i < arr.length; i++) 
-      if (fn(arr[i])) return arr[i]
+    for (var i = 0; i < arr.length; i++) if (fn(arr[i])) return arr[i]
     return null
   }
 }
@@ -71,8 +94,8 @@ function find(fn) {
 function filter(fn) {
   // filter
   // (a -> bool) -> [a] -> [a]
-  return function(sequence) {
-    var arr = arrayFrom(sequence),
+  return function(seq) {
+    var arr = arrayFrom(seq),
       rv = []
     for (var i = 0; i < arr.length; i++) fn(arr[i]) && rv.push(arr[i])
     return rv
@@ -82,8 +105,8 @@ function filter(fn) {
 function sort(fn) {
   // sort
   // ?((a, a) -> num) -> [a] -> [a]
-  return function(sequence) {
-    return arrayFrom(sequence).sort(fn)
+  return function(seq) {
+    return arrayFrom(seq).sort(fn)
   }
 }
 
@@ -118,10 +141,10 @@ function bind(fn, args) {
   }
 }
 
-function reverse(sequence) {
+function reverse(seq) {
   // reverse collection. returns Array
   // [*] -> [*]
-  return arrayFrom(sequence).reverse()
+  return arrayFrom(seq).reverse()
 }
 
 function ascend(fn) {
@@ -150,6 +173,47 @@ function prop(name) {
   }
 }
 
+function propOr(name, value) {
+  // prop getter with default value
+  // (k, v) -> {k:v} -> v
+  return function(obj) {
+    return has(name)(obj) ? obj[name] : value
+  }
+}
+
+function merge(a) {
+  // {} -> {} -> {}
+  return function(b) {
+    var c = {}
+    for (var k in a) c[k] = a[k]
+    for (var k in b) c[k] = b[k]
+    return c
+  }
+}
+
+function mergeRight(a) {
+  // {} -> {} -> {}
+  return function(b) {
+    return merge(b)(a)
+  }
+}
+
+function assoc(name, val) {
+  // (k, v) -> obj -> obj
+  var c = {}
+  c[name] = val
+  return mergeRight(c)
+}
+
+function setAttr(name, val) {
+  // mutating / inpure assoc
+  // (k, v) -> obj -> obj
+  return function(obj) {
+    obj[k] = v
+    return obj
+  }
+}
+
 function dotProp(name) {
   // convenience wrapper for dotted paths
   // 'k.k' -> {k:{k:v}} -> v?
@@ -174,28 +238,39 @@ function call(method) {
 function take(n) {
   // take that supports negative indexing
   // num -> [a] -> [a]
-  var args = n < 0 ? [n] : [0, n]
-  return function(sequence) {
-    return Array.prototype.slice.apply(arrayFrom(sequence), args)
+  return function(seq) {
+    return n < 0
+      ? arrayFrom(seq).slice(n)
+      : arrayFrom(seq).slice(0, n)
+  }
+}
+
+function drop(n) {
+  // drop that supports negative indexing
+  // num -> [a] -> [a]
+  return function(seq) {
+    return n < 0
+      ? arrayFrom(seq).slice(0, n)
+      : arrayFrom(seq).slice(n)
   }
 }
 
 function pipe() {
-  // function composition
-  var fnx = arguments
-  return function(val) {
+  // function composition left -> right
+  // (a -> b, ... , x -> z) -> a -> z
+  var f0 = arguments[0]
+  var fnx = Array.prototype.slice.call(arguments, 1)
+  return function() {
+    var val = f0.apply(this, arguments)
     for (var i = 0; i < fnx.length; i++) val = fnx[i](val)
     return val
   }
 }
 
 function compose() {
-  // function composition
-  var fnx = arguments
-  return function(val) {
-    for (var i = fnx.length - 1; i >= 0; i--) val = fnx[i](val)
-    return val
-  }
+  // function composition left <- right
+  // (x -> z, ... , a -> b) -> a -> z
+  return pipe.apply(this, reverse(arguments))
 }
 
 function keys(obj) {
@@ -254,17 +329,32 @@ function identity(val) {
   return val
 }
 
+function all(seq) {
+  // [a] -> bool
+  for (var i =0; i < seq.length; i++)
+    if (! seq[i]) return false
+  return true
+}
+
+function any(seq) {
+  // [a] -> bool
+  for (var i =0; i < seq.length; i++)
+    if (seq[i]) return true
+  return false
+}
+
 // comparison operators
 function eq(a) {
   // a -> a -> bool
   return function(b) {
-    return a === b
+    return uneval(a) == uneval(b)
   }
 }
+
 function neq(a) {
   // a -> a -> bool
   return function(b) {
-    return a !== b
+    return uneval(a) !== uneval(b)
   }
 }
 function gt(a) {

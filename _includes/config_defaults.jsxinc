@@ -67,9 +67,7 @@ config.importCSV = config.rotMappe + '/SCRIPTS/_resources/importstiler.csv' // t
 config.eksportCSV = config.rotMappe + '/SCRIPTS/_resources/eksportstiler.csv' // tabell med hva de ulike paragraph styles skal oversettes til ved eksport
 config.saksmaler = config.rotMappe + '/UTTEGNER/MALER/Saksmaler.indl' // bibliotek med saksmaler
 config.saksmalLibrary = config.rotMappe + '/UTTEGNER/MALER/Saksmaler.indl' // Biblioteket som saksmalene skal legges til
-config.backupLibrary = config.rotMappe + '/UTTEGNER/MALER/BACKUP/Saksmaler.indl' // Backup tas før skriptet kjøres
 config.mal_avis = config.rotMappe + '/UTTEGNER/MALER/MAL_AVIS.indt' // Avismalen
-config.backupMal = config.rotMappe + '/UTTEGNER/MALER/BACKUP/MAL_AVIS.indt' // Backup tas før fila blir overskrevet
 
 config.rotRegExp = new RegExp(config.rotMappe + '../') // brukes for å finne bildefiler
 

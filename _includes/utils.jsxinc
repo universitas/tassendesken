@@ -1,7 +1,7 @@
-// Helper functions for logging, testing and page element manipulation
+// Helper functions for logging and page element manipulation
 
-function ifMain(filename){
-  if (typeof filename == 'undefined')  
+function ifMain(filename) {
+  if (typeof filename == 'undefined')
     throw new Error('you must pass in file name `ifMain($.fileName)`')
 
   var topOfStack = $.stack.split('\n')[0].replace(/[\[\]\s]/g, '')
@@ -34,6 +34,16 @@ function nextFriday() {
   var month = zeroPad(2)(dt.getMonth())
   var day = zeroPad(2)(dt.getDate())
   return year + month + day
+}
+
+function backupFile(file) {
+  // create a date stamped backup of the input file
+  var today = JSON.stringify(new Date()).slice(0, 8)
+  var backupDir = new Folder(file.path + '/BACKUP/')
+  backupDir.exists || backupDir.create()
+  var backupFile = new File(file.path + '/BACKUP/' + today + '.' + file.name)
+  file.copy(backupFile)
+  return backupFile
 }
 
 // Image -> Number
@@ -85,10 +95,10 @@ function toUnicode(theString) {
   function charToUnicode(letter) {
     var charCode = (
       '0000' +
-        letter
-      .charCodeAt(0)
-      .toString(16)
-      .toUpperCase()
+      letter
+        .charCodeAt(0)
+        .toString(16)
+        .toUpperCase()
     ).substr(-4, 4)
     return '\\u' + charCode
   }
@@ -107,32 +117,30 @@ function toUnicode(theString) {
 // Object -> Object
 function serializeObject(obj) {
   // make object serializable
-  try {
-    var pt = Object.prototype.toString.call(obj)
-    switch (pt) {
-      case '[object global]':
-      case '[object String]':
-      case '[object Number]':
-      case '[object Boolean]':
-        return obj
-      case '[object Object]':
-      case '[object Error]':
-        var obj2 = {}
-        for (var key in obj) obj2[key] = serializeObject(obj[key])
-        return obj2
-      case '[object Array]':
-        var newarr = []
-        for (var i = 0; i < obj.length; i++) newarr[i] = serializeObject(obj[i])
-        return newarr
-      case '[object Story]':
-        return '[Story id:' + obj.id + ' ' + obj.contents.substr(0, 100) + ']'
-      case '[object Image]':
-        return '[Image id:' + obj.id + ' ' + obj.itemLink.name + ']'
-      default:
-        return pt
-    }
-  } catch (e) {
-    return obj ? obj.toSource() : typeof obj
+  if (typeof uneval === 'undefined') var uneval = String
+  if (obj === undefined || obj === null) return null
+  switch (obj.constructor.name) {
+    case 'String':
+    case 'Number':
+    case 'Boolean':
+      return obj
+    case 'Object':
+    case 'Error':
+      var newObj = {}
+      for (var key in obj) newObj[key] = serializeObject(obj[key])
+      return newObj
+    case 'Array':
+      var newArr = []
+      for (var i = 0; i < obj.length; i++) newArr[i] = serializeObject(obj[i])
+      return newArr
+    case 'Story':
+      return (
+        '[[ ' + obj.toSpecifier() + ' | ' + obj.contents.substr(0, 100) + ' ]]'
+      )
+    case 'Image':
+      return '[[ ' + obj.toSpecifier() + ' | ' + obj.itemLink.name + ' ]]'
+    default:
+      return '[[ ' + uneval(obj) + ' ]]'
   }
 }
 
@@ -140,11 +148,6 @@ function serializeObject(obj) {
 function jsonify(obj, indent) {
   // jsonify any object, including errors and indesign native objects
   if (typeof indent == 'undefined') indent == config.DEBUG ? 2 : 0
-  // workaround for indent bug for empty object and array
-  if (obj && typeof obj == 'object') {
-      if (obj && obj.toSource() == '({})') return '{}'
-      if (obj && obj.toSource() == '[]' ) return '[]'    
-  }
   return JSON.stringify(serializeObject(obj), null, indent)
 }
 
@@ -166,21 +169,24 @@ function logToFile(message, filename) {
 
 // log error object to file
 function logError(error, data, logfile) {
-  var datestamp = JSON.stringify(new Date()).substr(0,20)
+  var datestamp = JSON.stringify(new Date()).substr(0, 20)
   var scriptfile = error.fileName.replace(/.*SCRIPTS/, '')
   var filename =
-    logfile || ('ERROR.' + datestamp + '.') + scriptfile
-      .replace(/\W+/g, '-')
-      .toLowerCase() + '.json'
-    var msg = {
-      message: error.message,
-      line: error.line,
-      file: scriptfile,
-      time: datestamp,
-      data: data
-    }
-    log(jsonify(msg, 2), filename)
-    return filename
+    logfile ||
+    'ERROR.' +
+      datestamp +
+      '.' +
+      scriptfile.replace(/\W+/g, '-').toLowerCase() +
+      '.json'
+  var msg = {
+    message: error.message,
+    line: error.line,
+    file: scriptfile,
+    time: datestamp,
+    data: data
+  }
+  log(jsonify(msg, 2), filename)
+  return filename
 }
 
 // try to call function. Log errors to file
@@ -192,8 +198,13 @@ function tryLogErrors(fn, rethrow) {
     } catch (error) {
       var data = { functionName: fn.name, arguments: args, stacktrace: $.stack }
       var filename = logError(error, data)
-      var msg = ['Noe gikk galt med ', error.fileName, '\n' ,
-        'Feilmeldingen blir lagret her: ', filename].join('')
+      var msg = [
+        'Noe gikk galt med ',
+        error.fileName,
+        '\n',
+        'Feilmeldingen blir lagret her: ',
+        filename
+      ].join('')
       if (!config.DEBUG) alert(msg, 'Feil')
       if (rethrow) throw error
     }
@@ -203,12 +214,10 @@ function tryLogErrors(fn, rethrow) {
 // (String | Object, ?String) -> void
 function log(message, filename) {
   if (config.DEBUG || filename == '$') {
-    if (typeof message !== 'string')
-      message = jsonify(message, 2)
+    if (typeof message !== 'string') message = jsonify(message, 2)
     // log to extendscript console
     $.writeln(message)
-  } else if (filename)
-  logToFile(message, filename)
+  } else if (filename) logToFile(message, filename)
 }
 
 // Object -> [String]
@@ -225,54 +234,9 @@ function timeIt(fn) {
     var t0 = new Date()
     var retval = fn.apply(this, arguments)
     var time = new Date() - t0
-    var msg='time: ' + fn.name + '(' + jsonify(arguments) + ') ' + time + 'ms'
+    var msg = 'time: ' + fn.name + '(' + jsonify(arguments) + ') ' + time + 'ms'
     $.writeln(msg)
     return retval
   }
 }
-
-
-
-// Test runner
-function testRunner(raise) {
-  config.DEBUG = true
-  $.level = 2 // full debug mode
-  for (name in $.global) {
-    if (/test_/.test(name)) {
-      fn = $.global[name]
-      if (raise) {
-        fn()
-      } else {
-      try {
-        $.write('running tests: ' + name)
-        fn()
-        $.write(' Ok\n')
-      } catch (err) {
-        log('\n' + err.fileName + ':' + err.line + '\n' + err.message)
-      }
-    }
-    }
-  }
-}
-
-// Test assertions
-function assert(bool, msg) {
-  if (!bool) {
-    $.writeln($.stack)
-    throw new Error('ASSERTION ERROR: ' + (msg || 'no message'))
-  }
-}
-
-function assertEqual(a, b) {
-  if (a === b) return true
-  msg = 'expected ' + jsonify(b) + ' got ' + jsonify(a)
-  throw new Error('ASSERTION ERROR: ' + msg)
-}
-
-function assertRaises(fn, msg) {
-  try { fn() } catch (e) { return }
-  $.writeln($.stack)
-  throw new Error('ASSERTION ERROR: ' + (msg || 'no message'))
-}
-
 // vi: ft=javascript

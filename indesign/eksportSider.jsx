@@ -104,13 +104,13 @@ function main() {
   }
 }
 
-if (ifMain($.fileName)) app.doScript(
-        main,
-        ScriptLanguage.JAVASCRIPT,
-        [],
-        UndoModes.ENTIRE_SCRIPT,
-        'eksporter'
-)
-
+if (ifMain($.fileName))
+  app.doScript(
+    main,
+    ScriptLanguage.JAVASCRIPT,
+    [],
+    UndoModes.ENTIRE_SCRIPT,
+    'eksporter'
+  )
 
 // vi: ft=javascript
