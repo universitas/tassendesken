@@ -1,4 +1,5 @@
-#include ./utils.jsxinc;
+#include ./index.jsxinc;
+if (typeof config == 'undefined') var config = {}
 
 // Test runner
 function testRunner(raise) {
@@ -30,7 +31,7 @@ function assert(bool, msg) {
 }
 
 function assertEqual(a, b) {
-  if (a === b) return true
+  if (eq(a)(b)) return true
   msg = 'expected ' + jsonify(b) + ' got ' + jsonify(a)
   throw new Error('ASSERTION ERROR: ' + msg)
 }

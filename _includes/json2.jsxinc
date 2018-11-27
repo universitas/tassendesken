@@ -157,7 +157,7 @@
 
 // Create a JSON object only if one does not already exist. We create the
 // methods in a closure to avoid creating global variables.
-
+delete JSON
 if (typeof JSON !== 'object') {
   JSON = {}
 }
@@ -291,12 +291,10 @@ if (typeof JSON !== 'object') {
           // Join all of the elements together, separated with commas, and wrap them in
           // brackets.
 
-          v =
-            partial.length === 0
-              ? '[]'
-              : gap
-              ? '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']'
-              : '[' + partial.join(',') + ']'
+          if (partial.length === 0) v = '[]'
+          else if (gap)
+            v = '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']'
+          else v = '[' + partial.join(',') + ']'
           gap = mind
           return v
         }
@@ -330,12 +328,10 @@ if (typeof JSON !== 'object') {
         // Join all of the member texts together, separated with commas,
         // and wrap them in braces.
 
-        v =
-          partial.length === 0
-            ? '{}'
-            : gap
-            ? '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}'
-            : '{' + partial.join(',') + '}'
+        if (partial.length === 0) v = '{}'
+        else if (gap)
+          v = '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}'
+        else v = '{' + partial.join(',') + '}'
         gap = mind
         return v
     }
