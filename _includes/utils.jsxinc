@@ -139,8 +139,10 @@ function serializeObject(obj) {
       )
     case 'Image':
       return '[[ ' + obj.toSpecifier() + ' | ' + obj.itemLink.name + ' ]]'
+    case 'Function':
+      return '[[object Function | ' + obj.name + ' ]]'
     default:
-      return '[[ ' + uneval(obj) + ' ]]'
+      return '[' + obj + ']'
   }
 }
 
@@ -232,9 +234,10 @@ function objectKeys(obj) {
 function timeIt(fn) {
   return function() {
     var t0 = new Date()
-    var retval = fn.apply(this, arguments)
+    var args = arrayFrom(arguments)
+    var retval = fn.apply(this, args)
     var time = new Date() - t0
-    var msg = 'time: ' + fn.name + '(' + jsonify(arguments) + ') ' + time + 'ms'
+    var msg = 'time: ' + fn.name + '(' + args + ') ' + time + 'ms'
     $.writeln(msg)
     return retval
   }

@@ -144,16 +144,18 @@ function flip(fn) {
 function has(name) {
   // object has property `name`
   // str -> obj -> bool
-  if (isNil(obj)) return false
-  if (obj instanceof Object) {
-    if (obj.hasOwnProperty('isValid'))
-      // is indesign dom object
-      return obj.hasOwnProperty(name)
-    // is javascript object
-    else return obj.hasOwnProperty(name) || obj[name] !== undefined
+  return function(obj) {
+    if (isNil(obj)) return false
+    if (obj instanceof Object) {
+      if (obj.hasOwnProperty('isValid'))
+        // is indesign dom object
+        return obj.hasOwnProperty(name)
+      // is javascript object
+      else return obj.hasOwnProperty(name) || obj[name] !== undefined
+    }
+    // strings, numbers
+    return obj.constructor.prototype[name] !== undefined
   }
-  // strings, numbers
-  return obj.constructor.prototype[name] !== undefined
 }
 
 function identity(val) {
@@ -251,6 +253,11 @@ function prop(name) {
   return function(obj) {
     return has(name)(obj) ? obj[name] : undefined
   }
+}
+
+function propEq(name, value) {
+  // (k, v) -> {k: v} -> bool
+  return pipe(prop(name), eq(value))
 }
 
 function propOr(name, value) {
