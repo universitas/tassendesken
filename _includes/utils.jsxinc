@@ -18,6 +18,11 @@ function zeroPad(width, fillchar) {
   }
 }
 
+function titleCase(str) {
+  // str -> str
+  return str[0].toUpperCase() + str.substr(1).toLowerCase()
+}
+
 function currentIssue(root) {
   // Finner kommende currentIssue av avisa ved å lete etter mappe med høyest tall.
   for (var i = 50; i > 0; i--) if (Folder(path + zeroPad(2)(i)).exists) return i
@@ -38,7 +43,7 @@ function nextFriday() {
 
 function backupFile(file) {
   // create a date stamped backup of the input file
-  var today = JSON.stringify(new Date()).slice(0, 8)
+  var today = JSON.stringify(new Date()).substr(1, 10)
   var backupDir = new Folder(file.path + '/BACKUP/')
   backupDir.exists || backupDir.create()
   var backupFile = new File(file.path + '/BACKUP/' + today + '.' + file.name)

@@ -64,6 +64,13 @@ function bind(fn, args) {
   }
 }
 
+function both(fn0, fn1) {
+  // (a->bool, a->bool) -> a -> bool
+  return function(val) {
+    return fn0(val) && fn1(val)
+  }
+}
+
 function call(method) {
   // call function / method
   // k -> {k:(() -> a)} -> a
@@ -114,6 +121,13 @@ function drop(n) {
   }
 }
 
+function either(fn0, fn1) {
+  // (a->bool, a->bool) -> a -> bool
+  return function(val) {
+    return fn0(val) || fn1(val)
+  }
+}
+
 function filter(fn) {
   // filter
   // (a -> bool) -> [a] -> [a]
@@ -146,14 +160,7 @@ function has(name) {
   // str -> obj -> bool
   return function(obj) {
     if (isNil(obj)) return false
-    if (obj instanceof Object) {
-      if (obj.hasOwnProperty('isValid'))
-        // is indesign dom object
-        return obj.hasOwnProperty(name)
-      // is javascript object
-      else return obj.hasOwnProperty(name) || obj[name] !== undefined
-    }
-    // strings, numbers
+    if (obj instanceof Object) return name in obj
     return obj.constructor.prototype[name] !== undefined
   }
 }
@@ -257,7 +264,10 @@ function prop(name) {
 
 function propEq(name, value) {
   // (k, v) -> {k: v} -> bool
-  return pipe(prop(name), eq(value))
+  return pipe(
+    dotProp(name),
+    eq(value)
+  )
 }
 
 function propOr(name, value) {

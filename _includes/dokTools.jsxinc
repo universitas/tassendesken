@@ -3,7 +3,7 @@ var dokTools = {}
 dokTools.velgStil = function(doc, type, name) {
   // velger en paragraph-, cell-, table-, eller characterStyle, og oppretter en
   // ny hvis den ikke finnes
-  var styles = doc[type + 'Style']
+  var styles = doc[type + 'Styles']
   return styles.itemByName(name) || styles.add({ name: name })
 }
 
