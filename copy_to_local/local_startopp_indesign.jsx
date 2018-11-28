@@ -1,4 +1,5 @@
 /* jshint ignore:start */
+#target indesign
 #targetengine session
 #includepath ../_includes
 #include utils.jsxinc
@@ -121,8 +122,17 @@ function add_indesign_menu(menu_name, script_path, menu_items) {
 
 function open_indesign_libraries(folder) {
   // åpner alle libraries på desktoppen
-  var myLibraries = folder.getFiles('*.indl')
-  for (var i = 0; i < myLibraries.length; i++) {
-    app.open(myLibraries[i])
+  var libs = {}
+  var localFiles = folder.getFiles('*.indl')
+  for (var i=0; i < localFiles.length; i++) {
+    var lib = localFiles[i]
+    lib.readonly = true
+    libs[lib.fullName] = lib
   }
+  for (var i=0; i < app.libraries.length; i++) {
+    var lib = app.libraries[i]
+    if (lib.fullName in libs) delete libs[lib.fullName]
+    else lib.close()
+  }
+  for (var lib in libs) app.open(libs[lib])
 }

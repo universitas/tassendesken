@@ -1,5 +1,8 @@
+#target indesign
+
 // Dette skriptet skal kjøre før indesign cs5.5+ starter.
 // Det kopierer en del filer fra serveren til hver enkelt mac eller pc
+
 function get_folders() {
   VERSION = app.version.substr(0, 3) // Versjon av InDesign der "8.0" er CS6.
   LANGUAGE = 'en_GB'
@@ -46,51 +49,56 @@ function get_folders() {
   return folders
 }
 
-folders = get_folders()
-
-var files_to_copy = [
-  {
-    filename: '*.psp', // Keyboard shortcuts indesign
-    localfolder: folders.local.keyboard_shortcuts,
-    remotefolder: folders.server.repo
-  },
-  {
-    filename: '*.joboptions', // pdf joboptions indesign
-    localfolder: folders.local.job_options,
-    remotefolder: folders.server.repo
-  },
-  {
-    filename: 'utils.jsxinc', // utils
-    localfolder: folders.local.startup_scripts,
-    remotefolder: folders.server.includes
-  },
-  {
-    filename: 'local_startopp_indesign.jsx', // indesign startup script
-    localfolder: folders.local.startup_scripts,
-    remotefolder: folders.server.repo
-  },
-  {
-    filename: 'local_*.jsx', // scripts to indesign script panel
-    localfolder: folders.local.script_panel,
-    remotefolder: folders.server.repo
-  },
-  {
-    filename: '*.csf', // color profile
-    localfolder: folders.local.color_profile,
-    remotefolder: folders.server.repo
-  },
-  {
-    filename: '*.indl', // indesign libraries
-    localfolder: folders.local.desktop,
-    remotefolder: folders.server.libraries
-  }
-]
 
 function main() {
-  deleteFiles(folders.local.startup_scripts, '*.js*')
+  var folders = get_folders()
+
+  var files_to_copy = [
+    {
+      filename: '*.psp', // Keyboard shortcuts indesign
+      localfolder: folders.local.keyboard_shortcuts,
+      remotefolder: folders.server.repo
+    },
+    {
+      filename: '*.joboptions', // pdf joboptions indesign
+      localfolder: folders.local.job_options,
+      remotefolder: folders.server.repo
+    },
+    {
+      filename: 'utils.jsxinc', // utils
+      localfolder: folders.local.startup_scripts,
+      remotefolder: folders.server.includes
+    },
+    {
+      filename: 'local_startopp_indesign.jsx', // indesign startup script
+      localfolder: folders.local.startup_scripts,
+      remotefolder: folders.server.repo
+    },
+    {
+      filename: 'local_*.jsx', // scripts to indesign script panel
+      localfolder: folders.local.script_panel,
+      remotefolder: folders.server.repo
+    },
+    {
+      filename: 'utils.jsxinc', // utils
+      localfolder: folders.local.script_panel,
+      remotefolder: folders.server.includes
+    },
+    {
+      filename: '*.csf', // color profile
+      localfolder: folders.local.color_profile,
+      remotefolder: folders.server.repo
+    },
+    {
+      filename: '*.indl', // indesign libraries
+      localfolder: folders.local.desktop,
+      remotefolder: folders.server.libraries
+    }
+  ]
+
+  // deleteFiles(folders.local.startup_scripts, '*.js*')
   for (var n = 0; files_to_copy.length > n; n++) {
     file = files_to_copy[n]
-
     filename = file.filename
     source = Folder(file.remotefolder)
     destination = Folder(file.localfolder)
@@ -123,17 +131,11 @@ function copyFiles(localFolder, serverFolder, fileName) {
 }
 
 function deleteFiles(folderName, fileName) {
-  var myFile, myFiles
   var myFolder = Folder(folderName)
   if (myFolder.exists) {
-    myFiles = myFolder.getFiles(fileName)
+    var myFiles = myFolder.getFiles(fileName)
     for (var j = 0; myFiles.length > j; j++) {
-      myFile = myFiles[j]
-      try {
-        myFile.remove()
-      } catch (e) {
-        // couldn't delete file.
-      }
+      myFiles[j].remove()
     }
   }
 }
