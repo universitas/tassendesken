@@ -25,6 +25,14 @@ function any(seq) {
   return false
 }
 
+function apply(fn) {
+  // turn variadic function into unary function
+  // ((...*) -> *) -> ([*]) -> *
+  return function(args) {
+    return fn.apply(this, toArray(args))
+  }
+}
+
 function arrayFrom(seq) {
   // convert indesign collection specifier or other iterable to Array
   // [*] -> [*]
@@ -80,6 +88,11 @@ function call(method) {
   }
 }
 
+function chain(sequences) {
+  // chain all sequences together
+  return reduce(concat, [])(sequences)
+}
+
 function complement(fn) {
   // boolean invert function output
   // (* -> bool) -> (* -> bool)
@@ -92,6 +105,11 @@ function compose() {
   // function composition left <- right
   // (x -> z, ... , a -> b) -> a -> z
   return pipe.apply(this, reverse(arguments))
+}
+
+function concat(a, b) {
+  // [*], [*] -> [*]
+  return toArray(a).concat(toArray(b))
 }
 
 function defaultTo(val0) {
@@ -278,6 +296,17 @@ function propOr(name, value) {
   }
 }
 
+function reduce(fn, acc) {
+  // reduce
+  // (((a, b) -> b), a) -> [b] -> a
+  return function(seq) {
+    var arr = arrayFrom(seq)
+    if (typeof acc == 'undefined') acc = arr.shift()
+    for (var i = 0; i < arr.length; i++) acc = fn(acc, arr[i])
+    return acc
+  }
+}
+
 function reverse(seq) {
   // reverse collection. returns Array
   // [*] -> [*]
@@ -315,6 +344,14 @@ function tap(fn) {
   return function(val) {
     fn(val)
     return val
+  }
+}
+
+function unapply(fn) {
+  // make unary function variadic
+  // (([*]) -> *) -> ((...*) -> *)
+  return function() {
+    return fn(toArray(arguments))
   }
 }
 
