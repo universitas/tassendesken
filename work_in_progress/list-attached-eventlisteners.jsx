@@ -5,7 +5,7 @@ function removeEventListeners(eventType) {
     prop('eventListeners'),
     filter(propEq('eventType', eventType)),
     map(call('remove')),
-    prop('length'),
+    prop('length')
   )(app)
 }
 

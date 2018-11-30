@@ -4,14 +4,14 @@
 
 // OBS: pass på at ikke passord etc blir lagt inn i git
 // bruk denne kommandoen for å ignorere endringer:
-// 
+//
 // git update-index --skip-worktree config_local.jsxinc
 
 config.DEBUG = true
 config.api.PORT = 0
-config.api.ENDPOINT = "SECRET"
-config.api.HOST = "SECRET"
-config.api.USER = "SECRET"
-config.api.PASSWORD = "SECRET"
+config.api.ENDPOINT = 'SECRET'
+config.api.HOST = 'SECRET'
+config.api.USER = 'SECRET'
+config.api.PASSWORD = 'SECRET'
 
 // vi: set ft=javascript:

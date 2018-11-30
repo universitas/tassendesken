@@ -63,7 +63,7 @@ function removeEventListeners(eventType) {
     prop('eventListeners'),
     filter(propEq('eventType', eventType)),
     map(call('remove')),
-    prop('length'),
+    prop('length')
   )(app)
 }
 
@@ -71,7 +71,7 @@ function main() {
   removeEventListeners(DocumentEvent.BEFORE_SAVE)
   app.addEventListener(DocumentEvent.BEFORE_SAVE, postSaveExport)
   $.writeln('added event listener')
-  postSaveExport({target: app.activeDocument})
+  postSaveExport({ target: app.activeDocument })
 }
 
 // vi: ft=javascript
