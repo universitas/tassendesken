@@ -131,6 +131,21 @@ function test_compose() {
   )
 }
 
+// concat
+function test_concat() {
+  assertEqual(concat('ab', 'cd'), ['a', 'b', 'c', 'd'])
+  assertEqual(concat([], [1]), [1])
+}
+
+// curry
+function test_curry() {
+  var multiply = curry(function(a, b) {
+    return a * b
+  })
+  assertEqual(multiply(4, 5), 20)
+  assertEqual(multiply(4)(5), 20)
+}
+
 // defaultTo
 function test_defaultTo() {
   assertEqual(defaultTo('XXX')('hello'), 'hello')

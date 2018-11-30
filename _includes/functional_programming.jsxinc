@@ -112,6 +112,17 @@ function concat(a, b) {
   return toArray(a).concat(toArray(b))
 }
 
+function curry(fn, args) {
+  // simple function currying
+  // ((a,b,c,...) -> d) -> a -> b -> c -> ... -> d
+  var boundArgs = args || []
+  return function() {
+    var args = concat(boundArgs, arguments)
+    if (args.length < fn.length) return curry(fn, args)
+    else return fn.apply(this, args)
+  }
+}
+
 function defaultTo(val0) {
   // a -> b? -> b|a
   return function(val1) {
