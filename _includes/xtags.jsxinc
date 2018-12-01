@@ -1,0 +1,159 @@
+// #include 'index.jsxinc'
+
+function getXtags(eksportStories) {
+  return pipe(
+    map(nestedStories),
+    chain,
+    sort(ascending(dokTools.findPosition)),
+    map(storyToXtags),
+    join('\n'),
+    xtagsClean,
+    xtagsReorder,
+  )(eksportStories)
+}
+
+function nestedStories(story) {
+  var cells = story.tables.everyItem.cells
+  cellStories = cells
+    ? cells.everyItem().texts.everyItem().parentStory
+    : []
+  return pipe(
+    prop('allPageItems'),
+    pluck('parentStory'),
+    filter(identity),
+    append(story),
+    curry(concat)(cellStories),
+    uniq,
+  )(story)
+}
+
+function storyToXtags(story) {
+  // Story -> str
+  var rv = '',
+    lastTag = ''
+  for (var i = 0; i < story.textStyleRanges.length; i += 1) {
+    var chunk = story.textStyleRanges[i]
+    var text = chunk.contents.replace(/@/g, '[SNABELA]')
+    var tag = tagForStyle(chunk.appliedParagraphStyle.name)
+    if (chunk.appliedCharacterStyle.name.match(/I/)) text = '_' + text + '_'
+    if (tag != lastTag) text = '@' + tag + ':' + text
+    lastTag = tag
+    rv += text
+  }
+  return rv + '\n'
+}
+
+// gjør diverse utskiftinger før saken sendes til prodsys
+var xtagsClean = pipe(
+  replace(/(\u2002|\u2003|\u2007|\u2009|\u202F|\u00A0)/g, ' '), // diverse space
+  replace(/(\u2013|\u2014)/gi, '--'), // gjør om tankestreker til to bindestreker
+  replace(/\u00AD/gi, ''), // conditional hyphen (myk bindestrek) fjernes
+  replace(/\uFFFC|\u0016/gi, ''), // anchored object tegn fjernes
+  replace(/@SLETT:[^\r]*/gi, ''), //fjerner avsnitt med koden SLETT
+  replace(/\n/g, ' '), // linjeskift blir erstattet med mellomrom
+  replace(/^@[^:]+:\s*@/gm, '@'), // fjerne tomme avsnitt med xtag
+  replace(/(^@[^:]+:)\s+/gm, '$1'), // fjerne luft mellom xtag og første ord
+  replace(/  +/g, ' '), // gjør multispace om til enkelspace.
+  replace(/\s*\r\s*/g, '\r'), // fjerner ekstra luft mellom avsnitt.
+  replace(/^\s+/g, '').replace(/\s+$/g, '') // fjerner luft i slutten og starten av teksten.
+)
+
+function tagForStyle(styleName) {
+  return pipe(
+    find(
+      pipe(
+        prop(0),
+        apply([styleName])
+      )
+    ),
+    prop(1)
+  )([
+    [match(/\btit\b/), 'tit'],
+    [match(/\bmt\b/), 'mt'],
+    [match(/\bbt\b/), 'bt'],
+    [match(/\bbl\b/), 'bl'],
+    [match(/\bingress\b/), 'ing'],
+    [match(/\bstikktit\b/), 'stikktit'],
+    [match(/\bsitat\b/), 'sitat'],
+    [match(/\bsitatbyline\b/), 'sitatbyline'],
+    [match(/\bfakta/), 'fakta'],
+    [match(/\bspørsmål/), 'spm'],
+    [match(/ X$/), 'SLETT'],
+    [T, 'txt']
+  ])
+}
+
+
+function xtagsReorder(xtagsTekst) {
+  // gjør endringer sånn at nettavisa skal godta saken, legger faktarammer og byline til slutten av saken
+
+  // Anmelderfakta etter temaord
+  myAnmfakta = xtagsTekst.match(/@fak\d:[^@]+/g) || []
+  for (n = myAnmfakta.length - 1; n >= 0; n--) {
+    myFakta = myAnmfakta[n].replace(/\s*@$/, '')
+    xtagsTekst = xtagsTekst.replace(myFakta, '')
+    xtagsTekst = '\r' + myFakta + '\r' + xtagsTekst
+  }
+
+  // Temaord etter tittel og ingress
+  myTemaord = xtagsTekst.match(/@temaord:[^@]+/)
+  if (myTemaord) {
+    myTemaord = myTemaord[0]
+    xtagsTekst = xtagsTekst.replace(myTemaord, '\r')
+    xtagsTekst = '\r' + myTemaord + '\r' + xtagsTekst
+  }
+
+  // Ingress nest først
+  myIngress = xtagsTekst.match(/@ing:[^@]+/)
+  if (myIngress) {
+    myIngress = myIngress[0]
+    xtagsTekst = xtagsTekst.replace(myIngress, '\r')
+    xtagsTekst = '\r' + myIngress + '\r' + xtagsTekst
+  }
+
+  // Tittel først
+  myTittel = xtagsTekst.match(/@tit:[^@]+/)
+  if (myTittel) {
+    myTittel = myTittel[0]
+    xtagsTekst = xtagsTekst.replace(myTittel, '\r')
+    xtagsTekst = '\r' + myTittel + '\r' + xtagsTekst
+  }
+
+  // Stikktittel enda førstere
+  myStikktit = xtagsTekst.match(/@stikktit:[^@]+/)
+  if (myStikktit) {
+    myStikktit = myStikktit[0]
+    xtagsTekst = xtagsTekst.replace(myStikktit, '\r')
+    xtagsTekst = '\r' + myStikktit + '\r' + xtagsTekst
+  }
+
+  // Faktarammer til slutt
+  myFaktarammer = xtagsTekst.match(/@fakta:[^@]+/g) || []
+  for (n = 0; n < myFaktarammer.length; n++) {
+    myFakta = myFaktarammer[n].replace(/\s*@$/, '')
+    xtagsTekst = xtagsTekst.replace(myFakta, '')
+    myFakta = myFakta.replace(/\s+$/, '').replace(/\r/g, '\r# ')
+    xtagsTekst += '\r' + myFakta
+  }
+
+  // Bylines til slutt
+  myBylines = xtagsTekst.match(/[\r\n]*@bl:[^@]+/g) || []
+  for (n = 0; n < myBylines.length; n++) {
+    myByline = myBylines[n]
+    xtagsTekst = xtagsTekst.replace(myByline, '\r')
+    xtagsTekst += myByline
+  }
+
+  // Bildetekster til slutt
+  myBildetekster = xtagsTekst.match(/@bt:[\s\S]+?^/gm) || []
+  for (n = 0; n < myBildetekster.length; n++) {
+    myBildetekst = myBildetekster[n]
+    xtagsTekst = xtagsTekst.replace(myBildetekst, '\r')
+    xtagsTekst = xtagsTekst + '\r' + myBildetekst + '\r'
+  }
+
+  xtagsTekst = xtagsTekst.replace(/\s*\r\s*/g, '\n\n') // sørger for at alle avsnittskift blir markert på samme måte, slik webavisa vil ha det.
+  xtagsTekst = xtagsTekst.replace(/^\s+/g, '').replace(/\s+$/g, '') // fjerner luft i slutten og starten av teksten.
+  return xtagsTekst
+}
+// vi: ft=javascript
