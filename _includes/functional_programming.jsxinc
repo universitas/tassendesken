@@ -29,7 +29,7 @@ function apply(fn) {
   // turn variadic function into unary function
   // ((...*) -> *) -> ([*]) -> *
   return function(args) {
-    return fn.apply(this, toArray(args))
+    return fn.apply(this, arrayFrom(args))
   }
 }
 
@@ -109,7 +109,7 @@ function compose() {
 
 function concat(a, b) {
   // [*], [*] -> [*]
-  return toArray(a).concat(toArray(b))
+  return arrayFrom(a).concat(arrayFrom(b))
 }
 
 function curry(fn, args) {
@@ -133,7 +133,7 @@ function defaultTo(val0) {
 function descend(fn) {
   // sorting comparator descending
   // (a -> c) -> (a, a) -> num
-  return flip(asc(fn))
+  return flip(ascend(fn))
 }
 
 function dotProp(name) {
@@ -328,7 +328,7 @@ function setAttr(name, val) {
   // mutating / inpure assoc
   // (k, v) -> obj -> obj
   return function(obj) {
-    obj[k] = v
+    obj[name] = val
     return obj
   }
 }
@@ -336,6 +336,7 @@ function setAttr(name, val) {
 function sort(fn) {
   // sort
   // ?((a, a) -> num) -> [a] -> [a]
+  if (!fn) fn = ascend(identity)
   return function(seq) {
     return arrayFrom(seq).sort(fn)
   }
@@ -362,8 +363,23 @@ function unapply(fn) {
   // make unary function variadic
   // (([*]) -> *) -> ((...*) -> *)
   return function() {
-    return fn(toArray(arguments))
+    return fn(arrayFrom(arguments))
   }
+}
+
+function uniq(arr) {
+  // remove duplicates
+  // [*] -> [*]
+  var rv = []
+  var memo = {}
+  for (var i = 0; i < arr.length; i++) {
+    var val = arr[i]
+    var key = uneval(val)
+    if (key in memo) continue;
+    memo[key] = true
+    rv.push(val)
+  }
+  return rv
 }
 
 function values(obj) {
@@ -390,10 +406,10 @@ function withDefault(fn, val) {
   )
 }
 
-function zip(collections) {
+function zip() {
   // zip multiple input arrays / sequences
-  // [[a], [b], ...] -> [[a, b, ...]]
-  var arrs = map(arrayFrom)(collections)
+  // ([a], [b], ...) -> [[a, b, ...]]
+  var arrs = map(arrayFrom)(arguments)
   var length = pipe(
     pluck('length'),
     sort(),
@@ -419,15 +435,21 @@ function F() {
 // comparison operators
 function eq(a) {
   // a -> a -> bool
+  if (is(Object)(a)) {
+    return function(b) {
+      for (key in a) {
+        if (!propEq(key, a[key])(b)) return false
+      }
+      return true
+    }
+  }
   return function(b) {
     return uneval(a) == uneval(b)
   }
 }
 function neq(a) {
   // a -> a -> bool
-  return function(b) {
-    return uneval(a) !== uneval(b)
-  }
+  return complement(eq(a))
 }
 function gt(a) {
   // a -> a -> bool
@@ -497,5 +519,28 @@ function pow(a) {
   return function(b) {
     return Math.pow(b, a)
   }
+}
+
+// string functions
+var replace = curry(function(regex, rep, s) {
+  return ('' + s).replace(regex, rep)
+})
+var match = curry(function(regex, s) {
+  return eval(uneval(('' + s).match(regex) || []))
+})
+var test = curry(function(regex, s) {
+  return regex.test('' + s)
+})
+var split = curry(function(where, s) {
+  return ('' + s).split(where)
+})
+var toTitle = function(s) {
+  return s.substr(0, 1).toUpperCase() + s.substr(1).toLowerCase()
+}
+var toUpper = function(s) {
+  return ('' + s).toUpperCase()
+}
+var toLower = function(s) {
+  return ('' + s).toLowerCase()
 }
 // vi: ft=javascript

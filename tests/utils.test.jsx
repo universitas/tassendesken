@@ -2,7 +2,7 @@
 #include "test_runner.jsxinc"
 #include "utils.jsxinc"
 
-testRunner(false)
+testRunner(false, true)
 
 function test_logFail() {
   function failFunction(because) {
@@ -33,16 +33,10 @@ function test_nextFriday() {
 }
 
 function test_jsonify() {
-  var cases = {
-    '{}': {},
-    '[]': [],
-    null: null,
-    '[1,2,3]': [1, 2, 3]
-  }
-  for (var c in cases) {
-    var val = cases[c]
-    assertEqual(c, jsonify(val))
-  }
+  var cases = [['{}', {}], ['[]', []], ['null', null], ['[1,2,3]', [1, 2, 3]]]
+  map(function(cx) {
+    assertEqual(cx[0], jsonify(cx[1]))
+  })(cases)
 }
 
 function test_trim() {

@@ -2,25 +2,35 @@
 if (typeof config == 'undefined') var config = {}
 
 // Test runner
-function testRunner(raise) {
+function testRunner(raise, silent) {
+  $.writeln('\n------------- ' + $.stack.split('\n')[0] + ' --------------\n')
   config.DEBUG = true
   $.level = 2 // full debug mode
+  var ok = []
+  var failed = []
   for (name in $.global) {
     if (/test_/.test(name)) {
       fn = $.global[name]
       if (raise) {
         fn()
+        ok.push(name)
       } else {
         try {
-          $.write('running tests: ' + name)
+          silent || $.write('running tests: ' + name)
           fn()
-          $.write(' Ok\n')
+          ok.push(name)
+          silent || $.write('  OK!\n')
         } catch (err) {
+          $.write('running tests: ' + name)
           log('\n' + err.fileName + ':' + err.line + '\n' + err.message)
+          failed.push(name)
         }
       }
     }
   }
+  $.writeln('ok: ' + ok.length + '/' + (ok.length + failed.length) + ' tests')
+  failed.length && $.writeln('failed:\n' + failed.join('\n'))
+  $.writeln('\n------------------')
 }
 
 // Test assertions

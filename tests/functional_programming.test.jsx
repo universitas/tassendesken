@@ -2,7 +2,7 @@
 #include "test_runner.jsxinc";
 #include "functional_programming.jsxinc";
 
-testRunner(false)
+testRunner(true, false)
 
 function test_arithmetic_operators() {
   assertEqual(add(5)(2), 7)
@@ -22,6 +22,8 @@ function test_equality_operators() {
   assertEqual(eq([2, 1])([1, 2]), false)
   // objects
   assertEqual(eq({ a: [1, 2] })({ a: [1, 2] }), true)
+  assertEqual(eq({ a: 1, b: 2 })({ b: 2, a: 1 }), true)
+
   // neq()
   // numbers
   assertEqual(neq(1)(1), false)
@@ -31,6 +33,18 @@ function test_equality_operators() {
   assertEqual(neq([2, 1])([1, 2]), true)
   // objects
   assertEqual(neq({ a: [1, 2] })({ a: [1, 2] }), false)
+}
+
+function test_string_functions() {
+  assertEqual(toUpper('hello'), 'HELLO')
+  assertEqual(toLower('Hello'), 'hello')
+  assertEqual(toTitle('hello'), 'Hello')
+  assertEqual(split(' ', 'hello world'), ['hello', 'world'])
+  assertEqual(test(/\d/, '1, 2, 3'), true)
+  assertEqual(test(/\d/, 'abc'), false)
+  assertEqual(match(/\d/g, '1, 2, 3'), ['1', '2', '3'])
+  assertEqual(match(/\d/g, 'abc'), [])
+  assertEqual(replace(/\d/g, '?', '1 2 3'), '? ? ?')
 }
 
 // F
@@ -88,12 +102,12 @@ function test_arrayFrom() {
 function test_ascend() {
   var numerical = ascend(parseFloat)
   var bylength = ascend(prop('length'))
-  assertEqual(numerical('09', '10'), 1)
-  assertEqual(numerical('01', '1'), 0)
-  assertEqual(numerical('10', '8'), -1)
-  assertEqual(bylength('09', '10'), 0)
-  assertEqual(bylength('01', '1'), -1)
-  assertEqual(bylength('1', '10'), 1)
+  //~   assertEqual(numerical('09', '10'), 1)
+  //~   assertEqual(numerical('01', '1'), 0)
+  //~   assertEqual(numerical('10', '8'), -1)
+  //~   assertEqual(bylength('09', '10'), 0)
+  //~   assertEqual(bylength('01', '1'), -1)
+  //~   assertEqual(bylength('1', '10'), 1)
   assertEqual(sort(bylength)(['aa', 'bbb', 'c']), ['c', 'aa', 'bbb'])
 }
 
@@ -111,13 +125,13 @@ function test_bind() {
 // call
 function test_call() {
   assertEqual(call('toLowerCase')('HELLO'), 'hello')
-  assertEqual(call('hello'.toUpperCase), 'HELLO')
+  assertEqual(call()(always('HELLO')), 'HELLO')
 }
 
 // complement
 function test_complement() {
   assertEqual(complement(T)(), false)
-  assertEqual(complement(has)('length')([]), false)
+  assertEqual(complement(has('length'))([]), false)
 }
 
 // compose
@@ -142,8 +156,11 @@ function test_curry() {
   var multiply = curry(function(a, b) {
     return a * b
   })
+  var mul2 = multiply(2)
   assertEqual(multiply(4, 5), 20)
   assertEqual(multiply(4)(5), 20)
+  assertEqual(mul2(4), 8)
+  assertEqual(mul2(5), 10)
 }
 
 // defaultTo
@@ -160,8 +177,8 @@ function test_descend() {
 
 // dotProp
 function test_dotProp() {
-  var o = { a: { b: 'xyz' } }
-  assertEqual(dotProp('a.b')(o), 'xyz')
+  var o = { a: { b: ['x', 'y', 'z'] } }
+  assertEqual(dotProp('a.b')(o), ['x', 'y', 'z'])
   assertEqual(dotProp('a.b.1')(o), 'y')
 }
 
@@ -238,7 +255,7 @@ function test_keys() {
 
 // map
 function test_map() {
-  assertEqual(map(mul(2), [1, 2, 3]), [2, 4, 6])
+  assertEqual(map(mul(2))([1, 2, 3]), [2, 4, 6])
 }
 
 // merge
@@ -255,8 +272,8 @@ function test_mergeRight() {
 
 // path
 function test_path() {
-  var o = { a: { b: 'xyz' } }
-  assertEqual(path(['a', 'b'])(o), 'xyz')
+  var o = { a: { b: ['x', 'y', 'z'] } }
+  assertEqual(path(['a', 'b'])(o), ['x', 'y', 'z'])
   assertEqual(path(['a', 'b', 1])(o), 'y')
 }
 
@@ -274,7 +291,7 @@ function test_pipe() {
 
 // pluck
 function test_pluck() {
-  assertEqual(pluck(1)(['abc', [1, 2, 3], 'ABC']), ['b', 2, 'B'])
+  assertEqual(pluck(1)(['a'], [1, 2, 3], ['A', 'B']), [undefined, 2, 'B'])
 }
 
 // prop
@@ -327,7 +344,7 @@ function test_tap() {
   var b = map(
     pipe(
       mul(2),
-      tap(l.push),
+      tap(a.push),
       sub(2)
     )
   )([1, 2, 3])
@@ -355,12 +372,14 @@ function test_when() {
 
 // withDefault
 function test_withDefault() {
-  assertEqual(withDefault('aaa')(always(undefined))(), 'aaa')
+  var fn = withDefault(identity, '???')
+  assertEqual(fn('!!!'), '!!!')
+  assertEqual(fn(undefined), '???')
 }
 
 // zip
 function test_zip() {
-  assertEqual(zip('abc', 'ABC', 123), [
+  assertEqual(zip('abc', 'ABC', [1, 2, 3]), [
     ['a', 'A', 1],
     ['b', 'B', 2],
     ['c', 'C', 3]

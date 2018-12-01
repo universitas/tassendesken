@@ -3,7 +3,50 @@
 #targetengine "session"
 #include "../_includes/index.jsxinc"
 
-// findTemplateStrings(app.activeDocument)
+function findPlaceHolders(doc) {
+  app.findChangeGrepOptions.properties = {
+    includeHiddenLayers: true,
+    includeMasterPages: true
+  }
+  app.findGrepPreferences.properties = {
+    findWhat: '\\{\\{[^{]*\\}\\}'
+  }
+  return pipe(
+    call('findGrep'),
+    map(
+      pipe(
+        prop('contents'),
+        toLower,
+        replace(/[}{ ]/g, '')
+      )
+    ),
+    uniq
+  )(doc)
+}
+
+function resetSearch() {
+  app.changeGrepPreferences = NothingEnum.nothing
+  app.findGrepPreferences = NothingEnum.nothing
+  app.findChangeGrepOptions = NothingEnum.nothing
+}
+
+function changeTemplateStrings(doc, data) {
+  resetSearch()
+  var keys = findPlaceHolders(doc)
+  var notFound = []
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i]
+    var value = dotProp(key)(data)
+    if (value) {
+      app.findGrepPreferences.findWhat = '(?i)\\{\\{ *' + key + ' *\\}\\}'
+      app.changeGrepPreferences.changeTo = value
+      var res = doc.changeGrep()
+      log('changed ' + key + ' -> ' + value + ' ' + res, '$')
+    } else notFound.push(key)
+  }
+  notFound.length && log('could not find: ' + join(', ')(notFound), '$')
+  resetSearch()
+}
 
 var utgaveData = {
   utg: { nr: '15', åg: '80', dato: 'onsdag 23. oktober 1970' },
@@ -62,89 +105,24 @@ var utgaveData = {
   }
 }
 
-//~ pp( app.changeGrepPreferences.properties)
-//~ exit()
 app.doScript(
-  changeTemplateStrings,
+  function() {
+    changeTemplateStrings(app.activeDocument, utgaveData)
+  },
   ScriptLanguage.JAVASCRIPT,
-  [utgaveData],
+  [],
   UndoModes.ENTIRE_SCRIPT,
   'change template strings'
 )
 
 function pp(obj) {
+  // prettyprint
+  if (has('properties')(obj)) obj = obj.properties
   var rv = {}
   for (var key in obj) {
     var val = uneval(obj[key])
-    // $.writeln(key, ':', val)
     if (val.substr(0, 7) == 'resolve' || val == '' || val == '({})') continue;
     rv[key] = obj[key]
   }
   $.writeln('\n\n', JSON.stringify(rv, null, 2))
-}
-
-function findTemplateStrings(doc) {
-  app.findGrepPreferences = NothingEnum.nothing
-  app.changeGrepPreferences = NothingEnum.nothing
-  app.findChangeGrepOptions.properties = {
-    includeLockedStoriesForFind: false,
-    includeLockedLayersForFind: false,
-    includeHiddenLayers: true,
-    includeMasterPages: true,
-    includeFootnotes: false,
-    kanaSensitive: true,
-    widthSensitive: true
-  }
-  app.findGrepPreferences.properties = {
-    findWhat: '\\{\\{[^{]*\\}\\}'
-  }
-  var results = doc.findGrep()
-  // $.writeln(results[0].reflect.properties)
-  var data = {}
-  pipe(
-    pluck('contents'),
-    map(function(s) {
-      return s.replace(/[{}\s]/g, '').split('.')
-    }),
-    map(assocPair(data))
-  )(results)
-  return uneval(data)
-}
-
-function assocPair(obj) {
-  return function(pair) {
-    if (!(pair[0] in obj)) obj[pair[0]] = {}
-    obj[pair[0]][pair[1]] = pair[0] + ' ' + pair[1]
-  }
-}
-
-function changeTemplateStrings(args) {
-  var data = utgaveData
-  var doc = app.activeDocument
-  app.findGrepPreferences = NothingEnum.nothing
-  app.changeGrepPreferences = NothingEnum.nothing
-  app.findChangeGrepOptions.properties = {
-    includeHiddenLayers: true,
-    includeMasterPages: true
-  }
-  var flatData = flattenObj(data)
-  for (var key in flatData) {
-    var findWhat = '\\{\\{ *' + key + ' *\\}\\}'
-    var changeTo = flatData[key]
-    app.findGrepPreferences.findWhat = findWhat
-    app.changeGrepPreferences.changeTo = changeTo
-    var res = doc.changeGrep()
-    // $.writeln(findWhat, '\n', changeTo, '\n', res, '\n')
-  }
-}
-
-function flattenObj(obj, path, rv) {
-  if (!path) path = ''
-  if (!rv) rv = {}
-  for (key in obj) {
-    var val = obj[key]
-    if (typeof val == 'object') flattenObj(val, path + key + '.', rv)
-    else rv[path + key] = val
-  }
-  return rv
 }
