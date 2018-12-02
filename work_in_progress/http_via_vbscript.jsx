@@ -29,9 +29,10 @@ parameter is Null ("") or missing.
 */
 
 // VBScript to use windows https library
+
 VbHttpGet = """
-method = arguments(0)
-url = arguments(1)
+url = arguments(0)
+method = arguments(1)
 user = arguments(2)
 password = arguments(3)
 payload = arguments(4)
@@ -41,14 +42,21 @@ Http.open method, url, FALSE, user, password
 Http.setRequestHeader "User-Agent", "InDesign script"
 Http.send payload
 app.ScriptArgs.SetValue "response", Http.responseText
-app.ScriptArgs.SetValue "status", ""&Http.status
+app.ScriptArgs.SetValue "status", "" & Http.status
 app.ScriptArgs.SetValue "headers", Http.getAllResponseHeaders()
 """
 
-app.doScript(VbHttpGet, ScriptLanguage.VISUAL_BASIC,
-  ['GET', 'https://universitas.no/api/', '', '', 'aaa'])
-response = app.scriptArgs.getValue('response')
-status = app.scriptArgs.getValue('status')
-headers = app.scriptArgs.getValue('headers')
-$.writeln(headers)
-$.writeln(status, ' ', response.length)
+function https(url, method, user, password, payload) {
+  app.doScript(
+    VbHttpGet,
+    ScriptLanguage.VISUAL_BASIC,
+    [url, method || 'GET', user || '', password || '', payload || ''],
+  )
+  return {
+    response: app.scriptArgs.getValue('response')
+    status: app.scriptArgs.getValue('status')
+    headers: app.scriptArgs.getValue('headers')
+  }
+}
+
+// vi: ft=javascript
