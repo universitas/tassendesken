@@ -9,8 +9,6 @@ function importerSak(sak, artikkeltype) {
   }
 }
 
-var prodsys = {}
-
 var http = {}
 http.use_mock = function() {
   return false
@@ -49,7 +47,9 @@ http.connect = function(request, encoding, host, port) {
   }
 }
 
-var prodsys = {}
+var prodsys = {
+  endpoint: config.api.ENDPOINT
+}
 
 prodsys.get = function(pk, attrs) {
   return this.request('GET', pk, null, attrs)
@@ -80,11 +80,8 @@ prodsys.list = function(attrs) {
 }
 
 prodsys.request = function(method, pk, payload, attrs) {
-  var url =
-    pk === null || pk === undefined
-      ? config.api.ENDPOINT
-      : config.api.ENDPOINT + pk + '/'
-
+ 
+  var url = this.endpoint + (pk ? pk + '/' : '')
   if (attrs) {
     var queryString = []
     for (var key in attrs) {

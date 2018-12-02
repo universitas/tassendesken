@@ -1,4 +1,5 @@
 #include "../_includes/index.jsxinc"
+// #target indesign
 
 /*
 oXMLHttpRequest.open(bstrMethod, bstrUrl, varAsync, bstrUser, bstrPassword);
@@ -53,9 +54,9 @@ function https(url, method, user, password, payload) {
     [url, method || 'GET', user || '', password || '', payload || ''],
   )
   return {
-    response: app.scriptArgs.getValue('response')
-    status: app.scriptArgs.getValue('status')
-    headers: app.scriptArgs.getValue('headers')
+    response: app.scriptArgs.getValue('response'),
+    status: app.scriptArgs.getValue('status'),
+    headers: app.scriptArgs.getValue('headers'),
   }
 }
 
