@@ -2,7 +2,46 @@
 #include "test_runner.jsxinc";
 #include "functional_programming.jsxinc";
 
-testRunner(true, false)
+testRunner(false, true)
+
+// applySpec
+function test_applySpec() {
+  var fn = applySpec({ m2: mul(2), two: { a: add(2), s: sub(2) } })
+  assertEqual(fn(3), { m2: 6, two: { a: 5, s: 1 } })
+  assertEqual(fn(11), { m2: 22, two: { a: 13, s: 9 } })
+}
+
+// omit
+function test_omit() {
+  assertEqual(omit(lte(3))([1, 3, 4, 5, 2, 10]), [4, 5, 10])
+}
+
+function test_ifElse() {
+  var fn = ifElse(gte(2), T, F)
+  assertEqual(map(fn)([-5, 1, 5, 0, 2, 10]), [
+    false,
+    false,
+    true,
+    false,
+    true,
+    true
+  ])
+}
+
+function test_clamp() {
+  assertEqual(map(clamp(0, 10))([-5, 1, 5, 10, 15, 20]), [0, 1, 5, 10, 10, 10])
+}
+
+function test_memoSort() {
+  var values = ['hhhh', 'z', 'xxx', 'bb']
+  assertEqual(memoSort(prop('length'), ascend, values), [
+    'z',
+    'bb',
+    'xxx',
+    'hhhh'
+  ])
+  assertEqual(memoSort(identity)(descend, values), ['z', 'xxx', 'hhhh', 'bb'])
+}
 
 function test_arithmetic_operators() {
   assertEqual(add(5)(2), 7)
@@ -191,6 +230,11 @@ function test_drop() {
 // filter
 function test_filter() {
   assertEqual(filter(gt(3))([1, 3, 4, 5, 2, 10]), [4, 5, 10])
+  assertEqual(filter(gt(3))({ a: 1, b: 3, c: 4, d: 5, e: 2, f: 10 }), {
+    c: 4,
+    d: 5,
+    f: 10
+  })
 }
 
 // find
@@ -256,6 +300,7 @@ function test_keys() {
 // map
 function test_map() {
   assertEqual(map(mul(2))([1, 2, 3]), [2, 4, 6])
+  assertEqual(map(mul(2))({ a: 1, b: 2, c: 3 }), { a: 2, b: 4, c: 6 })
 }
 
 // merge
@@ -287,6 +332,8 @@ function test_pipe() {
     )('abcdef'),
     'A B C'
   )
+  // empty pipe works
+  assertEqual(pipe()('yes'), 'yes')
 }
 
 // pluck

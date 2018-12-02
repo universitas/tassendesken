@@ -114,15 +114,3 @@ app.doScript(
   UndoModes.ENTIRE_SCRIPT,
   'change template strings'
 )
-
-function pp(obj) {
-  // prettyprint
-  if (has('properties')(obj)) obj = obj.properties
-  var rv = {}
-  for (var key in obj) {
-    var val = uneval(obj[key])
-    if (val.substr(0, 7) == 'resolve' || val == '' || val == '({})') continue;
-    rv[key] = obj[key]
-  }
-  $.writeln('\n\n', JSON.stringify(rv, null, 2))
-}

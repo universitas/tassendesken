@@ -1,5 +1,79 @@
 // Ramda.js inspired functional programming utilities for extendscript
 
+var len = prop('length')
+var head = pipe(
+  arrayFrom,
+  prop(0)
+)
+
+var tail = pipe(
+  arrayFrom,
+  function(arr) {
+    return arr.slice(1)
+  }
+)
+
+function applySpec(spec) {
+  // {k: (a -> *)} -> a -> {k: *}
+  spec = map(when(complement(is(Function)), applySpec), spec)
+  return function(val) {
+    return map(function(fn) {
+      return fn(val)
+    })(spec)
+  }
+}
+
+var omit = curry(function omit(fn, seq) {
+  // reverse filter
+  // (a -> bool) -> [a] -> [a]
+  return filter(complement(fn), seq)
+})
+
+var ifElse = curry(function(cond, thenFn, elseFn, val) {
+  // if then else
+  // (a -> bool) -> (a -> *) -> (a -> *) -> *
+  return cond(val) ? thenFn(val) : elseFn(val)
+})
+
+var clamp = curry(function(a, b, c) {
+  // clamp value in range between min and max
+  // a -> a -> a -> a
+  return sort()([a, b, c])[1]
+})
+
+var min = curry(function(a, b) {
+  // smallest of two
+  // a -> a -> a
+  return a < b ? a : b
+})
+
+var max = curry(function(a, b) {
+  // largest of two
+  // a -> a -> a
+  return a > b ? a : b
+})
+
+var converge = curry(function converge(after, fnx, val) {
+  // (b,c,.. -> z) -> [(a->b),(a->c),..] -> a -> z
+  return pipe(
+    map(flip(apply)([val])),
+    apply(after)
+  )(fnx)
+})
+
+var memoSort = curry(
+  // Sort function that only evaluates the key function once for each item
+  // This is useful for expensive key function evaluation.
+  // (a -> b) -> ((b, b) -> 1|0|-1) -> [a] -> [a]
+  function(keyfn, sorter, arr) {
+    return pipe(
+      converge(zip, [map(keyfn), identity]),
+      sort(sorter(prop(0))),
+      pluck(1)
+    )(arr)
+  }
+)
+
 function all(seq) {
   // [a] -> bool
   for (var i = 0; i < seq.length; i++) if (!seq[i]) return false
@@ -25,11 +99,16 @@ function any(seq) {
   return false
 }
 
-function apply(fn) {
+var apply = curry(function apply(fn, args) {
   // turn variadic function into unary function
   // ((...*) -> *) -> ([*]) -> *
-  return function(args) {
-    return fn.apply(this, arrayFrom(args))
+  return fn.apply(this, arrayFrom(args))
+})
+
+function append(val) {
+  // a -> [*] -> [*, a]
+  return function(arr) {
+    return arr.slice().concat([val])
   }
 }
 
@@ -157,16 +236,20 @@ function either(fn0, fn1) {
   }
 }
 
-function filter(fn) {
+var filter = curry(function filter(fn, obj) {
   // filter
-  // (a -> bool) -> [a] -> [a]
-  return function(seq) {
-    var arr = arrayFrom(seq),
-      rv = []
+  // (a -> bool) -> [a]|{k:a} -> [a]
+  if (!fn) fn = identity
+  if (obj.constructor == Object) {
+    var rv = {}
+    for (var key in obj) fn(obj[key]) && (rv[key] = obj[key])
+  } else {
+    var arr = arrayFrom(obj)
+    var rv = []
     for (var i = 0; i < arr.length; i++) fn(arr[i]) && rv.push(arr[i])
-    return rv
   }
-}
+  return rv
+})
 
 function find(fn) {
   // (a -> bool) -> [a] -> a|null
@@ -179,9 +262,9 @@ function find(fn) {
 function flip(fn) {
   // flip order of arguments of 2-ary function
   // ((a, b) -> c) -> ((b, a) -> c)
-  return function(a, b) {
+  return curry(function(a, b) {
     return fn(b, a)
-  }
+  })
 }
 
 function has(name) {
@@ -231,43 +314,47 @@ function keys(obj) {
   return rv
 }
 
-function map(fn) {
-  // map
-  // (a -> b) -> [a] -> [b]
-  return function(seq) {
-    var arr = arrayFrom(seq),
-      rv = []
-    for (var i = 0; i < arr.length; i++) rv.push(fn(arr[i]))
+var map = curry(function map(fn, obj) {
+  // filter
+  // (a -> b) -> [a]|{k:a} -> [b]
+  if (obj.constructor == Object) {
+    var rv = {}
+    for (var key in obj) rv[key] = fn(obj[key])
+    return rv
+  } else {
+    var rv = []
+    var arr = arrayFrom(obj)
+    for (var i = 0; i < arr.length; i++) rv[i] = fn(obj[i])
     return rv
   }
-}
+})
 
-function merge(a) {
+var merge = curry(function merge(a, b) {
   // {} -> {} -> {}
-  return function(b) {
-    var c = {}
-    for (var k in a) c[k] = a[k]
-    for (var k in b) c[k] = b[k]
-    return c
-  }
-}
+  var c = {}
+  for (var k in a) c[k] = a[k]
+  for (var k in b) c[k] = b[k]
+  return c
+})
 
-function mergeRight(a) {
-  // {} -> {} -> {}
-  return function(b) {
-    return merge(b)(a)
-  }
-}
+var mergeRight = flip(merge)
+//~ function mergeRight(a) {
+//~   // {} -> {} -> {}
+//~   return function(b) {
+//~     return merge(b)(a)
+//~   }
+//~ }
 
 function path(parts) {
   // nested prop getter
   // [k] -> {k:v} -> v?
-  return pipe.apply(null, map(prop)(parts))
+  return pipe.apply(this, map(prop)(parts))
 }
 
 function pipe() {
   // function composition left -> right
   // (a -> b, ... , x -> z) -> a -> z
+  if (arguments.length == 0) return identity
   var f0 = arguments[0]
   var fnx = Array.prototype.slice.call(arguments, 1)
   return function() {
@@ -342,13 +429,11 @@ function sort(fn) {
   }
 }
 
-function take(n) {
+var take = curry(function take(n, seq) {
   // take that supports negative indexing
   // num -> [a] -> [a]
-  return function(seq) {
-    return n < 0 ? arrayFrom(seq).slice(n) : arrayFrom(seq).slice(0, n)
-  }
-}
+  return n < 0 ? arrayFrom(seq).slice(n) : arrayFrom(seq).slice(0, n)
+})
 
 function tap(fn) {
   // For numroducing side effects such as logging numo function pipe line
@@ -433,48 +518,40 @@ function F() {
 }
 
 // comparison operators
-function eq(a) {
+
+// comparison operators
+var eq = curry(function eq(a, b) {
   // a -> a -> bool
   if (is(Object)(a)) {
-    return function(b) {
-      for (key in a) {
-        if (!propEq(key, a[key])(b)) return false
-      }
-      return true
-    }
-  }
-  return function(b) {
-    return uneval(a) == uneval(b)
-  }
-}
-function neq(a) {
+    for (key in a) if (!propEq(key, a[key])(b)) return false
+    return true
+  } else return uneval(a) == uneval(b)
+})
+
+var neq = curry(function neq(a, b) {
   // a -> a -> bool
-  return complement(eq(a))
-}
-function gt(a) {
+  return complement(eq)(a, b)
+})
+
+var gt = curry(function gt(a, b) {
   // a -> a -> bool
-  return function(b) {
-    return b > a
-  }
-}
-function lt(a) {
+  return b > a
+})
+
+var lt = curry(function lt(a, b) {
   // a -> a -> bool
-  return function(b) {
-    return b < a
-  }
-}
-function gte(a) {
+  return b < a
+})
+
+var gte = curry(function gte(a, b) {
   // a -> a -> bool
-  return function(b) {
-    return b >= a
-  }
-}
-function lte(a) {
+  return b >= a
+})
+
+var lte = curry(function lte(a, b) {
   // a -> a -> bool
-  return function(b) {
-    return b <= a
-  }
-}
+  return b <= a
+})
 
 // logical operators
 function not(val) {
@@ -483,43 +560,36 @@ function not(val) {
 }
 
 // arithmetic operators
-function add(a) {
+var add = curry(function add(a, b) {
   // num -> num -> num
   // str|* -> *|str -> str
-  return function(b) {
-    return b + a
-  }
-}
-function sub(a) {
+  return b + a
+})
+
+var sub = curry(function sub(a, b) {
   // num -> num -> num
-  return function(b) {
-    return b - a
-  }
-}
-function mul(a) {
+  return b - a
+})
+
+var mul = curry(function mul(a, b) {
   // num -> num -> num
-  return function(b) {
-    return b * a
-  }
-}
-function div(a) {
+  return b * a
+})
+
+var div = curry(function div(a, b) {
   // num -> num -> num
-  return function(b) {
-    return b / a
-  }
-}
-function mod(a) {
+  return b / a
+})
+
+var mod = curry(function mod(a, b) {
   // num -> num -> num
-  return function(b) {
-    return b % a
-  }
-}
-function pow(a) {
+  return b % a
+})
+
+var pow = curry(function pow(a, b) {
   // num -> num -> num
-  return function(b) {
-    return Math.pow(b, a)
-  }
-}
+  return Math.pow(b, a)
+})
 
 // string functions
 var replace = curry(function(regex, rep, s) {
@@ -534,6 +604,9 @@ var test = curry(function(regex, s) {
 var split = curry(function(where, s) {
   return ('' + s).split(where)
 })
+var trim = function(s) {
+  return ('' + s).replace(/^\s+/, '').replace(/\s+$/, '')
+}
 var toTitle = function(s) {
   return s.substr(0, 1).toUpperCase() + s.substr(1).toLowerCase()
 }
@@ -543,4 +616,5 @@ var toUpper = function(s) {
 var toLower = function(s) {
   return ('' + s).toLowerCase()
 }
+
 // vi: ft=javascript

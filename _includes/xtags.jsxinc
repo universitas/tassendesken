@@ -1,61 +1,144 @@
-// #include 'index.jsxinc'
+#include 'index.jsxinc'
+
+config.DEBUG = true
+$.strict = true
+
+$.clear()
+app.scriptPreferences.properties = {
+  enableRedraw: false,
+  userInteractionLevel: UserInteractionLevels.NEVER_INTERACT
+}
+
+pipe(
+  prop('selection'),
+  pluck('parentStory'),
+  filter(),
+  getXtags,
+  log
+)(app)
+
+function findPosition(myStory) {
+  var textContainer = myStory.textContainers[0]
+  if (!textContainer.contents) return Infinity
+  var firstchar = myStory.characters[0]
+  var page = textContainer.parentPage
+  var leftMargin = page.bounds[1] + page.marginPreferences.left
+  var x = Math.round(firstchar.horizontalOffset)
+  var y = Math.round(firstchar.baseline)
+  var cols = pipe(
+    dotProp('marginPreferences.columnsPositions'),
+    map(add(leftMargin)),
+    filter(lt(x))
+  )(page)
+
+  var pgNum = pipe(
+    match(/\d+/),
+    propOr(0, 0),
+    parseInt
+  )(page.name)
+
+  var rv = Math.round(x + y * 10 + cols.length * 1e3, pgNum * 1e8)
+  // log([x, y, rv, myStory])
+  return rv
+}
 
 function getXtags(eksportStories) {
   return pipe(
+    memoSort(findPosition, ascend),
     map(nestedStories),
     chain,
-    sort(ascending(dokTools.findPosition)),
+    uniq,
     map(storyToXtags),
-    join('\n'),
-    xtagsClean,
-    xtagsReorder,
+    join('\r\r'),
+    xtagsClean
+    // xtagsReorder,
   )(eksportStories)
 }
 
 function nestedStories(story) {
-  var cells = story.tables.everyItem.cells
-  cellStories = cells
-    ? cells.everyItem().texts.everyItem().parentStory
+  var cells = story.tables.everyItem().cells
+  cellStories = cells.length
+    ? cells
+        .everyItem()
+        .texts.everyItem()
+        .getElements()
     : []
   return pipe(
     prop('allPageItems'),
     pluck('parentStory'),
     filter(identity),
     append(story),
-    curry(concat)(cellStories),
-    uniq,
+    curry(concat)(cellStories)
+    // uniq,
   )(story)
 }
 
+function chunkToXtags(chunk) {
+  return test(/I/, chunk.appliedCharacterStyle.name)
+    ? '_' + chunk.contents + '_'
+    : chunk.contents
+}
+
+function clampRange(a, b, text) {
+  var clamper = clamp(a, b)
+  var range = [clamper(text.index), clamper(text.index + text.length - 1)]
+  var rv = text.parent.characters.itemByRange(range[0], range[1])
+  // if (rv.isValid != text.isValid) throw new Error('fail');
+  return rv
+}
+
+function characterRanges(paragraph) {
+  return pipe(
+    prop('textStyleRanges'),
+    map(
+      curry(clampRange)(paragraph.index, paragraph.index + paragraph.length - 1)
+    )
+  )(paragraph)
+}
+
+function paragraphToXtags(paragraph) {
+  var tag = tagForStyle(paragraph.appliedParagraphStyle.name)
+  var text = pipe(
+    ifElse(
+      pipe(
+        dotProp('textStyleRanges.length'),
+        gt(1)
+      ),
+      pipe(
+        characterRanges,
+        map(chunkToXtags),
+        join('')
+      ),
+      prop('contents')
+    ),
+    replace(/@/, '@')
+  )(paragraph)
+  // $.bp(test(/mai/, paragraph.contents))
+  return '@' + tag + ': ' + text
+}
 function storyToXtags(story) {
   // Story -> str
-  var rv = '',
-    lastTag = ''
-  for (var i = 0; i < story.textStyleRanges.length; i += 1) {
-    var chunk = story.textStyleRanges[i]
-    var text = chunk.contents.replace(/@/g, '[SNABELA]')
-    var tag = tagForStyle(chunk.appliedParagraphStyle.name)
-    if (chunk.appliedCharacterStyle.name.match(/I/)) text = '_' + text + '_'
-    if (tag != lastTag) text = '@' + tag + ':' + text
-    lastTag = tag
-    rv += text
-  }
-  return rv + '\n'
+  return pipe(
+    prop('paragraphs'),
+    map(paragraphToXtags),
+    map(trim),
+    join('\r')
+  )(story)
 }
 
 // gjør diverse utskiftinger før saken sendes til prodsys
 var xtagsClean = pipe(
   replace(/(\u2002|\u2003|\u2007|\u2009|\u202F|\u00A0)/g, ' '), // diverse space
-  replace(/(\u2013|\u2014)/gi, '--'), // gjør om tankestreker til to bindestreker
-  replace(/\u00AD/gi, ''), // conditional hyphen (myk bindestrek) fjernes
-  replace(/\uFFFC|\u0016/gi, ''), // anchored object tegn fjernes
-  replace(/@SLETT:[^\r]*/gi, ''), //fjerner avsnitt med koden SLETT
+  replace(/(\u2013|\u2014)/g, '--'), // gjør om tankestreker til to bindestreker
+  replace(/\u00AD/g, '~'), // conditional hyphen (myk bindestrek) fjernes
+  replace(/\uFFFC|\u0016/g, ''), // anchored object tegn fjernes
+  replace(/@SLETT:[^\r]*/g, ''), //fjerner avsnitt med koden SLETT
+  replace(/^@mt:/gm, '\r@mt:'), //ekstra avsnitt
   replace(/\n/g, ' '), // linjeskift blir erstattet med mellomrom
   replace(/^@[^:]+:\s*@/gm, '@'), // fjerne tomme avsnitt med xtag
-  replace(/(^@[^:]+:)\s+/gm, '$1'), // fjerne luft mellom xtag og første ord
-  replace(/  +/g, ' '), // gjør multispace om til enkelspace.
-  replace(/\s*\r\s*/g, '\r'), // fjerner ekstra luft mellom avsnitt.
-  replace(/^\s+/g, '').replace(/\s+$/g, '') // fjerner luft i slutten og starten av teksten.
+  replace(/[ \t]+/g, ' '), // gjør multispace om til enkelspace.
+  replace(/\r\r+/g, '\r\r'), // fjerner ekstra luft mellom avsnitt.
+  trim
 )
 
 function tagForStyle(styleName) {
@@ -63,97 +146,28 @@ function tagForStyle(styleName) {
     find(
       pipe(
         prop(0),
-        apply([styleName])
+        function(fn) {
+          return fn(styleName)
+        }
       )
     ),
     prop(1)
   )([
-    [match(/\btit\b/), 'tit'],
-    [match(/\bmt\b/), 'mt'],
-    [match(/\bbt\b/), 'bt'],
-    [match(/\bbl\b/), 'bl'],
-    [match(/\bingress\b/), 'ing'],
-    [match(/\bstikktit\b/), 'stikktit'],
-    [match(/\bsitat\b/), 'sitat'],
-    [match(/\bsitatbyline\b/), 'sitatbyline'],
-    [match(/\bfakta/), 'fakta'],
-    [match(/\bspørsmål/), 'spm'],
-    [match(/ X$/), 'SLETT'],
+    [test(/\btit\b/), 'tit'],
+    [test(/\bmt\b/), 'mt'],
+    [test(/\bbt\b/), 'bt'],
+    [test(/\bbl\b/), 'bl'],
+    [test(/\bingress\b/), 'ing'],
+    [test(/\bstikktit\b/), 'stikktit'],
+    [test(/\bsitat\b/), 'sitat'],
+    [test(/\bsitatbyline\b/), 'sitatbyline'],
+    [test(/\btema/), 'tema'],
+    [test(/\bfakta/), 'fakta'],
+    [test(/\bspørsmål/), 'spm'],
+    [test(/\btingo/), 'tingo'],
+    [test(/(epost)/), 'SLETT'],
     [T, 'txt']
   ])
 }
 
-
-function xtagsReorder(xtagsTekst) {
-  // gjør endringer sånn at nettavisa skal godta saken, legger faktarammer og byline til slutten av saken
-
-  // Anmelderfakta etter temaord
-  myAnmfakta = xtagsTekst.match(/@fak\d:[^@]+/g) || []
-  for (n = myAnmfakta.length - 1; n >= 0; n--) {
-    myFakta = myAnmfakta[n].replace(/\s*@$/, '')
-    xtagsTekst = xtagsTekst.replace(myFakta, '')
-    xtagsTekst = '\r' + myFakta + '\r' + xtagsTekst
-  }
-
-  // Temaord etter tittel og ingress
-  myTemaord = xtagsTekst.match(/@temaord:[^@]+/)
-  if (myTemaord) {
-    myTemaord = myTemaord[0]
-    xtagsTekst = xtagsTekst.replace(myTemaord, '\r')
-    xtagsTekst = '\r' + myTemaord + '\r' + xtagsTekst
-  }
-
-  // Ingress nest først
-  myIngress = xtagsTekst.match(/@ing:[^@]+/)
-  if (myIngress) {
-    myIngress = myIngress[0]
-    xtagsTekst = xtagsTekst.replace(myIngress, '\r')
-    xtagsTekst = '\r' + myIngress + '\r' + xtagsTekst
-  }
-
-  // Tittel først
-  myTittel = xtagsTekst.match(/@tit:[^@]+/)
-  if (myTittel) {
-    myTittel = myTittel[0]
-    xtagsTekst = xtagsTekst.replace(myTittel, '\r')
-    xtagsTekst = '\r' + myTittel + '\r' + xtagsTekst
-  }
-
-  // Stikktittel enda førstere
-  myStikktit = xtagsTekst.match(/@stikktit:[^@]+/)
-  if (myStikktit) {
-    myStikktit = myStikktit[0]
-    xtagsTekst = xtagsTekst.replace(myStikktit, '\r')
-    xtagsTekst = '\r' + myStikktit + '\r' + xtagsTekst
-  }
-
-  // Faktarammer til slutt
-  myFaktarammer = xtagsTekst.match(/@fakta:[^@]+/g) || []
-  for (n = 0; n < myFaktarammer.length; n++) {
-    myFakta = myFaktarammer[n].replace(/\s*@$/, '')
-    xtagsTekst = xtagsTekst.replace(myFakta, '')
-    myFakta = myFakta.replace(/\s+$/, '').replace(/\r/g, '\r# ')
-    xtagsTekst += '\r' + myFakta
-  }
-
-  // Bylines til slutt
-  myBylines = xtagsTekst.match(/[\r\n]*@bl:[^@]+/g) || []
-  for (n = 0; n < myBylines.length; n++) {
-    myByline = myBylines[n]
-    xtagsTekst = xtagsTekst.replace(myByline, '\r')
-    xtagsTekst += myByline
-  }
-
-  // Bildetekster til slutt
-  myBildetekster = xtagsTekst.match(/@bt:[\s\S]+?^/gm) || []
-  for (n = 0; n < myBildetekster.length; n++) {
-    myBildetekst = myBildetekster[n]
-    xtagsTekst = xtagsTekst.replace(myBildetekst, '\r')
-    xtagsTekst = xtagsTekst + '\r' + myBildetekst + '\r'
-  }
-
-  xtagsTekst = xtagsTekst.replace(/\s*\r\s*/g, '\n\n') // sørger for at alle avsnittskift blir markert på samme måte, slik webavisa vil ha det.
-  xtagsTekst = xtagsTekst.replace(/^\s+/g, '').replace(/\s+$/g, '') // fjerner luft i slutten og starten av teksten.
-  return xtagsTekst
-}
 // vi: ft=javascript

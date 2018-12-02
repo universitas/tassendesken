@@ -1,5 +1,9 @@
 // Helper functions for logging and page element manipulation
 
+$.clear = function() {
+  $.writeln(Array(30000).join(' '))
+}
+
 function ifMain(filename) {
   if (typeof filename == 'undefined')
     throw new Error('you must pass in file name `ifMain($.fileName)`')
@@ -140,7 +144,14 @@ function serializeObject(obj) {
       return newArr
     case 'Story':
       return (
-        '[[ ' + obj.toSpecifier() + ' | ' + obj.contents.substr(0, 100) + ' ]]'
+        '[[ ' +
+        obj.toSpecifier() +
+        ' | ' +
+        obj.contents.substr(0, 50) +
+        ' (' +
+        obj.lines.length +
+        ' lines)' +
+        ' ]]'
       )
     case 'Image':
       return '[[ ' + obj.toSpecifier() + ' | ' + obj.itemLink.name + ' ]]'
@@ -232,6 +243,24 @@ function objectKeys(obj) {
   var result = []
   for (key in obj) result.push(key)
   return result
+}
+
+function pp(obj) {
+  return pipe(
+    when(
+      has('properties'),
+      pipe(
+        prop('properties'),
+        map(uneval),
+        omit(eq('({})')),
+        map(replace(/^resolve/, '')),
+        map(eval),
+        filter(identity)
+      )
+    ),
+    flip(jsonify)(2),
+    log
+  )(obj)
 }
 
 // Debugging decorator for functions
