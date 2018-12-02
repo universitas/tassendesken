@@ -23,7 +23,7 @@ function applySpec(spec) {
   }
 }
 
-var omit = curry(function omit(fn, seq) {
+var reject = curry(function reject(fn, seq) {
   // reverse filter
   // (a -> bool) -> [a] -> [a]
   return filter(complement(fn), seq)

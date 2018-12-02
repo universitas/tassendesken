@@ -6,7 +6,6 @@
 
 var pdfSideDefault = false
 var eksporterDefault = true
-// doc.pages[0].appliedSection.sectionPrefix = ''
 
 function getDocument() {
   var doc, errorMsg
