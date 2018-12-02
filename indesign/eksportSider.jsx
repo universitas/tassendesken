@@ -1,12 +1,11 @@
 #target "indesign";
 #targetengine "session";
-#includepath "../_includes/";
+#includepath "../includes/";
 #include "index.jsxinc";
 #include "eksport.jsxinc"; // brukergrensesnittet
 
 var pdfSideDefault = false
 var eksporterDefault = true
-// doc.pages[0].appliedSection.sectionPrefix = ''
 
 function getDocument() {
   var doc, errorMsg

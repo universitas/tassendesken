@@ -1,7 +1,7 @@
 #script "document format templatestrings"
 #target "indesign"
 #targetengine "session"
-#include "../_includes/index.jsxinc"
+#include "../includes/index.jsxinc"
 
 function findPlaceHolders(doc) {
   app.findChangeGrepOptions.properties = {

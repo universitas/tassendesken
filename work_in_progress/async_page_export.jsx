@@ -1,6 +1,6 @@
 #target "indesign"
 #targetengine "session"
-#include ../_includes/index.jsxinc
+#include ../includes/index.jsxinc
 
 if (ifMain($.fileName)) main()
 var FILEPATTERN = /^UNI.*.indd$/

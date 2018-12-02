@@ -1,5 +1,4 @@
-#include "../_includes/index.jsxinc"
-// #target indesign
+#include "../includes/index.jsxinc"
 
 /*
 oXMLHttpRequest.open(bstrMethod, bstrUrl, varAsync, bstrUser, bstrPassword);

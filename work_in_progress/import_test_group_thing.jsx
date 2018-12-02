@@ -1,6 +1,6 @@
 #target "indesign";
 #target "indesign";
-#include "../_includes/test_runner.jsxinc";
+#include "../includes/test_runner.jsxinc";
 
 var findAllElements = function() {
   var group = app.selection[0]

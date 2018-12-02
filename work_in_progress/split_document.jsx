@@ -1,7 +1,7 @@
 #script "split template document"
 #target "indesign"
 #targetengine "session"
-#include "../_includes/index.jsxinc"
+#include "../includes/index.jsxinc"
 
 main()
 

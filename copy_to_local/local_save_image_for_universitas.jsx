@@ -1,4 +1,4 @@
-#includepath "../_includes/"
+#includepath "../includes/"
 #include "prodsys.jsxinc"
 
 var artikkeltyper = {

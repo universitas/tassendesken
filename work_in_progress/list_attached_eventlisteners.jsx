@@ -1,4 +1,4 @@
-#include ../_includes/index.jsxinc
+#include ../includes/index.jsxinc
 
 function removeEventListeners(eventType) {
   return pipe(

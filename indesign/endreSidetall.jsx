@@ -1,6 +1,6 @@
 #target "indesign"
 #targetengine "session"
-#include ../_includes/index.jsxinc
+#include ../includes/index.jsxinc
 
 var dok = app.activeDocument
 var gammeltDok = new File(dok.fullName)
@@ -42,18 +42,13 @@ function endreSideTall(dok, mappe) {
     firstPage = sidetallboks.editValue
 
     sidetall(firstPage)
-    if (firstPage < 10) {
-      firstPage = '0' + firstPage
-    }
+    if (firstPage < 10) firstPage = '0' + firstPage
 
     var filnavn = 'UNI11VER' + nestefredag() + firstPage + '000.indd'
     myFile = new File(mappe + '/' + filnavn) // new file object
 
     if (myFile.exists) {
-      myDialog = app.dialogs.add({
-        name: 'Lagre over?',
-        canCancel: true
-      })
+      myDialog = app.dialogs.add({ name: 'Lagre over?', canCancel: true })
       myDialog.dialogColumns.add().staticTexts.add({
         staticLabel:
           'Fila: ' + myFile.name + ' finnes fra før. Vil du lagre over?'

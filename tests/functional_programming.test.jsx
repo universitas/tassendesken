@@ -1,4 +1,4 @@
-#includepath "../_includes"
+#includepath "../includes"
 #include "test_runner.jsxinc";
 #include "functional_programming.jsxinc";
 
@@ -11,9 +11,9 @@ function test_applySpec() {
   assertEqual(fn(11), { m2: 22, two: { a: 13, s: 9 } })
 }
 
-// omit
-function test_omit() {
-  assertEqual(omit(lte(3))([1, 3, 4, 5, 2, 10]), [4, 5, 10])
+// reject
+function test_reject() {
+  assertEqual(reject(lte(3))([1, 3, 4, 5, 2, 10]), [4, 5, 10])
 }
 
 function test_ifElse() {

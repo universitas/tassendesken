@@ -252,7 +252,7 @@ function pp(obj) {
       pipe(
         prop('properties'),
         map(uneval),
-        omit(eq('({})')),
+        reject(eq('({})')),
         map(replace(/^resolve/, '')),
         map(eval),
         filter(identity)

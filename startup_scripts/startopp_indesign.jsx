@@ -39,7 +39,7 @@ function get_folders() {
     server: {
       libraries: SERVER + 'UTTEGNER/MALER/',
       repo: SERVER + 'SCRIPTS/copy_to_local/',
-      includes: SERVER + 'SCRIPTS/_includes/'
+      includes: SERVER + 'SCRIPTS/includes/'
     }
   }
 

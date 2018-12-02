@@ -1,5 +1,5 @@
 #target "indesign";
-#includepath "../_includes/";
+#includepath "../includes/";
 #include "index.jsxinc";
 
 function main() {

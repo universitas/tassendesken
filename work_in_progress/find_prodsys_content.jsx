@@ -1,32 +1,34 @@
 #target indesign
 #targetengine session
+#include index.jsxinc
 
-#include 'index.jsxinc'
-
-config.DEBUG = true
-$.strict = true
-
-$.clear()
-app.scriptPreferences.properties = {
-  enableRedraw: false,
-  userInteractionLevel: UserInteractionLevels.NEVER_INTERACT
-}
-
-var pageItemSpecs = {
-  label: prop('label'),
-  spread: dotProp('parentPage.parent'),
-  gb: prop('geometricBounds')
+function main() {
+  config.DEBUG = true
+  $.clear()
+  app.scriptPreferences.properties = {
+    enableRedraw: false,
+    userInteractionLevel: UserInteractionLevels.NEVER_INTERACT
+  }
+  pipe(
+    map(applySpec(pageItemSpecs)),
+    tap(log),
+    apply(overlaps),
+    log
+  )(app.selection)
 }
 
 var pageFilter = pipe(
+  // filter for PageItems. Filters only elements valid for export to prodsys
   filter(propEq('parentPage.parent.constructor.name', 'Spread')),
-  omit(propEq('label', 'ignore')),
-  omit(propEq('itemLayer.name', 'background'))
+  reject(propEq('label', 'ignore')),
+  reject(propEq('itemLayer.name', 'background'))
 )
 
-var overlaps = curry(function overlaps(a, b) {
+var gbOverlaps = curry(function gbOverlaps(a, b) {
   // gb in the format [y1, x1, y2, x2],
-  // which give the coordinates of the top-left and bottom-right corners of the bounding box.
+  // which give the coordinates of the top-left and bottom-right corners of the
+  // bounding box.
+  // box -> box -> bool
   return all([
     a.spread == b.spread,
     a.gb[0] < b.gb[2],
@@ -36,14 +38,84 @@ var overlaps = curry(function overlaps(a, b) {
   ])
 })
 
-pipe(
-  map(applySpec(pageItemSpecs)),
-  tap(log),
-  apply(overlaps),
-  log
-)(app.selection)
+var gbMerge = curry(function gbMerge(a, b) {
+  // box -> box -> box
+  if (a.spread != b.spread) throw new Error('not on same spread')
+  return merge(a, {
+    gb: [
+      min(a.gb[0], b.gb[0]),
+      min(a.gb[1], b.gb[1]),
+      max(a.gb[2], b.gb[2]),
+      max(a.gb[3], b.gb[3])
+    ]
+  })
+})
 
-// findTextContent ()
+var gbAdjust = curry(function gbAdjust(d, obj) {
+  // [t, l, r, b] -> {gb: [t, l, r, b]} -> {gb: [t, l, r, b]}
+  return assoc('gb', map(apply(add))(zip(d, obj.gb))(obj))
+})
+
+var gbSetAttr = curry(function gbSetAttr(box, pageItem) {
+  // sets geometric bounds for page item
+  pageItem.geometricBounds = box.gb
+  return undefined
+})
+
+var pageItemSpecs = pipe(
+  // PageItem -> {k: v}
+  // common properties to extract from PageItems
+  applySpec({
+    specifier: pipe(
+      prop('toSpecifier'),
+      flip(apply)([])
+    ),
+    label: prop('label'),
+    gb: prop('geometricBounds'),
+    spread: dotProp('parentPage.parent'),
+    contents: dotProp('contents'),
+    image: dotProp('allGraphics.0.itemLink.name'),
+    prodsak_id: always(0),
+    prodbilde_id: always(0)
+  }),
+  when(
+    // extract metadata from script label if any
+    pipe(
+      prop('label'),
+      test(/\^ *{.*\} *$/)
+    ),
+    converge(merge, [
+      identity,
+      pipe(
+        prop('label'),
+        JSON.parse
+      )
+    ])
+  )
+)
+
+var groupBy = curry(function(keyFn, arr) {
+  // (a -> b) -> [a] -> [[a]]
+  var rv = {}
+  for (var i = 0; i < arr.length; i++) {
+    var val = arr[i]
+    var key = uneval(keyFn(val))
+    if (!rv[key]) rv[key] = []
+    rv[key].push(val)
+  }
+  return values(rv)
+})
+
+var isCaption = pipe(
+  path(['parentStory', 'paragraphs', 0, 'appliedParagraphStyle', 'name']),
+  test(/\bbt\b/)
+)
+
+var isImage = pipe(
+  path(['allGraphics', 0, 'itemLink', 'name']),
+  defaultTo(''),
+  test(/\.(jpe?g|png)$/i)
+)
 
 function findTextContent(doc) {
   if (!doc) doc = app.activeDocument
@@ -54,169 +126,20 @@ function findTextContent(doc) {
   )(doc)
 
   var captions = pipe(
-    // map(dotProp('parentStory')),
-    filter(
-      pipe(
-        dotProp('parentStory.paragraphs.0.appliedParagraphStyle.name'),
-        test(/\bbt\b/)
-      )
-    ),
-    map(
-      applySpec({
-        contents: dotProp('contents'),
-        label: prop('label'),
-        specifier: call('toSpecifier'),
-        page: dotProp('parentPage.parent'),
-        gb: prop('geometricBounds')
-      })
-    ),
-    //filter(null),
-    log
+    filter(isCaption),
+    map(pageItemSpecs)
   )(pageItems)
-
   var graphics = pipe(
-    filter(dotProp('allGraphics.0')),
-    map(
-      applySpec({
-        image: dotProp('allGraphics.0.itemLink.name'),
-        label: prop('label'),
-        specifier: call('toSpecifier'),
-        spread: dotProp('parentPage.parent'),
-        gb: prop('geometricBounds')
-      })
-    )
-    // log,
+    filter(isImage),
+    map(pageItemSpecs)
   )(pageItems)
-
   var textFrames = pipe(
-    dotProp('textFrames'),
-    pageFilter,
-    pluck('label'),
-    filter(null),
-    map(JSON.parse),
-    map(
-      pipe(
-        values,
-        head
-      )
-    ),
-    uniq
-    // log,
-  )(doc)
+    filter(prop('contents')),
+    reject(isCaption),
+    map(pageItemSpecs)
+  )(pageItems)
 }
 
-var finnEksportSaker = function(myDoc) {
-  for (var n = 0; n < myDoc.stories.length; n++) {
-    var myStory = myDoc.stories[n]
-    if (myStory.paragraphs.length == 0) {
-      continue;
-    }
-    if (dokTools.onPage(myStory) === false) {
-      continue;
-    }
-    if (getLabel(myStory) == 'ignore') {
-      continue;
-    }
-    if (isCaption(myStory)) {
-      continue;
-    }
-
-    prodsak_id = getLabel(myStory, 'prodsak_id') // scripting label til første textFrame i storien
-    if (prodsak_id) {
-      if (eksportSaker[prodsak_id] === undefined) {
-        // finnes denne saken i objektet eksportSaker ?
-        eksportSaker[prodsak_id] = {
-          json: prodsys.get(prodsak_id).json,
-          stories: [],
-          bounds: {},
-          images: []
-        } // oppretter et nytt objekt i eksportSaker
-      }
-      eksportSaker[prodsak_id].stories.push(myStory)
-    } else if (
-      myStory.length > minimumStoryLength ||
-      myStory.tables.length > 0
-    ) {
-      var myText = myStory.contents
-      if (myStory.tables.length > 0) {
-        // legger til tabelltekst
-        myText +=
-          '\r' +
-          myStory.tables
-            .everyItem()
-            .cells.everyItem()
-            .contents.join('\t')
-      }
-      inkognitoStories.push({
-        prodsak_id: null,
-        story: myStory,
-        text: myText,
-        json: null
-      }) // her er en story som trolig skal være med på eksporten. Det gjelder bare å finne ut hvilken sak i prodsys den hører til.
-    }
-  }
-}
-
-var finnEksportBilder = function(myDoc) {
-  var myImage
-  var myBT
-  var prodsak_id
-  var prodbilde_id
-  for (var n = 0; n < myDoc.allGraphics.length; n++) {
-    myImage = myDoc.allGraphics[n]
-    if (false === dokTools.onPage(myImage)) continue;
-    if (null === myImage.itemLink.name.match(/jpg/)) continue;
-    if ('ignore' === getLabel(myImage)) continue;
-    myBT = finnbildetekst(myImage.parent) || ''
-    if (myBT) myBT = xtagsGrep(myBT.contents)
-
-    prodsak_id = getLabel(myImage, 'prodsak_id')
-    prodbilde_id = getLabel(myImage, 'prodbilde_id') || 0
-    if (prodsak_id) {
-      var sak = eksportSaker[prodsak_id]
-      if (sak === undefined) {
-        setLabel(myImage, '')
-      } else {
-        sak.images.push({
-          image: myImage,
-          prodbilde_id: prodbilde_id,
-          bildetekst: myBT
-        })
-        continue;
-      }
-    }
-    // her er et bilde som trolig skal være med på eksporten. Det gjelder
-    // bare å finne ut hvilken sak i prodsys den hører til.
-    inkognitoBilder.push({
-      prodsak_id: null,
-      image: myImage,
-      bildetekst: myBT
-    })
-  }
-}
-
-var finnbildetekst = function(myRectangle) {
-  // tar et rektangel og returnerer en story med paragraphstyle BT som ligger oppå eller rett under rektanglet.
-  var myPage = myRectangle.parent
-  var btSone = [0, 0, 10, 0] //  sonen man skal lete etter bildetekst i
-  var myTextFrames = myPage.textFrames
-  var myTextFrame
-  var bildeGB, btGB, btStory
-  bildeGB = myRectangle.geometricBounds
-  for (var i = 0; i < myTextFrames.length; i++) {
-    myTextFrame = myTextFrames[i]
-    btGB = myTextFrame.geometricBounds
-    if (
-      btGB[2] > bildeGB[0] - btSone[0] &&
-      btGB[3] > bildeGB[1] - btSone[1] &&
-      btGB[0] < bildeGB[2] + btSone[2] &&
-      btGB[1] < bildeGB[3] + btSone[3]
-    ) {
-      if (myTextFrame.paragraphs.length == 0) continue;
-      if (isCaption(myTextFrame)) return myTextFrame.parentStory
-    }
-  }
-  return null
-}
+if (ifMain($.fileName)) main()
 
 // vi: ft=javascript
