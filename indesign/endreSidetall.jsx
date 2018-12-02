@@ -1,6 +1,6 @@
 #target "indesign"
 #targetengine "session"
-#include ../_includes/index.jsxinc
+#include ../includes/index.jsxinc
 
 var dok = app.activeDocument
 var gammeltDok = new File(dok.fullName)

@@ -1,4 +1,4 @@
-#includepath "../_includes"
+#includepath "../includes"
 #include "test_runner.jsxinc";
 #include "functional_programming.jsxinc";
 

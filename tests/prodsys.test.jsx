@@ -1,4 +1,4 @@
-#include "../_includes/index.jsxinc"; // diverse konfigurasjonsverdier
+#include "../includes/index.jsxinc"; // diverse konfigurasjonsverdier
 
 main()
 

@@ -53,7 +53,7 @@ if ($.os.match('Windows')) {
     copyFiles(
       // en include
       localScriptfolder,
-      Folder(SERVER + 'SCRIPTS/_includes/'),
+      Folder(SERVER + 'SCRIPTS/includes/'),
       '*.jsxinc'
     )
   } catch (e) {

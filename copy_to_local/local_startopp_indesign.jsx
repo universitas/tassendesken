@@ -1,5 +1,5 @@
 #targetengine session
-#includepath ../_includes
+#includepath ../includes
 #include utils.jsxinc
 
 main()

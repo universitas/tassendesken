@@ -1,6 +1,6 @@
 #target "indesign"
 #targetengine "session"
-#includepath "../_includes/"
+#includepath "../includes/"
 #include "index.jsxinc"
 #include "artikkeltyper.jsxinc"
 #include "prodsys.jsxinc"

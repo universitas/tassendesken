@@ -22,7 +22,7 @@ Tree
     │   ├── pdf_merge.sh*
     │   ├── pdf_thumbs.sh*
     │   └── README.md
-    ├── _includes/
+    ├── includes/
     │   ├── artikkeltyper.jsxinc
     │   ├── base64.jsxinc
     │   ├── config_defaults.jsxinc
