@@ -80,7 +80,6 @@ prodsys.list = function(attrs) {
 }
 
 prodsys.request = function(method, pk, payload, attrs) {
- 
   var url = this.endpoint + (pk ? pk + '/' : '')
   if (attrs) {
     var queryString = []

@@ -1,0 +1,106 @@
+#include ../_includes/index.jsxinc
+#include http_via_vbscript.jsx
+
+// main export
+function buildRenderContext() {
+  // build context dictionary to fill out placeholder in template file
+  var data = getIssueDataFromApi()
+  var context = staffContext(data)
+  context.utg = context.issue = issueContext(data)
+  return context
+}
+
+function issueContext(data) {
+  // { nr: '15', åg: '80', dato: 'onsdag 23. oktober 1970' }
+  return pipe(
+    dotProp('issues.next'),
+    applySpec({
+      åg: pipe(
+        prop('year'),
+        add(-1946)
+      ),
+      nr: pipe(
+        prop('issue_name'),
+        match(/\d+/),
+        head,
+        parseInt
+      ),
+      pubDate: pipe(
+        prop('publication_date'),
+        parseIsoDate
+      ),
+      dato: pipe(
+        prop('publication_date'),
+        parseIsoDate,
+        dateLine
+      )
+    })
+  )(data)
+}
+
+function staffContext(data) {
+  var abbr = pipe(
+    // str -> str
+    // abbreviated titles for staff
+    toLower,
+    replace(/(sje|red|led|jou).*/g, ' $1'),
+    replace(/^(...)\S* +(.).*$/, '$1$2'),
+    trim
+  )
+  return pipe(
+    prop('staff'),
+    map(
+      applySpec({
+        navn: prop('display_name'),
+        epost: prop('email'),
+        tlf: prop('phone'),
+        tittel: dotProp('position.title')
+      })
+    ),
+    converge(zipObj, [
+      map(
+        pipe(
+          prop('tittel'),
+          abbr
+        )
+      ),
+      identity
+    ])
+  )(data)
+}
+
+function parseIsoDate(dt) {
+  // "YYYY-MM-DD" -> Date
+  var Y = parseInt(dt.slice(0, 4))
+  var M = parseInt(dt.slice(5, 7)) - 1
+  var D = parseInt(dt.slice(8, 10))
+  var H = 12 // noon
+  return new Date(Y, M, D, H)
+}
+
+function dateLine(dt) {
+  // Date -> String
+  // prettier-ignore
+  var MONTHS = ['januar', 'februar', 'mars', 'april', 'mai', 'juni',
+    'juli', 'august', 'september', 'oktober', 'november', 'desember']
+  var month = MONTHS[dt.getMonth()]
+  var year = dt.getFullYear()
+  var date = dt.getDate()
+  return 'onsdag ' + date + '. ' + month + ' ' + year
+}
+
+function getIssueDataFromApi() {
+  var dumpfile = File($.fileName).parent + '/api.site.dump.json'
+  var ENDPOINT = 'https://universitas.no/api/site/'
+  try {
+    return loadData(dumpfile)
+  } catch (e) {}
+  var response = https(endpoint)
+  var data = JSON.parse(response.response)
+  if (response.status == 200) dumpData(dumpfile, data)
+  return data
+}
+
+if (ifMain($.fileName)) log(jsonify(buildRenderContext()), '$') // for development
+
+// vi: ft=javascript

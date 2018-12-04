@@ -4,6 +4,67 @@ $.clear = function() {
   $.writeln(Array(30000).join(' '))
 }
 
+function dumpData(path, data) {
+  var file = new File(path)
+  log('dumping: ' + file.fullName)
+  file.open('w')
+  file.write(JSON.stringify(data, null, 2))
+  return file.close()
+}
+
+function loadData(path) {
+  var file = new File(path)
+  log('loading: ' + file.fullName)
+  file.open('r')
+  data = file.read()
+  file.close()
+  return JSON.parse(data)
+}
+
+function fileNameDateStamp(dt) {
+  // pdf datestamp format "YYMMDD"
+  var YY = dt
+    .getFullYear()
+    .toString()
+    .slice(-2)
+  var MM = zeroPad(2)(dt.getMonth() + 1)
+  var DD = zeroPad(2)(dt.getDate())
+  return YY + MM + DD
+}
+
+var nextWeekDay = curry(function nextWeekDay(dayNumber, dt) {
+  // zero indexed day number {0:S,1:M,2:T,3:W,4:T,5:F,6:S}
+  dt = dt ? new Date(dt) : new Date()
+  dt.setDate(dt.getDate() + ((7 + dayNumber - dt.getDay()) % 7))
+  return dt
+})
+
+var pageFileName = curry(function pageFileName(
+  pubDate,
+  typeNumber,
+  pageNumber
+) {
+  // Date -> Number -> Number -> String
+  var friday = nextWeekDay(5, pubDate)
+  var X = typeNumber // 1 = vanlig, 2 = magasin
+  var YYMMDD = fileNameDateStamp(friday)
+  var PP = zeroPad(2)(pageNumber)
+  return 'UNI1' + X + 'VER' + YYMMDD + PP + '000.indd'
+})
+
+function mkdir(folder) {
+  // assert that folder exists
+  // works like mkdir -p and creates parent directories
+  if (!folder.exists) mkdir(folder.parent)
+  if (folder instanceof Folder) folder.create()
+  return folder
+}
+
+function issueFolder(issueNumber) {
+  // Number -> String
+  return config.rotMappe + zeroPad(2)(issueNumber)
+}
+
 function ifMain(filename) {
   if (typeof filename == 'undefined')
     throw new Error('you must pass in file name `ifMain($.fileName)`')

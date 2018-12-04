@@ -1,17 +1,38 @@
 // Ramda.js inspired functional programming utilities for extendscript
 
-var len = prop('length')
-var head = pipe(
-  arrayFrom,
-  prop(0)
-)
+// new functions (might not have tests)
 
-var tail = pipe(
-  arrayFrom,
-  function(arr) {
-    return arr.slice(1)
-  }
-)
+var zipObj = curry(function zipObj(keys, values) {
+  // [k] -> [v] -> {k: v}
+  var rv = {}
+  for (var i = 0; i < keys.length && i < values.length; i++)
+    rv[keys[i]] = values[i]
+  return rv
+})
+
+function fromPairs(pairs) {
+  // [[k, v]] -> {k: v}
+  var rv = {}
+  for (var i = 0; i < pairs.length; i++) rv[pairs[i][0]] = pairs[i][1]
+  return rv
+}
+
+var len = function(val) {
+  // a -> Number
+  return val.length
+}
+
+var head = function(val) {
+  // [a] -> a
+  // String -> String
+  return val[0]
+}
+
+var tail = function(val) {
+  // [a] -> [a]
+  // String -> String
+  return val.slice(1)
+}
 
 function applySpec(spec) {
   // {k: (a -> *)} -> a -> {k: *}
@@ -73,6 +94,8 @@ var memoSort = curry(
     )(arr)
   }
 )
+
+// function sorted alphabetically
 
 function all(seq) {
   // [a] -> bool
@@ -495,13 +518,14 @@ function zip() {
   // zip multiple input arrays / sequences
   // ([a], [b], ...) -> [[a, b, ...]]
   var arrs = map(arrayFrom)(arguments)
-  var length = pipe(
+  var longest = pipe(
     pluck('length'),
     sort(),
     prop(0)
-  )(arrs)
+  )
+  var l = longest(arrs)
   rv = []
-  for (i = 0; i < length; i++) rv.push(pluck(i)(arrs))
+  for (i = 0; i < l; i++) rv.push(pluck(i)(arrs))
   return rv
 }
 

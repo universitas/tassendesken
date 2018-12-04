@@ -30,32 +30,35 @@ parameter is Null ("") or missing.
 
 // VBScript to use windows https library
 
-VbHttpGet = """
-url = arguments(0)
-method = arguments(1)
-user = arguments(2)
-password = arguments(3)
-payload = arguments(4)
-
-Set Http = CreateObject("MSXML2.XMLHTTP")
-Http.open method, url, FALSE, user, password
-Http.setRequestHeader "User-Agent", "InDesign script"
-Http.send payload
-app.ScriptArgs.SetValue "response", Http.responseText
-app.ScriptArgs.SetValue "status", "" & Http.status
-app.ScriptArgs.SetValue "headers", Http.getAllResponseHeaders()
-"""
+VbHttpGet =
+  '                                                   \n\
+url = arguments(0)                                              \n\
+method = arguments(1)                                           \n\
+user = arguments(2)                                             \n\
+password = arguments(3)                                         \n\
+payload = arguments(4)                                          \n\
+                                                                \n\
+Set Http = CreateObject("MSXML2.XMLHTTP")                       \n\
+Http.open method, url, FALSE, user, password                    \n\
+Http.setRequestHeader "User-Agent", "InDesign script"           \n\
+Http.send payload                                               \n\
+app.ScriptArgs.SetValue "response", Http.responseText           \n\
+app.ScriptArgs.SetValue "status", "" & Http.status              \n\
+app.ScriptArgs.SetValue "headers", Http.getAllResponseHeaders() \n\
+'
 
 function https(url, method, user, password, payload) {
-  app.doScript(
-    VbHttpGet,
-    ScriptLanguage.VISUAL_BASIC,
-    [url, method || 'GET', user || '', password || '', payload || ''],
-  )
+  app.doScript(VbHttpGet, ScriptLanguage.VISUAL_BASIC, [
+    url,
+    method || 'GET',
+    user || '',
+    password || '',
+    payload || ''
+  ])
   return {
     response: app.scriptArgs.getValue('response'),
     status: app.scriptArgs.getValue('status'),
-    headers: app.scriptArgs.getValue('headers'),
+    headers: app.scriptArgs.getValue('headers')
   }
 }
 
