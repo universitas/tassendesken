@@ -2,6 +2,41 @@
 
 // new functions (might not have tests)
 
+var either = curry(function either(f0, f1, val) {
+  // (a -> bool) -> (a -> bool) -> (a -> bool)
+  return f0(val) || f1(val)
+})
+
+var both = curry(function either(f0, f1, val) {
+  // (a -> bool) -> (a -> bool) -> (a -> bool)
+  return f0(val) && f1(val)
+})
+
+function range(start, end, stride) {
+  // (num, num?, num?) -> [num]
+  if (typeof end == 'undefined') {
+    end = start
+    start = 0
+  }
+  if (typeof stride == 'undefined') {
+    stride = (start < end) ? 1 : -1
+  }
+  var rv = []
+  while ((end - start) / stride > 0) {
+    rv.push(start)
+    start += stride
+  }
+  return rv
+}
+
+var slice = curry(function slice(start, end, seq) {
+  // num -> num -> [a] -> [a]
+  if (has('slice', seq) && is(Function, seq.slice))
+    return seq.slice(start, end)
+  else
+    return arrayFrom(seq).slice(start, end)
+})
+
 var zipObj = curry(function zipObj(keys, values) {
   // [k] -> [v] -> {k: v}
   var rv = {}
