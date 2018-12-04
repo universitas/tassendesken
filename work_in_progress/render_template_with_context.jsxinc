@@ -63,4 +63,3 @@ function resetSearch() {
   app.findGrepPreferences = NothingEnum.nothing
   app.findChangeGrepOptions = NothingEnum.nothing
 }
-

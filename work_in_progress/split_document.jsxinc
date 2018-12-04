@@ -6,8 +6,12 @@
 // testing
 function main() {
   //app.documents.everyItem().close()
-  var doc = app.documents.length ? app.activeDocument : app.open('MAL_AVIS.indt')
-  var pages = map(function(n) { return { number: n, file: new File('page-' + n + '.indd') } })(range(1, doc.pages.length + 1, 4))
+  var doc = app.documents.length
+    ? app.activeDocument
+    : app.open('MAL_AVIS.indt')
+  var pages = map(function(n) {
+    return { number: n, file: new File('page-' + n + '.indd') }
+  })(range(1, doc.pages.length + 1, 4))
   pp(pages)
   splitDocument(doc, pages)
 }
@@ -75,4 +79,4 @@ function splitDocument(doc, pages) {
   }
 }
 
-if(ifMain($.fileName))main()
+if (ifMain($.fileName)) main()

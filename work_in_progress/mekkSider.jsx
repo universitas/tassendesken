@@ -10,25 +10,27 @@ var ANNONSEANSVARLIG = {
   navn: 'Geir Dorp',
   tlf: '22 85 32 69',
   tittel: 'annonseansvarlig',
-  epost: 'geir.dorp@universitas.no',
+  epost: 'geir.dorp@universitas.no'
 }
 var UNIVERSITAS = {
   adresse: 'Moltke Moes vei 33',
   post: 'Boks 89 Blindern, 0314 Oslo',
   epost: 'universitas@universitas.no',
-  web: 'https://universitas.no',
+  web: 'https://universitas.no'
 }
 
 config.mal_avis = 'MAL_AVIS.indt'
 
 function main() {
-  switch( app.documents.length) {
-    case 0: 
+  switch (app.documents.length) {
+    case 0:
       openNewspaperTemplate()
-    case 1: 
+    case 1:
       return prepareNewspaperTemplate()
-    default: 
-      alert('Opprett sider\r' + 'Lukk andre dokumenter før du oppretter ny avis.')
+    default:
+      alert(
+        'Opprett sider\r' + 'Lukk andre dokumenter før du oppretter ny avis.'
+      )
   }
 }
 
@@ -38,7 +40,7 @@ function prepareNewspaperTemplate() {
   var context = buildRenderContext()
   context.anan = ANNONSEANSVARLIG
   var changes = renderTemplate(doc, context)
-  $.clear()  
+  $.clear()
   log(map(join('\t\t'), changes).join('\r'), $)
   var rootDir = Folder(issueFolder(context.issue.nr) + '/INDESIGN/')
   mkdir(rootDir)
@@ -52,7 +54,7 @@ function prepareNewspaperTemplate() {
       fileName: pipe(
         prop('documentOffset'),
         add(1),
-        pageFileName(context.issue.pubDate, '1'),
+        pageFileName(context.issue.pubDate, '1')
       ),
       masterName: path(['appliedMaster', 'name']),
       firstPage: pipe(
@@ -67,13 +69,16 @@ function prepareNewspaperTemplate() {
     var pages = pipe(
       prop('pages'),
       filter(prop('firstPage')),
-      map(applySpec({
-        number: prop('pageNumber'),
-        file: function(pg) { return new File(data.rootDir + '/' + pg.fileName) },
-                page: prop('page'),
-
-      }),
-    ))(data)
+      map(
+        applySpec({
+          number: prop('pageNumber'),
+          file: function(pg) {
+            return new File(data.rootDir + '/' + pg.fileName)
+          },
+          page: prop('page')
+        })
+      )
+    )(data)
     $.clear()
     log(pages, $)
     splitDocument(doc, pages)

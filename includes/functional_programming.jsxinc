@@ -19,7 +19,7 @@ function range(start, end, stride) {
     start = 0
   }
   if (typeof stride == 'undefined') {
-    stride = (start < end) ? 1 : -1
+    stride = start < end ? 1 : -1
   }
   var rv = []
   while ((end - start) / stride > 0) {
@@ -31,10 +31,8 @@ function range(start, end, stride) {
 
 var slice = curry(function slice(start, end, seq) {
   // num -> num -> [a] -> [a]
-  if (has('slice', seq) && is(Function, seq.slice))
-    return seq.slice(start, end)
-  else
-    return arrayFrom(seq).slice(start, end)
+  if (has('slice', seq) && is(Function, seq.slice)) return seq.slice(start, end)
+  else return arrayFrom(seq).slice(start, end)
 })
 
 var zipObj = curry(function zipObj(keys, values) {
