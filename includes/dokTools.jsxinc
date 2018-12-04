@@ -287,14 +287,19 @@ dokTools.parseCSV = function(filePath) {
   return result
 }
 
-dokTools.zoomOut = function() {
+dokTools.zoomOut = function(pageIndex) {
   // går til side 1 og zoomer ut
-  app.activeWindow.activePage = app.activeDocument.pages.firstItem()
-  app.activeWindow.zoom(ZoomOptions.SHOW_PASTEBOARD)
+  var pages = app.activeDocument.pages
+  var win =  app.activeWindow
+  win.activePage = pages[clamp(0, pages.length -1, pageIndex || 0)]
+  win.zoom(ZoomOptions.SHOW_PASTEBOARD)
 }
 
 dokTools.zoomTo = function(myObj) {
   // snedig måte å zoome til et objekt på siden som har geometricBounds.
+  
+  if (!app.scriptPreferences.enableRedraw) return
+
   var marg = 10 // ekstra luft i mm på arket
   var maxZoom = 150 // max innzooming i %
   var myWindow = app.activeDocument.layoutWindows[0] // det aktive vinduet i InDesign
@@ -329,8 +334,15 @@ dokTools.zoomTo = function(myObj) {
     myZoomP = myWindow.zoomPercentage * zoomRatio
     myZoomP = Math.min(myZoomP, maxZoom) // sørger for at innzoomingen ikke er større enn maxZoom<
   }
+//~   var selection = app.selection
+//~   var redraw = app.scriptPreferences.enableRedraw  
+//~   app.scriptPreferences.enableRedraw = true
+  
   app.select(myObj) // myObj blir selektert slik at det havner i midten av zoomen
   myWindow.zoomPercentage = myZoomP // zoomer inn på objektet
+//~   $.sleep(50)
+//~   app.selection = selection 
+//~   app.scriptPreferences.enableRedraw = redraw
 }
 
 dokTools.onPage = function(item) {
@@ -362,7 +374,7 @@ dokTools.getScriptFolder = function() {
 dokTools.progressBar = function(myTitle, myText, myNumberofStages, canCancel) {
   var myProgress = {}
   myProgress.numberOfStages = myNumberofStages
-  myProgress.window = new Window('window', myTitle)
+  myProgress.window = new Window('palette', myTitle)
   myProgress.progressBar = myProgress.window.add(
     'progressbar',
     [12, 12, 350, 24],

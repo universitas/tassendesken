@@ -7,12 +7,41 @@
 
 //~ var myLibrary = File(config.saksmalLibrary) // Biblioteket som saksmalene skal legges til
 //~ var lagreSom = File(config.mal_avis) // Avismalen
-
-var libraryFile = File('saksmaler.indl')
-var lagreSom = File('MAL.indt')
+//~ var __dir__ = File($.fileName).parent
+var __dir__ = app.activeDocument.fullName.parent
+var libraryFile = File(__dir__ + '/saksmaler.indl')
+var lagreSom = File(__dir__ + '/MAL_AVIS.indt')
 var annotation = 'beskjed'
 
-if (ifMain($.fileName)) main()
+function main() {
+  dokTools.zoomOut()
+  var step0 = confirm(
+    'Vil du legge alle saksmaler inn i biblioteket Saksmaler.indl?',
+    false,
+    'Saksmaler'
+  )
+  var step1 = confirm(
+    'Er du sikker på at du vil lagre ny MAL_AVIS.indt?',
+    false,
+    'Lagre over'
+  )
+  if (step0)
+    app.doScript(
+      buildLibrary,
+      undefined,
+      undefined,
+      UndoModes.ENTIRE_SCRIPT,
+      'legg saksmaler'
+    )
+  if (step1)
+    app.doScript(
+      lagNyAvisMal,
+      undefined,
+      undefined,
+      UndoModes.FAST_ENTIRE_SCRIPT,
+      'lag mal'
+    )
+}
 
 function clearReports(doc, objStyle) {
   app.findObjectPreferences = NothingEnum.nothing
@@ -46,36 +75,6 @@ function itemName(item) {
   var cols = Math.ceil(width / 57)
   var withLoft = gb[0] > 70 && height > 250 ? ' loft' : ''
   return titleCase(item.label) + ' ' + cols + ' spalter' + withLoft
-}
-
-function main() {
-  var step0 = confirm(
-    'Vil du legge alle saksmaler inn i biblioteket Saksmaler.indl?',
-    false,
-    'Saksmaler'
-  )
-  var step1 = confirm(
-    'Er du sikker på at du vil lagre ny MAL_AVIS.indt?',
-    false,
-    'Lagre over'
-  )
-
-  if (step0)
-    app.doScript(
-      buildLibrary,
-      undefined,
-      undefined,
-      UndoModes.ENTIRE_SCRIPT,
-      'legg saksmaler'
-    )
-  if (step1)
-    app.doScript(
-      lagNyAvisMal,
-      undefined,
-      undefined,
-      UndoModes.FAST_ENTIRE_SCRIPT,
-      'lag mal'
-    )
 }
 
 function prepareLibrary(libraryFile) {
@@ -157,6 +156,7 @@ function lagNyAvisMal() {
   myProgressBar.update('Tar backup av AVIS_MAL.indt')
   backupFile(lagreSom)
   myProgressBar.update('Lagrer ny AVIS_MAL.indt')
+  dokTools.zoomOut()
   var original = doc.fullName
   doc.save(lagreSom, true, '', true)
   doc.close()
@@ -165,4 +165,7 @@ function lagNyAvisMal() {
   dokTools.zoomOut()
   myProgressBar.close()
 }
+
+if (ifMain($.fileName)) main()
+
 // vi: ft=javascript

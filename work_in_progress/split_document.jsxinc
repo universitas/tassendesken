@@ -3,27 +3,13 @@
 #targetengine "session"
 #include "../includes/index.jsxinc"
 
-main()
-
 // testing
 function main() {
   //app.documents.everyItem().close()
-  var doc = app.documents.length ? app.activeDocument : app.open('MAL.indt')
-  splitDocument(doc, 'page-{}-000.indd', [
-    1,
-    2,
-    4,
-    6,
-    8,
-    10,
-    12,
-    14,
-    16,
-    18,
-    20,
-    22,
-    24
-  ])
+  var doc = app.documents.length ? app.activeDocument : app.open('MAL_AVIS.indt')
+  var pages = map(function(n) { return { number: n, file: new File('page-' + n + '.indd') } })(range(1, doc.pages.length + 1, 4))
+  pp(pages)
+  splitDocument(doc, pages)
 }
 
 function addSection(doc, pg) {
@@ -36,15 +22,17 @@ function addSection(doc, pg) {
   })
 }
 
-function splitDocument(doc, namePattern, pageNumbers) {
+function splitDocument(doc, pages) {
+  // (Document, [{number: Number, file: File}]) -> [File]
   // split one document into multiple parts and save
 
   // setup
+  app.scriptPreferences.enableRedraw = true
   dokTools.zoomOut()
   var progressBar = dokTools.progressBar(
     'Splitter sider',
     'gjør klar',
-    pageNumbers.length,
+    pages.length,
     false
   )
   app.scriptPreferences.properties = {
@@ -54,7 +42,6 @@ function splitDocument(doc, namePattern, pageNumbers) {
   // doc.documentPreferences.allowPageShuffle = true
   var tmpFile = new File('tmp.indd')
   doc.saveACopy(tmpFile)
-  doc.close()
   var doc0 = app.open(tmpFile, false, OpenOptions.OPEN_COPY)
   var doc1 = app.open(tmpFile, false, OpenOptions.OPEN_COPY)
   tmpFile.remove()
@@ -63,29 +50,29 @@ function splitDocument(doc, namePattern, pageNumbers) {
   doc1.pages[0].move(LocationOptions.AT_END)
   doc1.pages.itemByRange(2, -1).remove()
 
-  pageNumbers = sort(descend(parseInt))(pageNumbers)
-  for (var i = 0; i < pageNumbers.length; i++) {
-    var pgNumber = pageNumbers[i]
-    var fileName = namePattern.replace(/\{\}/, ('0' + pgNumber).substr(-2))
-    progressBar.update(fileName, i + 1)
-    if (pgNumber == 1) doc0.saveACopy(new File(fileName))
+  fromBack = sort(descend(prop('number')))(pages)
+  log(pluck('number', fromBack), $)
+  for (var i = 0; i < fromBack.length; i++) {
+    var page = fromBack[i]
+    progressBar.update(page.file.name, i + 1)
+    if (page.number == 1) doc0.saveACopy(page.file)
     else {
-      addSection(doc0, doc0.pages[pgNumber - 1])
-      var pages = doc0.pages.itemByRange(pgNumber - 1, -1)
+      addSection(doc0, doc0.pages[page.number - 1])
+      var pages = doc0.pages.itemByRange(page.number - 1, -1)
       var length = pages.getElements().length
-
       pages.move(LocationOptions.BEFORE, doc1.pages[0])
       doc1.pages.itemByRange(length, doc1.pages.length - 1).remove()
-      doc1.saveACopy(new File(fileName))
+      doc1.saveACopy(page.file)
     }
   }
   progressBar.update('rydder opp')
   // cleanup
-  doc0.close()
-  doc1.close()
+  app.documents.everyItem().close()
   progressBar.close()
   app.scriptPreferences.properties = {
     enableRedraw: true,
     userInteractionLevel: UserInteractionLevels.INTERACT_WITH_ALL
   }
 }
+
+if(ifMain($.fileName))main()

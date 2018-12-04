@@ -292,7 +292,7 @@ function tryLogErrors(fn, rethrow) {
 
 // (String | Object, ?String) -> void
 function log(message, filename) {
-  if (config.DEBUG || filename == '$') {
+  if (config.DEBUG || filename == '$' || filename == $) {
     if (typeof message !== 'string') message = jsonify(message, 2)
     // log to extendscript console
     $.writeln(message)
@@ -320,7 +320,7 @@ function pp(obj) {
       )
     ),
     flip(jsonify)(2),
-    log
+    flip(log)($)
   )(obj)
 }
 

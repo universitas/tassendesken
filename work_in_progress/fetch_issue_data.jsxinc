@@ -1,4 +1,4 @@
-#include ../_includes/index.jsxinc
+#include ../includes/index.jsxinc
 #include http_via_vbscript.jsx
 
 // main export

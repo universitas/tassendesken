@@ -4,16 +4,37 @@
 #include "../includes/index.jsxinc"
 
 function renderTemplate(doc, context) {
+  var changes = []
   var fn = function() {
-    changeTemplateStrings(doc, context)
+    changeTemplateStrings(doc, context, changes)
   }
+  app.scriptPreferences.enableRedraw = false
   app.doScript(
     fn,
     ScriptLanguage.JAVASCRIPT,
     [],
-    UndoModes.ENTIRE_SCRIPT,
+    UndoModes.FAST_ENTIRE_SCRIPT,
     'change template strings'
   )
+  return filter(prop(2), changes)
+}
+
+function changeTemplateStrings(doc, data, changes) {
+  resetSearch()
+  var keys = findPlaceHolders(doc)
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i]
+    app.findGrepPreferences.findWhat = '(?i)\\{\\{ *' + key + ' *\\}\\}'
+    var value = dotProp(key)(data)
+    if (value) {
+      app.findGrepPreferences.findWhat = '(?i)\\{\\{ *' + key + ' *\\}\\}'
+      app.changeGrepPreferences.changeTo = '' + value
+      changes.push([key, value, len(doc.changeGrep())])
+    } else {
+      changes.push([key, null, len(doc.findGrep())])
+    }
+  }
+  resetSearch()
 }
 
 function findPlaceHolders(doc) {
@@ -43,20 +64,3 @@ function resetSearch() {
   app.findChangeGrepOptions = NothingEnum.nothing
 }
 
-function changeTemplateStrings(doc, data) {
-  resetSearch()
-  var keys = findPlaceHolders(doc)
-  var notFound = []
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i]
-    var value = dotProp(key)(data)
-    if (value) {
-      app.findGrepPreferences.findWhat = '(?i)\\{\\{ *' + key + ' *\\}\\}'
-      app.changeGrepPreferences.changeTo = value
-      var res = doc.changeGrep()
-      log('changed ' + key + ' -> ' + value + ' ' + res, '$')
-    } else notFound.push(key)
-  }
-  notFound.length && log('could not find: ' + join(', ')(notFound), '$')
-  resetSearch()
-}
