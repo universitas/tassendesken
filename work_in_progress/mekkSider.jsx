@@ -24,7 +24,7 @@ config.mal_avis = 'MAL_AVIS.indt'
 function main() {
   switch (app.documents.length) {
     case 0:
-      openNewspaperTemplate()
+      return openNewspaperTemplate()
     case 1:
       return prepareNewspaperTemplate()
     default:
@@ -40,13 +40,10 @@ function prepareNewspaperTemplate() {
   var context = buildRenderContext()
   context.anan = ANNONSEANSVARLIG
   var changes = renderTemplate(doc, context)
-  $.clear()
-  log(map(join('\t\t'), changes).join('\r'), $)
   var rootDir = Folder(issueFolder(context.issue.nr) + '/INDESIGN/')
   mkdir(rootDir)
   var pages = map(
     applySpec({
-      page: identity,
       pageNumber: pipe(
         prop('documentOffset'),
         add(1)
@@ -65,7 +62,6 @@ function prepareNewspaperTemplate() {
     })
   )(doc.pages)
   var callback = function(data) {
-    // log(data, '$')
     var pages = pipe(
       prop('pages'),
       filter(prop('firstPage')),
@@ -74,13 +70,11 @@ function prepareNewspaperTemplate() {
           number: prop('pageNumber'),
           file: function(pg) {
             return new File(data.rootDir + '/' + pg.fileName)
-          },
-          page: prop('page')
+          }
         })
       )
     )(data)
-    $.clear()
-    log(pages, $)
+
     splitDocument(doc, pages)
   }
   var initialState = { pages: pages, rootDir: rootDir, issue: context.issue }
@@ -96,7 +90,6 @@ function openNewspaperTemplate() {
 function splitPagesDialog(doc, initialState, callback) {
   // dialog window to select where to split newspaper into spreads
   // (Document, {k: v}, ([{page: Page, file: File}] -> *)) -> 1|2
-
   callback(initialState)
   return
   var PANEL_SIZE = 24 // max antall sider som vises i menyen

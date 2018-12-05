@@ -1,0 +1,64 @@
+// prettier-ignore
+
+function main(state) {
+  $.writeln(state)
+}
+
+var INITIAL_STATE = {
+  pages:[
+    {pageNumber:1, fileName:"UNI11VER19011101000.indd",
+      masterName:"F-Front", firstPage:true},
+    {pageNumber:2, fileName:"UNI11VER19011102000.indd",
+      masterName:"2-Side 2-3", firstPage:true},
+    {pageNumber:3, fileName:"UNI11VER19011103000.indd",
+      masterName:"2-Side 2-3", firstPage:false},
+    {pageNumber:4, fileName:"UNI11VER19011104000.indd",
+      masterName:"N-Nyhet Intro", firstPage:true},
+    {pageNumber:5, fileName:"UNI11VER19011105000.indd",
+      masterName:"N-Nyhet Intro", firstPage:false},
+    {pageNumber:6, fileName:"UNI11VER19011106000.indd",
+      masterName:"N-Nyhet", firstPage:true},
+    {pageNumber:7, fileName:"UNI11VER19011107000.indd",
+      masterName:"N-Nyhet", firstPage:false},
+    {pageNumber:8, fileName:"UNI11VER19011108000.indd",
+      masterName:"N-Nyhet", firstPage:true},
+    {pageNumber:9, fileName:"UNI11VER19011109000.indd",
+      masterName:"N-Nyhet", firstPage:false},
+    {pageNumber:10, fileName:"UNI11VER19011110000.indd",
+      masterName:"N-Nyhet", firstPage:true},
+    {pageNumber:11, fileName:"UNI11VER19011111000.indd",
+      masterName:"N-Nyhet", firstPage:false},
+    {pageNumber:12, fileName:"UNI11VER19011112000.indd",
+      masterName:"D-Debatt Intro", firstPage:true},
+    {pageNumber:13, fileName:"UNI11VER19011113000.indd",
+      masterName:"D-Debatt Intro", firstPage:false},
+    {pageNumber:14, fileName:"UNI11VER19011114000.indd",
+      masterName:"K-Kultur Intro", firstPage:true},
+    {pageNumber:15, fileName:"UNI11VER19011115000.indd",
+      masterName:"K-Kultur Intro", firstPage:false},
+    {pageNumber:16, fileName:"UNI11VER19011116000.indd",
+      masterName:"K-Kultur", firstPage:true},
+    {pageNumber:17, fileName:"UNI11VER19011117000.indd",
+      masterName:"K-Kultur", firstPage:false},
+    {pageNumber:18, fileName:"UNI11VER19011118000.indd",
+      masterName:"K-Kultur", firstPage:true},
+    {pageNumber:19, fileName:"UNI11VER19011119000.indd",
+      masterName:"K-Kultur", firstPage:false},
+    {pageNumber:20, fileName:"UNI11VER19011120000.indd",
+      masterName:"R-Reportasje", firstPage:true},
+    {pageNumber:21, fileName:"UNI11VER19011121000.indd",
+      masterName:"R-Reportasje", firstPage:false},
+    {pageNumber:22, fileName:"UNI11VER19011122000.indd",
+      masterName:"A-Anmeldelser", firstPage:true},
+    {pageNumber:23, fileName:"UNI11VER19011123000.indd",
+      masterName:"A-Anmeldelser", firstPage:false},
+    {pageNumber:24, fileName:"UNI11VER19011124000.indd",
+      masterName:"B-Baksida", firstPage:true}
+  ],
+  rootDir: new Folder("//kant.uio.no/div-universitas-desken/01/INDESIGN"),
+  issue:{'åg':73, nr:1, pubDate:new Date(2019, 0, 9), dato:"onsdag 9. januar 2019"}
+}
+
+if(ifMain($.fileName)) main(INITIAL_STATE)
+
+// vi: ft=javascript
