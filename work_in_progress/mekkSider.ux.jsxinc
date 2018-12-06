@@ -1,64 +1,203 @@
-// prettier-ignore
+#script "user interface for page builder"
+// #target "indesign"
+// #targetengine "session"
+#include "../includes/index.jsxinc"
+
+winResource =
+  "palette {\
+  properties: {resizeable: true},\
+  text: 'Opprett Sider', frameLocation:[1200,10],\
+  preferredSize: [450, 100], spacing: 5, margins: 10,\
+  head: Group {\
+    margins: [7,2,25,0], alignment: ['fill', 'top'], orientation: 'row',\
+    preferredSize: [-1, 10],\
+    t0: StaticText {text: 'startside:',\
+      alignment: 'left', preferredSize: [80, -1] },\
+    t1: StaticText {text: 'filnavn:',\
+      alignment: ['fill', 'bottom'] },\
+    t2: StaticText {text: 'master:', alignment: ['right', '']\
+      , preferredSize: [100, -1] },\
+  },\
+  scrollPanel: Group {margins: 0, alignment: ['fill', 'fill'] },\
+  helpText: StaticText { alignment: ['fill', 'bottom'], \
+    text: 'Del opp avisa i flere filer' }, \
+  dataTable: Group { orientation: 'column', spacing: 2,\
+    alignment: ['fill', 'bottom'] minimumSize: ['', 50] },\
+  buttons: Group { alignment: 'bottom', alignChildren: ['center', 'center'],\
+    choose: Button { text: 'Velg Mappe' }, \
+    cancel: Button { text: 'Avbryt' }, \
+    accept: Button { text: 'OK' }, \
+  }\
+}"
 
 function main(state) {
-  $.writeln(state)
+  if (typeof w == 'object') w.close()
+  w = new Window(winResource)
+  w.state = state
+  w.pagesList = scrollPanel(w.scrollPanel, 400)
+  map(function(page) {
+    pageRow(w.pagesList, page)
+  })(w.state.pages.slice(0, 30))
+  dataTable(w.dataTable, w.state.issue)
+  w.onResize = function(e) {
+    w.layout.resize()
+  }
+  w.buttons.cancel.onClick = function() {
+    $.clear()
+    pp(w.state)
+  }
+  w.buttons.accept.onClick = function() {
+    w.close()
+  }
+  w.show()
+  return w
 }
 
+function dataTable(parent, data) {
+  for (var key in data) {
+    var row = parent.add(
+      "Group { \
+      alignment: 'left', margins: 0, \
+      alignChildren: ['left', 'fill'], \
+      key: StaticText { text: 'key', preferredSize: [80, ''] }, \
+      val: StaticText { text: 'val' }, \
+    }"
+    )
+    row.key.text = key
+    row.val.text = data[key]
+  }
+}
+
+function scrollPanel(parent, maxHeight) {
+  var rs =
+    "Group {\
+    spacing: 0, margins: 0,\
+    alignment: ['fill', 'fill'],\
+    alignChildren: ['fill', 'fill'],\
+    wrapper: Panel { properties: {borderStyle: 'sunken'}, margins: 0,\
+      content: Panel {\
+        alignment: ['fill', 'top'], margins: 5, spacing: 5,\
+        orientation: 'column', alignChildren: ['fill', 'top'] \
+    }},\
+    scrollbar: Scrollbar {\
+      stepdelta: 5, jumpdelta: 1\
+      maxvalue: 0, alignment: ['right', 'fill'], size: [15, -1],},\
+  }"
+  var panel = parent.add(rs)
+  var content = panel.wrapper.content
+  content.maximumSize.height = maxHeight
+
+  panel.drawHandler = function drawHandler() {
+    var height = panel.size.height - 10
+    if (panel.outerHeight == height) return
+    var first = content.children[0]
+    var last = content.children[content.children.length - 1]
+    panel.outerHeight = height
+    panel.innerHeight = last.bounds.bottom - first.bounds.top
+    if (panel.innerHeight > panel.outerHeight) {
+      panel.scrollbar.maxvalue =
+        (panel.innerHeight - panel.outerHeight) / panel.outerHeight
+      content.maximumSize.height = panel.innerHeight + 10
+      panel.scrollHandler()
+    } else {
+      content.maximumSize.height = panel.outerHeight + 10
+      panel.scrollbar.maxvalue = 0
+    }
+  }
+  panel.scrollHandler = function scrollHandler() {
+    content.bounds.top = -panel.scrollbar.value * panel.outerHeight
+  }
+  panel.scrollbar.onChanging = panel.scrollHandler
+  content.onDraw = panel.drawHandler
+  return panel.wrapper.content
+}
+
+function pageRow(parent, state) {
+  var rs =
+    "Group { margins: 0,\
+    alignChildren: ['left', 'center'], preferredSize: [-1, 10],\
+    number: StaticText {text: '01', preferredSize: [45, -1] },\
+    firstp: Checkbox {value: true, preferredSize: [25, -1] },\
+    flname: EditText {alignment: ['fill', 'center'] },\
+    master: StaticText {alignment: ['right', 'center'], preferredSize: [100, -1]},\
+  }"
+  var row = parent.add(rs)
+  row.state = state
+  row.render = function render() {
+    row.number.text = 'side ' + state.pageNumber
+    row.firstp.value = state.firstPage
+    row.flname.visible = state.firstPage
+    row.flname.text = state.fileName
+    row.master.text = state.masterName
+  }
+  row.render()
+  row.firstp.onClick = function() {
+    row.state.firstPage = !row.state.firstPage
+    row.render()
+  }
+  row.flname.onChange = function() {
+    row.state.fileName = row.flname.text
+  }
+  return row
+}
+
+// prettier-ignore
 var INITIAL_STATE = {
-  pages:[
-    {pageNumber:1, fileName:"UNI11VER19011101000.indd",
-      masterName:"F-Front", firstPage:true},
-    {pageNumber:2, fileName:"UNI11VER19011102000.indd",
-      masterName:"2-Side 2-3", firstPage:true},
-    {pageNumber:3, fileName:"UNI11VER19011103000.indd",
-      masterName:"2-Side 2-3", firstPage:false},
-    {pageNumber:4, fileName:"UNI11VER19011104000.indd",
-      masterName:"N-Nyhet Intro", firstPage:true},
-    {pageNumber:5, fileName:"UNI11VER19011105000.indd",
-      masterName:"N-Nyhet Intro", firstPage:false},
-    {pageNumber:6, fileName:"UNI11VER19011106000.indd",
-      masterName:"N-Nyhet", firstPage:true},
-    {pageNumber:7, fileName:"UNI11VER19011107000.indd",
-      masterName:"N-Nyhet", firstPage:false},
-    {pageNumber:8, fileName:"UNI11VER19011108000.indd",
-      masterName:"N-Nyhet", firstPage:true},
-    {pageNumber:9, fileName:"UNI11VER19011109000.indd",
-      masterName:"N-Nyhet", firstPage:false},
-    {pageNumber:10, fileName:"UNI11VER19011110000.indd",
-      masterName:"N-Nyhet", firstPage:true},
-    {pageNumber:11, fileName:"UNI11VER19011111000.indd",
-      masterName:"N-Nyhet", firstPage:false},
-    {pageNumber:12, fileName:"UNI11VER19011112000.indd",
-      masterName:"D-Debatt Intro", firstPage:true},
-    {pageNumber:13, fileName:"UNI11VER19011113000.indd",
-      masterName:"D-Debatt Intro", firstPage:false},
-    {pageNumber:14, fileName:"UNI11VER19011114000.indd",
-      masterName:"K-Kultur Intro", firstPage:true},
-    {pageNumber:15, fileName:"UNI11VER19011115000.indd",
-      masterName:"K-Kultur Intro", firstPage:false},
-    {pageNumber:16, fileName:"UNI11VER19011116000.indd",
-      masterName:"K-Kultur", firstPage:true},
-    {pageNumber:17, fileName:"UNI11VER19011117000.indd",
-      masterName:"K-Kultur", firstPage:false},
-    {pageNumber:18, fileName:"UNI11VER19011118000.indd",
-      masterName:"K-Kultur", firstPage:true},
-    {pageNumber:19, fileName:"UNI11VER19011119000.indd",
-      masterName:"K-Kultur", firstPage:false},
-    {pageNumber:20, fileName:"UNI11VER19011120000.indd",
-      masterName:"R-Reportasje", firstPage:true},
-    {pageNumber:21, fileName:"UNI11VER19011121000.indd",
-      masterName:"R-Reportasje", firstPage:false},
-    {pageNumber:22, fileName:"UNI11VER19011122000.indd",
-      masterName:"A-Anmeldelser", firstPage:true},
-    {pageNumber:23, fileName:"UNI11VER19011123000.indd",
-      masterName:"A-Anmeldelser", firstPage:false},
-    {pageNumber:24, fileName:"UNI11VER19011124000.indd",
-      masterName:"B-Baksida", firstPage:true}
+  pages: [
+    { pageNumber: 1, fileName: 'UNI11VER19011101000.indd',
+      masterName: 'F-Front', firstPage: true },
+    { pageNumber: 2, fileName: 'UNI11VER19011102000.indd',
+      masterName: '2-Side 2-3', firstPage: true },
+    { pageNumber: 3, fileName: 'UNI11VER19011103000.indd',
+      masterName: '2-Side 2-3', firstPage: false },
+    { pageNumber: 4, fileName: 'UNI11VER19011104000.indd',
+      masterName: 'N-Nyhet Intro', firstPage: true },
+    { pageNumber: 5, fileName: 'UNI11VER19011105000.indd',
+      masterName: 'N-Nyhet Intro', firstPage: false },
+    { pageNumber: 6, fileName: 'UNI11VER19011106000.indd',
+      masterName: 'N-Nyhet', firstPage: true },
+    { pageNumber: 7, fileName: 'UNI11VER19011107000.indd',
+      masterName: 'N-Nyhet', firstPage: false },
+    { pageNumber: 8, fileName: 'UNI11VER19011108000.indd',
+      masterName: 'N-Nyhet', firstPage: true },
+    { pageNumber: 9, fileName: 'UNI11VER19011109000.indd',
+      masterName: 'N-Nyhet', firstPage: false },
+    { pageNumber: 10, fileName: 'UNI11VER19011110000.indd',
+      masterName: 'N-Nyhet', firstPage: true },
+    { pageNumber: 11, fileName: 'UNI11VER19011111000.indd',
+      masterName: 'N-Nyhet', firstPage: false },
+    { pageNumber: 12, fileName: 'UNI11VER19011112000.indd',
+      masterName: 'D-Debatt Intro', firstPage: true },
+    { pageNumber: 13, fileName: 'UNI11VER19011113000.indd',
+      masterName: 'D-Debatt Intro', firstPage: false },
+    { pageNumber: 14, fileName: 'UNI11VER19011114000.indd',
+      masterName: 'K-Kultur Intro', firstPage: true },
+    { pageNumber: 15, fileName: 'UNI11VER19011115000.indd',
+      masterName: 'K-Kultur Intro', firstPage: false },
+    { pageNumber: 16, fileName: 'UNI11VER19011116000.indd',
+      masterName: 'K-Kultur', firstPage: true },
+    { pageNumber: 17, fileName: 'UNI11VER19011117000.indd',
+      masterName: 'K-Kultur', firstPage: false },
+    { pageNumber: 18, fileName: 'UNI11VER19011118000.indd',
+      masterName: 'K-Kultur', firstPage: true },
+    { pageNumber: 19, fileName: 'UNI11VER19011119000.indd',
+      masterName: 'K-Kultur', firstPage: false },
+    { pageNumber: 20, fileName: 'UNI11VER19011120000.indd',
+      masterName: 'R-Reportasje', firstPage: true },
+    { pageNumber: 21, fileName: 'UNI11VER19011121000.indd',
+      masterName: 'R-Reportasje', firstPage: false },
+    { pageNumber: 22, fileName: 'UNI11VER19011122000.indd',
+      masterName: 'A-Anmeldelser', firstPage: true },
+    { pageNumber: 23, fileName: 'UNI11VER19011123000.indd',
+      masterName: 'A-Anmeldelser', firstPage: false },
+    { pageNumber: 24, fileName: 'UNI11VER19011124000.indd',
+      masterName: 'B-Baksida', firstPage: true }
   ],
-  rootDir: new Folder("//kant.uio.no/div-universitas-desken/01/INDESIGN"),
-  issue:{'åg':73, nr:1, pubDate:new Date(2019, 0, 9), dato:"onsdag 9. januar 2019"}
+  rootDir: new Folder('//kant.uio.no/div-universitas-desken/01/INDESIGN'),
+  issue: { åg: 73, nr: 1, pubDate: new Date(2019, 0, 9),
+    dato: 'onsdag 9. januar 2019' }
 }
 
-if(ifMain($.fileName)) main(INITIAL_STATE)
+if (ifMain($.fileName)) var w = main(INITIAL_STATE)
 
 // vi: ft=javascript
