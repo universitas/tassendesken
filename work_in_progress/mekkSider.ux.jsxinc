@@ -24,31 +24,70 @@ winResource =
   dataTable: Group { orientation: 'column', spacing: 2,\
     alignment: ['fill', 'bottom'] minimumSize: ['', 50] },\
   buttons: Group { alignment: 'bottom', alignChildren: ['center', 'center'],\
-    choose: Button { text: 'Velg Mappe' }, \
+    magasin: CheckBox { text: 'Magasin', value: false },\
+    choose: Button { text: 'Endre Mappe' }, \
     cancel: Button { text: 'Avbryt' }, \
     accept: Button { text: 'OK' }, \
   }\
 }"
+
+function call(fn) {
+  if (arguments.length > 1) {
+    args = Array.prototype.slice.call(arguments, 1)
+    return fn.apply(this, args)
+  }
+  return function() {
+    fn.apply(this, arguments)
+  }
+}
+
+function removeChildren(parent) {
+  map(call(parent.remove), range(0, parent.children.length))
+}
 
 function main(state) {
   if (typeof w == 'object') w.close()
   w = new Window(winResource)
   w.state = state
   w.pagesList = scrollPanel(w.scrollPanel, 400)
-  map(function(page) {
-    pageRow(w.pagesList, page)
-  })(w.state.pages.slice(0, 30))
-  dataTable(w.dataTable, w.state.issue)
+  w.render = function() {
+    removeChildren(w.pagesList)
+    removeChildren(w.dataTable)
+    map(function(page) {
+      pageRow(w.pagesList, page)
+    })(w.state.pages.slice(0, 30))
+    dataTable(w.dataTable, w.state.issue)
+  }
   w.onResize = function(e) {
     w.layout.resize()
   }
   w.buttons.cancel.onClick = function() {
-    $.clear()
-    pp(w.state)
-  }
-  w.buttons.accept.onClick = function() {
     w.close()
   }
+  w.buttons.accept.onClick = function() {
+    $.clear()
+    pp(w.state)
+    w.close()
+  }
+  w.buttons.magasin.onClick = function() {
+    var val = w.buttons.magasin.value ? '2' : '1'
+    var builder = pageFileName(context.issue.pubDate, val)
+    map(function(pg) {
+      pg.fileName = builder(pg.pageNumber)
+    }, w.state.pages)
+    w.render()
+  }
+  w.changeFolderBtn.onClick = function() {
+    var folder = Folder.selectDialog(
+      'Velg mappa filene skal lagres i',
+      w.state.rootDir.parent
+    )
+    if (folder && folder != w.state.rootDir) {
+      w.state.rootDir = folder
+      w.render()
+    }
+  }
+  w.render()
   w.show()
   return w
 }

@@ -4,13 +4,47 @@
 // main export
 function buildRenderContext() {
   // build context dictionary to fill out placeholder in template file
-  var data = getIssueDataFromApi()
-  var context = staffContext(data)
-  context.utg = context.issue = issueContext(data)
+  var data = _getIssueDataFromApi()
+  var context = _staffContext(data)
+  context.utg = context.issue = _issueContext(data)
   return context
 }
 
-function issueContext(data) {
+function parseIsoDate(dt) {
+  // "YYYY-MM-DD" -> Date
+  var Y = parseInt(dt.slice(0, 4))
+  var M = parseInt(dt.slice(5, 7)) - 1
+  var D = parseInt(dt.slice(8, 10))
+  var H = 12 // noon
+  return new Date(Y, M, D, H)
+}
+
+function dateLine(dt) {
+  // Date -> String
+  // prettier-ignore
+  var MONTHS = ['januar', 'februar', 'mars', 'april', 'mai', 'juni',
+    'juli', 'august', 'september', 'oktober', 'november', 'desember']
+  var DAYS = ['søn', 'man', 'tir', 'ons', 'tor', 'fre', 'lør']
+  var day = DAYS[dt.getDay()] + 'dag'
+  var month = MONTHS[dt.getMonth()]
+  var year = dt.getFullYear()
+  var date = dt.getDate() + '.'
+  return [day, date, month, year].join(' ')
+}
+
+function _getIssueDataFromApi() {
+  var dumpfile = File($.fileName).parent + '/api.site.dump.json'
+  var ENDPOINT = 'https://universitas.no/api/site/'
+  try {
+    return loadData(dumpfile)
+  } catch (e) {}
+  var response = https(endpoint)
+  var data = JSON.parse(response.response)
+  if (response.status == 200) dumpData(dumpfile, data)
+  return data
+}
+
+function _issueContext(data) {
   // { nr: '15', åg: '80', dato: 'onsdag 23. oktober 1970' }
   return pipe(
     dotProp('issues.next'),
@@ -38,7 +72,7 @@ function issueContext(data) {
   )(data)
 }
 
-function staffContext(data) {
+function _staffContext(data) {
   var abbr = pipe(
     // str -> str
     // abbreviated titles for staff
@@ -67,38 +101,6 @@ function staffContext(data) {
       identity
     ])
   )(data)
-}
-
-function parseIsoDate(dt) {
-  // "YYYY-MM-DD" -> Date
-  var Y = parseInt(dt.slice(0, 4))
-  var M = parseInt(dt.slice(5, 7)) - 1
-  var D = parseInt(dt.slice(8, 10))
-  var H = 12 // noon
-  return new Date(Y, M, D, H)
-}
-
-function dateLine(dt) {
-  // Date -> String
-  // prettier-ignore
-  var MONTHS = ['januar', 'februar', 'mars', 'april', 'mai', 'juni',
-    'juli', 'august', 'september', 'oktober', 'november', 'desember']
-  var month = MONTHS[dt.getMonth()]
-  var year = dt.getFullYear()
-  var date = dt.getDate()
-  return 'onsdag ' + date + '. ' + month + ' ' + year
-}
-
-function getIssueDataFromApi() {
-  var dumpfile = File($.fileName).parent + '/api.site.dump.json'
-  var ENDPOINT = 'https://universitas.no/api/site/'
-  try {
-    return loadData(dumpfile)
-  } catch (e) {}
-  var response = https(endpoint)
-  var data = JSON.parse(response.response)
-  if (response.status == 200) dumpData(dumpfile, data)
-  return data
 }
 
 if (ifMain($.fileName)) log(jsonify(buildRenderContext()), '$') // for development
