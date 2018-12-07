@@ -1,0 +1,78 @@
+#script "user interface helper functions"
+#include "../includes/index.jsxinc"
+
+var uxStyle = curry(function(style, element) {
+  // background color
+  var g = element.graphics
+
+  // color examples
+  // white = "#FFF", "#FFFFFF", [1,1,1], 1
+  // yellow = "#FF0", blue = "#00F", red = "#F00"
+  if ('bg' in style)
+    g.backgroundColor = g.newBrush(g.BrushType.SOLID_COLOR, uxColor(style.bg))
+  if ('fg' in style)
+    g.foregroundColor = g.newPen(g.PenType.SOLID_COLOR, uxColor(style.fg), 1)
+
+  // useful primer on scriptui fonts
+  // http://www.indiscripts.com/post/2012/05/scriptui-fonts-facts
+  // examples (dialog is the default font): "Arial-bold:24", "Times", "dialog:12", "dialog-bold"
+  if ('font' in style) {
+    try {
+      g.font = style.font
+      if (element.children) map(uxStyle({ font: style.font }))(element.children)
+    } catch (e) {
+      log(style.font + ' is not valid', $)
+    }
+  }
+})
+
+var uxColor = cond([
+  [is(Array), identity],
+  [
+    is(Number),
+    function(n) {
+      return [n, n, n]
+    }
+  ],
+  [
+    test(/^#?[0-9a-f]{6}$/),
+    pipe(
+      match(/[0-9a-f]{2}/g),
+      map(flip(parseInt)(16)),
+      map(mul(1 / 256))
+    )
+  ],
+  [
+    test(/^#?[0-9a-f]{3}$/),
+    pipe(
+      match(/[0-9a-f]{1}/g),
+      map(flip(parseInt)(16)),
+      map(mul(1 / 16))
+    )
+  ],
+  [T, add(' is invalid color')]
+])
+
+if (ifMain($.fileName)) {
+  if (typeof w != 'undefined') w.close()
+  var w = new Window(
+    'palette { title: "ux styles", preferredSize: [200, 200], location: [1200, 100] }'
+  )
+
+  map(
+    function(style) {
+      var g = w.add(
+        'Group { margins: 10, st: StaticText { text: "hello world" }}'
+      )
+      uxStyle(style, g)
+      g.st.text = uneval(style)
+    },
+    [
+      { fg: '#ccf', bg: '#009' },
+      { font: 'dialog:20' },
+      { font: 'dialog-Bold' },
+      { font: 'Consolas-italic:15', bg: 1 }
+    ]
+  )
+  w.show()
+}

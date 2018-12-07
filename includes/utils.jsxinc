@@ -49,7 +49,7 @@ var pageFileName = curry(function pageFileName(
   var X = typeNumber // 1 = vanlig, 2 = magasin
   var YYMMDD = fileNameDateStamp(friday)
   var PP = zeroPad(2)(pageNumber)
-  return 'UNI1' + X + 'VER' + YYMMDD + PP + '000.indd'
+  return 'UNI1' + X + 'VER' + YYMMDD + PP + '000'
 })
 
 function mkdir(folder) {

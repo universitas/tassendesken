@@ -2,12 +2,15 @@
 // #target "indesign"
 // #targetengine "session"
 #include "../includes/index.jsxinc"
+#include "ux-utils.jsxinc"
 
 winResource =
   "palette {\
   properties: {resizeable: true},\
   text: 'Opprett Sider', frameLocation:[1200,10],\
-  preferredSize: [450, 100], spacing: 5, margins: 10,\
+  preferredSize: [400, 400], spacing: 5, margins: 10,\
+  helpText: StaticText { alignment: ['fill', 'top'], \
+  text: 'Del opp avisa i flere filer' }, \
   head: Group {\
     margins: [7,2,25,0], alignment: ['fill', 'top'], orientation: 'row',\
     preferredSize: [-1, 10],\
@@ -18,45 +21,36 @@ winResource =
     t2: StaticText {text: 'master:', alignment: ['right', '']\
       , preferredSize: [100, -1] },\
   },\
-  scrollPanel: Group {margins: 0, alignment: ['fill', 'fill'] },\
-  helpText: StaticText { alignment: ['fill', 'bottom'], \
-    text: 'Del opp avisa i flere filer' }, \
+  scrollPanel: Group {margins: 0, minimumSize: [350, 100], alignment: ['fill', 'fill'] },\
   dataTable: Group { orientation: 'column', spacing: 2,\
     alignment: ['fill', 'bottom'] minimumSize: ['', 50] },\
-  buttons: Group { alignment: 'bottom', alignChildren: ['center', 'center'],\
-    magasin: CheckBox { text: 'Magasin', value: false },\
-    choose: Button { text: 'Endre Mappe' }, \
-    cancel: Button { text: 'Avbryt' }, \
-    accept: Button { text: 'OK' }, \
+  buttons: Group { \
+    alignment: ['fill', 'bottom'], alignChildren: ['fill', 'center'],\
+    margins: [0,10,0,0], minimumSize: [350, 40],\
+    magasin: Checkbox { text: 'Magasin', value: false },\
+    choose: Button { text: 'Endre Mappe', preferredSize: [-1, 30] }, \
+    cancel: Button { text: 'Avbryt', preferredSize: [-1, 30]  }, \
+    accept: Button { text: 'OK', preferredSize: [-1, 30]  }, \
   }\
 }"
-
-function call(fn) {
-  if (arguments.length > 1) {
-    args = Array.prototype.slice.call(arguments, 1)
-    return fn.apply(this, args)
-  }
-  return function() {
-    fn.apply(this, arguments)
-  }
-}
-
-function removeChildren(parent) {
-  map(call(parent.remove), range(0, parent.children.length))
-}
 
 function main(state) {
   if (typeof w == 'object') w.close()
   w = new Window(winResource)
   w.state = state
-  w.pagesList = scrollPanel(w.scrollPanel, 400)
+  w.pagesList = scrollPanel(w.scrollPanel, 640)
+  uxStyle({ bg: 0.8 }, w)
+  uxStyle({ fg: 0.4 }, w.head)
+  uxStyle({ bg: 0.98 }, w.scrollPanel)
   w.render = function() {
-    removeChildren(w.pagesList)
-    removeChildren(w.dataTable)
     map(function(page) {
       pageRow(w.pagesList, page)
     })(w.state.pages.slice(0, 30))
-    dataTable(w.dataTable, w.state.issue)
+    dataTable(w.dataTable, {
+      'utgave nr': w.state.issue.nr,
+      dato: w.state.issue.dato,
+      mappe: w.state.rootDir
+    })
   }
   w.onResize = function(e) {
     w.layout.resize()
@@ -66,25 +60,33 @@ function main(state) {
   }
   w.buttons.accept.onClick = function() {
     $.clear()
-    pp(w.state)
+    var pages = pipe(
+      prop('pages'),
+      filter(prop('firstPage')),
+      pluck('fileName'),
+      map(function(fn) {
+        return w.state.rootDir + '/' + fn + ''
+      })
+    )(w.state)
+    pp(pages)
     w.close()
   }
   w.buttons.magasin.onClick = function() {
     var val = w.buttons.magasin.value ? '2' : '1'
-    var builder = pageFileName(context.issue.pubDate, val)
-    map(function(pg) {
-      pg.fileName = builder(pg.pageNumber)
-    }, w.state.pages)
-    w.render()
+    var builder = pageFileName(w.state.issue.pubDate, val)
+    map(function(row) {
+      row.state.fileName = row.flname.text = builder(row.state.pageNumber)
+    })(w.pagesList.children)
+    w.pagesList.layout.layout(true)
   }
-  w.changeFolderBtn.onClick = function() {
+  w.buttons.choose.onClick = function() {
     var folder = Folder.selectDialog(
       'Velg mappa filene skal lagres i',
-      w.state.rootDir.parent
+      w.state.rootDir
     )
     if (folder && folder != w.state.rootDir) {
       w.state.rootDir = folder
-      w.render()
+      w.dataTable.children[2].val.text = w.state.rootDir
     }
   }
   w.render()
@@ -98,11 +100,12 @@ function dataTable(parent, data) {
       "Group { \
       alignment: 'left', margins: 0, \
       alignChildren: ['left', 'fill'], \
-      key: StaticText { text: 'key', preferredSize: [80, ''] }, \
+      key: StaticText { text: 'key', preferredSize: [60, ''] }, \
       val: StaticText { text: 'val' }, \
     }"
     )
-    row.key.text = key
+    uxStyle({ fg: 0.4 }, row.key)
+    row.key.text = key + ':'
     row.val.text = data[key]
   }
 }
@@ -113,13 +116,13 @@ function scrollPanel(parent, maxHeight) {
     spacing: 0, margins: 0,\
     alignment: ['fill', 'fill'],\
     alignChildren: ['fill', 'fill'],\
-    wrapper: Panel { properties: {borderStyle: 'sunken'}, margins: 0,\
+    wrapper: Panel { properties: {borderStyle: 'thin'}, margins: 0,\
       content: Panel {\
-        alignment: ['fill', 'top'], margins: 5, spacing: 5,\
+        alignment: ['fill', 'top'], margins: 0, spacing: 0,\
         orientation: 'column', alignChildren: ['fill', 'top'] \
     }},\
     scrollbar: Scrollbar {\
-      stepdelta: 5, jumpdelta: 1\
+      stepdelta: 1, jumpdelta: 1\
       maxvalue: 0, alignment: ['right', 'fill'], size: [15, -1],},\
   }"
   var panel = parent.add(rs)
@@ -127,7 +130,7 @@ function scrollPanel(parent, maxHeight) {
   content.maximumSize.height = maxHeight
 
   panel.drawHandler = function drawHandler() {
-    var height = panel.size.height - 10
+    var height = panel.size.height
     if (panel.outerHeight == height) return
     var first = content.children[0]
     var last = content.children[content.children.length - 1]
@@ -135,11 +138,11 @@ function scrollPanel(parent, maxHeight) {
     panel.innerHeight = last.bounds.bottom - first.bounds.top
     if (panel.innerHeight > panel.outerHeight) {
       panel.scrollbar.maxvalue =
-        (panel.innerHeight - panel.outerHeight) / panel.outerHeight
+        (10 + panel.innerHeight - panel.outerHeight) / panel.outerHeight
       content.maximumSize.height = panel.innerHeight + 10
       panel.scrollHandler()
     } else {
-      content.maximumSize.height = panel.outerHeight + 10
+      content.maximumSize.height = panel.outerHeight
       panel.scrollbar.maxvalue = 0
     }
   }
@@ -153,7 +156,7 @@ function scrollPanel(parent, maxHeight) {
 
 function pageRow(parent, state) {
   var rs =
-    "Group { margins: 0,\
+    "Group { margins: [5,2,5,2],\
     alignChildren: ['left', 'center'], preferredSize: [-1, 10],\
     number: StaticText {text: '01', preferredSize: [45, -1] },\
     firstp: Checkbox {value: true, preferredSize: [25, -1] },\
@@ -162,7 +165,9 @@ function pageRow(parent, state) {
   }"
   var row = parent.add(rs)
   row.state = state
+  row.flname.graphics.font = 'Consolas:12'
   row.render = function render() {
+    if (state.pageNumber % 2) uxStyle({ bg: 0.9 }, row)
     row.number.text = 'side ' + state.pageNumber
     row.firstp.value = state.firstPage
     row.flname.visible = state.firstPage
@@ -183,53 +188,53 @@ function pageRow(parent, state) {
 // prettier-ignore
 var INITIAL_STATE = {
   pages: [
-    { pageNumber: 1, fileName: 'UNI11VER19011101000.indd',
+    { pageNumber: 1, fileName: 'UNI11VER19011101000',
       masterName: 'F-Front', firstPage: true },
-    { pageNumber: 2, fileName: 'UNI11VER19011102000.indd',
+    { pageNumber: 2, fileName: 'UNI11VER19011102000',
       masterName: '2-Side 2-3', firstPage: true },
-    { pageNumber: 3, fileName: 'UNI11VER19011103000.indd',
+    { pageNumber: 3, fileName: 'UNI11VER19011103000',
       masterName: '2-Side 2-3', firstPage: false },
-    { pageNumber: 4, fileName: 'UNI11VER19011104000.indd',
+    { pageNumber: 4, fileName: 'UNI11VER19011104000',
       masterName: 'N-Nyhet Intro', firstPage: true },
-    { pageNumber: 5, fileName: 'UNI11VER19011105000.indd',
+    { pageNumber: 5, fileName: 'UNI11VER19011105000',
       masterName: 'N-Nyhet Intro', firstPage: false },
-    { pageNumber: 6, fileName: 'UNI11VER19011106000.indd',
+    { pageNumber: 6, fileName: 'UNI11VER19011106000',
       masterName: 'N-Nyhet', firstPage: true },
-    { pageNumber: 7, fileName: 'UNI11VER19011107000.indd',
+    { pageNumber: 7, fileName: 'UNI11VER19011107000',
       masterName: 'N-Nyhet', firstPage: false },
-    { pageNumber: 8, fileName: 'UNI11VER19011108000.indd',
+    { pageNumber: 8, fileName: 'UNI11VER19011108000',
       masterName: 'N-Nyhet', firstPage: true },
-    { pageNumber: 9, fileName: 'UNI11VER19011109000.indd',
+    { pageNumber: 9, fileName: 'UNI11VER19011109000',
       masterName: 'N-Nyhet', firstPage: false },
-    { pageNumber: 10, fileName: 'UNI11VER19011110000.indd',
+    { pageNumber: 10, fileName: 'UNI11VER19011110000',
       masterName: 'N-Nyhet', firstPage: true },
-    { pageNumber: 11, fileName: 'UNI11VER19011111000.indd',
+    { pageNumber: 11, fileName: 'UNI11VER19011111000',
       masterName: 'N-Nyhet', firstPage: false },
-    { pageNumber: 12, fileName: 'UNI11VER19011112000.indd',
+    { pageNumber: 12, fileName: 'UNI11VER19011112000',
       masterName: 'D-Debatt Intro', firstPage: true },
-    { pageNumber: 13, fileName: 'UNI11VER19011113000.indd',
+    { pageNumber: 13, fileName: 'UNI11VER19011113000',
       masterName: 'D-Debatt Intro', firstPage: false },
-    { pageNumber: 14, fileName: 'UNI11VER19011114000.indd',
+    { pageNumber: 14, fileName: 'UNI11VER19011114000',
       masterName: 'K-Kultur Intro', firstPage: true },
-    { pageNumber: 15, fileName: 'UNI11VER19011115000.indd',
+    { pageNumber: 15, fileName: 'UNI11VER19011115000',
       masterName: 'K-Kultur Intro', firstPage: false },
-    { pageNumber: 16, fileName: 'UNI11VER19011116000.indd',
+    { pageNumber: 16, fileName: 'UNI11VER19011116000',
       masterName: 'K-Kultur', firstPage: true },
-    { pageNumber: 17, fileName: 'UNI11VER19011117000.indd',
+    { pageNumber: 17, fileName: 'UNI11VER19011117000',
       masterName: 'K-Kultur', firstPage: false },
-    { pageNumber: 18, fileName: 'UNI11VER19011118000.indd',
+    { pageNumber: 18, fileName: 'UNI11VER19011118000',
       masterName: 'K-Kultur', firstPage: true },
-    { pageNumber: 19, fileName: 'UNI11VER19011119000.indd',
+    { pageNumber: 19, fileName: 'UNI11VER19011119000',
       masterName: 'K-Kultur', firstPage: false },
-    { pageNumber: 20, fileName: 'UNI11VER19011120000.indd',
+    { pageNumber: 20, fileName: 'UNI11VER19011120000',
       masterName: 'R-Reportasje', firstPage: true },
-    { pageNumber: 21, fileName: 'UNI11VER19011121000.indd',
+    { pageNumber: 21, fileName: 'UNI11VER19011121000',
       masterName: 'R-Reportasje', firstPage: false },
-    { pageNumber: 22, fileName: 'UNI11VER19011122000.indd',
+    { pageNumber: 22, fileName: 'UNI11VER19011122000',
       masterName: 'A-Anmeldelser', firstPage: true },
-    { pageNumber: 23, fileName: 'UNI11VER19011123000.indd',
+    { pageNumber: 23, fileName: 'UNI11VER19011123000',
       masterName: 'A-Anmeldelser', firstPage: false },
-    { pageNumber: 24, fileName: 'UNI11VER19011124000.indd',
+    { pageNumber: 24, fileName: 'UNI11VER19011124000',
       masterName: 'B-Baksida', firstPage: true }
   ],
   rootDir: new Folder('//kant.uio.no/div-universitas-desken/01/INDESIGN'),

@@ -2,6 +2,14 @@
 
 // new functions (might not have tests)
 
+var cond = curry(function cond(rules, val) {
+  // Switch/case-like function
+  // [[(a -> bool), (a -> b)]] -> a -> b
+  for (var i = 0; i < rules.length; i++)
+    if (rules[i][0](val)) return rules[i][1](val)
+  throw new Error('no condition matched for ' + val)
+})
+
 var either = curry(function either(f0, f1, val) {
   // (a -> bool) -> (a -> bool) -> (a -> bool)
   return f0(val) || f1(val)
