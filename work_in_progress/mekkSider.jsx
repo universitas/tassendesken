@@ -61,6 +61,7 @@ function prepareNewspaperTemplate() {
       )
     })
   )(doc.pages)
+
   var callback = function(data) {
     var pages = pipe(
       prop('pages'),
@@ -69,7 +70,7 @@ function prepareNewspaperTemplate() {
         applySpec({
           number: prop('pageNumber'),
           file: function(pg) {
-            return new File(data.rootDir + '/' + pg.fileName)
+            return new File(data.rootDir + '/' + pg.fileName + '.indd')
           }
         })
       )
@@ -78,7 +79,7 @@ function prepareNewspaperTemplate() {
     splitDocument(doc, pages)
   }
   var initialState = { pages: pages, rootDir: rootDir, issue: context.issue }
-  splitPagesDialog(doc, initialState, callback)
+  splitPagesDialog(initialState, callback)
 }
 
 function openNewspaperTemplate() {
@@ -87,29 +88,10 @@ function openNewspaperTemplate() {
   dokTools.zoomOut()
 }
 
-function splitPagesDialog(doc, initialState, callback) {
+function splitPagesDialog(state, callback) {
   // dialog window to select where to split newspaper into spreads
   // (Document, {k: v}, ([{page: Page, file: File}] -> *)) -> 1|2
-  callback(initialState)
-  return
-  var PANEL_SIZE = 24 // max antall sider som vises i menyen
-  var w = new Window('palette')
-  w.state = initialState
-  w.ok = function() {
-    alert('ok')
-    callback(w.state)
-  }
-  w.cancel = function() {
-    alert('cancel')
-    win.close()
-  }
-  w.changeFolder = function() {
-    w.state.rootDir =
-      Folder.selectDialog('Velg mappa filene skal lagres i', rootDir.parent) ||
-      rootDir
-    folderName.text = 'mappe: ' + rootDir
-  }
-  w.show()
+  callback(state)
 }
 
 if (ifMain($.fileName)) main()
