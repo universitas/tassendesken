@@ -4,48 +4,49 @@
 #include "../includes/index.jsxinc"
 #include "ux-utils.jsxinc"
 
-winResource =
-  "palette {\
-  properties: {resizeable: true},\
-  text: 'Opprett Sider', frameLocation:[1200,10],\
-  preferredSize: [400, 400], spacing: 5, margins: 10,\
-  helpText: StaticText { alignment: ['fill', 'top'], \
-  text: 'Del opp avisa i flere filer' }, \
-  head: Group {\
-    margins: [7,2,25,0], alignment: ['fill', 'top'], orientation: 'row',\
-    preferredSize: [-1, 10],\
-    t0: StaticText {text: 'startside:',\
-      alignment: 'left', preferredSize: [80, -1] },\
-    t1: StaticText {text: 'filnavn:',\
-      alignment: ['fill', 'bottom'] },\
-    t2: StaticText {text: 'master:', alignment: ['right', '']\
-      , preferredSize: [100, -1] },\
-  },\
-  scrollPanel: Group {margins: 0, minimumSize: [350, 100], alignment: ['fill', 'fill'] },\
-  dataTable: Group { orientation: 'column', spacing: 2,\
-    alignment: ['fill', 'bottom'] minimumSize: ['', 50] },\
-  buttons: Group { \
-    alignment: ['fill', 'bottom'], alignChildren: ['fill', 'center'],\
-    margins: [0,10,0,0], minimumSize: [350, 40],\
-    magasin: Checkbox { text: 'Magasin', value: false },\
-    choose: Button { text: 'Endre Mappe', preferredSize: [-1, 30] }, \
-    cancel: Button { text: 'Avbryt', preferredSize: [-1, 30]  }, \
-    accept: Button { text: 'OK', preferredSize: [-1, 30]  }, \
-  }\
-}"
-
 function main(state) {
+  resourceString =
+    "palette {\
+    properties: {resizeable: true},\
+    text: 'Opprett Sider', frameLocation:[1200,10],\
+    preferredSize: [400, 400], spacing: 5, margins: 10,\
+    helpText: StaticText { alignment: ['fill', 'top'], \
+    text: 'Del opp avisa i flere filer' }, \
+    thead: Group {\
+      margins: [7,2,25,0], alignment: ['fill', 'top'], orientation: 'row',\
+      preferredSize: [-1, 10],\
+      th0: StaticText {text: 'startside:',\
+        alignment: 'left', preferredSize: [80, -1] },\
+      th1: StaticText {text: 'filnavn:',\
+        alignment: ['fill', 'bottom'] },\
+      th2: StaticText {text: 'master:', alignment: ['right', '']\
+        , preferredSize: [100, -1] },\
+    },\
+    scrollPanel: Group {\
+      margins: 0, minimumSize: [350, 100], alignment: ['fill', 'fill'] },\
+    dataTable: Group { orientation: 'column', spacing: 2,\
+      alignment: ['fill', 'bottom'] minimumSize: ['', 50] },\
+    buttons: Group { \
+      alignment: ['fill', 'bottom'], alignChildren: ['fill', 'center'],\
+      margins: [0,10,0,0], minimumSize: [350, 40],\
+      magasin: Checkbox { text: 'Magasin', value: false },\
+      choose: Button { text: 'Endre Mappe', preferredSize: [-1, 30] }, \
+      cancel: Button { text: 'Avbryt', preferredSize: [-1, 30]  }, \
+      accept: Button { text: 'OK', preferredSize: [-1, 30]  }, \
+    }\
+  }"
   if (typeof w == 'object') w.close()
-  w = new Window(winResource)
+  w = new Window(resourceString)
   w.state = state
   w.pagesList = scrollPanel(w.scrollPanel, 640)
   uxStyle({ bg: 0.8 }, w)
-  uxStyle({ fg: 0.4 }, w.head)
+  uxStyle({ fg: 0.4 }, w.thead)
   uxStyle({ bg: 0.98 }, w.scrollPanel)
   w.render = function() {
-    map(function(page) {
+    var rows = map(function(page) {
       pageRow(w.pagesList, page)
-    })(w.state.pages.slice(0, 30))
+    })(w.state.pages)
+    for (var i = 0; i < rows.length; i += 2) uxStyle({ bg: 0.9 }, rows[i])
     dataTable(w.dataTable, {
       'utgave nr': w.state.issue.nr,
       dato: w.state.issue.dato,
@@ -54,9 +55,6 @@ function main(state) {
   }
   w.onResize = function(e) {
     w.layout.resize()
-  }
-  w.buttons.cancel.onClick = function() {
-    w.close()
   }
   w.buttons.accept.onClick = function() {
     $.clear()
@@ -69,6 +67,9 @@ function main(state) {
       })
     )(w.state)
     pp(pages)
+    w.close()
+  }
+  w.buttons.cancel.onClick = function() {
     w.close()
   }
   w.buttons.magasin.onClick = function() {
@@ -94,66 +95,6 @@ function main(state) {
   return w
 }
 
-function dataTable(parent, data) {
-  for (var key in data) {
-    var row = parent.add(
-      "Group { \
-      alignment: 'left', margins: 0, \
-      alignChildren: ['left', 'fill'], \
-      key: StaticText { text: 'key', preferredSize: [60, ''] }, \
-      val: StaticText { text: 'val' }, \
-    }"
-    )
-    uxStyle({ fg: 0.4 }, row.key)
-    row.key.text = key + ':'
-    row.val.text = data[key]
-  }
-}
-
-function scrollPanel(parent, maxHeight) {
-  var rs =
-    "Group {\
-    spacing: 0, margins: 0,\
-    alignment: ['fill', 'fill'],\
-    alignChildren: ['fill', 'fill'],\
-    wrapper: Panel { properties: {borderStyle: 'thin'}, margins: 0,\
-      content: Panel {\
-        alignment: ['fill', 'top'], margins: 0, spacing: 0,\
-        orientation: 'column', alignChildren: ['fill', 'top'] \
-    }},\
-    scrollbar: Scrollbar {\
-      stepdelta: 1, jumpdelta: 1\
-      maxvalue: 0, alignment: ['right', 'fill'], size: [15, -1],},\
-  }"
-  var panel = parent.add(rs)
-  var content = panel.wrapper.content
-  content.maximumSize.height = maxHeight
-
-  panel.drawHandler = function drawHandler() {
-    var height = panel.size.height
-    if (panel.outerHeight == height) return
-    var first = content.children[0]
-    var last = content.children[content.children.length - 1]
-    panel.outerHeight = height
-    panel.innerHeight = last.bounds.bottom - first.bounds.top
-    if (panel.innerHeight > panel.outerHeight) {
-      panel.scrollbar.maxvalue =
-        (10 + panel.innerHeight - panel.outerHeight) / panel.outerHeight
-      content.maximumSize.height = panel.innerHeight + 10
-      panel.scrollHandler()
-    } else {
-      content.maximumSize.height = panel.outerHeight
-      panel.scrollbar.maxvalue = 0
-    }
-  }
-  panel.scrollHandler = function scrollHandler() {
-    content.bounds.top = -panel.scrollbar.value * panel.outerHeight
-  }
-  panel.scrollbar.onChanging = panel.scrollHandler
-  content.onDraw = panel.drawHandler
-  return panel.wrapper.content
-}
-
 function pageRow(parent, state) {
   var rs =
     "Group { margins: [5,2,5,2],\
@@ -167,7 +108,6 @@ function pageRow(parent, state) {
   row.state = state
   row.flname.graphics.font = 'Consolas:12'
   row.render = function render() {
-    if (state.pageNumber % 2) uxStyle({ bg: 0.9 }, row)
     row.number.text = 'side ' + state.pageNumber
     row.firstp.value = state.firstPage
     row.flname.visible = state.firstPage

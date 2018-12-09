@@ -1,52 +1,56 @@
-#script "document format templatestrings"
-#target "indesign"
-#targetengine "session"
-#include "../includes/index.jsxinc"
+// #script "document format templatestrings"
+// #target "indesign"
+// #targetengine "session"
+// #include "../includes/index.jsxinc"
 
 function renderTemplate(doc, context) {
-  var changes = []
-  var fn = function() {
-    changeTemplateStrings(doc, context, changes)
-  }
   app.scriptPreferences.enableRedraw = false
+  var changeList = _buildChangeList(doc, context)
   app.doScript(
-    fn,
+    _changePlaceHolders,
     ScriptLanguage.JAVASCRIPT,
-    [],
+    [doc, changeList],
     UndoModes.FAST_ENTIRE_SCRIPT,
     'change template strings'
   )
-  return filter(prop(2), changes)
+  _clearGrepSearchOptions()
 }
 
-function changeTemplateStrings(doc, data, changes) {
-  resetSearch()
-  var keys = findPlaceHolders(doc)
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i]
-    app.findGrepPreferences.findWhat = '(?i)\\{\\{ *' + key + ' *\\}\\}'
-    var value = dotProp(key)(data)
-    if (value) {
-      app.findGrepPreferences.findWhat = '(?i)\\{\\{ *' + key + ' *\\}\\}'
-      app.changeGrepPreferences.changeTo = '' + value
-      changes.push([key, value, len(doc.changeGrep())])
-    } else {
-      changes.push([key, null, len(doc.findGrep())])
-    }
-  }
-  resetSearch()
+function _buildChangeList(doc, context) {
+  // (Document, {k: v|{k:v}}) -> [[k, v]]
+  var keys = sort(ascending(indentity), _findPlaceHolders(doc))
+  var values = map(flip(dotProp)(context))(keys)
+  return zip(keys, values)
 }
 
-function findPlaceHolders(doc) {
+function _changePlaceHolders(doc, changeList) {
+  // (Document, [[k, v]]) -> undefined
+  // changes placeholder tags in indesing document based on change list
+  _clearGrepSearchOptions()
   app.findChangeGrepOptions.properties = {
     includeHiddenLayers: true,
     includeMasterPages: true
   }
-  app.findGrepPreferences.properties = {
-    findWhat: '\\{\\{[^{]*\\}\\}'
+  for (var i = 0; i < changeList.length; i++) {
+    var ch = changeList[i]
+    app.findGrepPreferences.findWhat = '(?i)\\{\\{ *' + ch[0] + ' *\\}\\}'
+    app.changeGrepPreferences.changeTo = '' + ch[1]
+    app.changeGrep()
   }
+}
+
+function _findPlaceHolders(doc) {
+  // Document -> [String]
+  // find all placeholder tags in indesign document
+  var PATTERN = '\\{\\{.*?\\}\\}' // example: {{ person.name }}
+  _clearGrepSearchOptions()
+  app.findChangeGrepOptions.properties = {
+    includeHiddenLayers: true,
+    includeMasterPages: true
+  }
+  app.findGrepPreferences.properties = { findWhat: PATTERN }
+  var searchResults = doc.findGrep()
   return pipe(
-    call('findGrep'),
     map(
       pipe(
         prop('contents'),
@@ -55,11 +59,12 @@ function findPlaceHolders(doc) {
       )
     ),
     uniq
-  )(doc)
+  )(searchResults)
 }
 
-function resetSearch() {
-  app.changeGrepPreferences = NothingEnum.nothing
+function _clearGrepSearchOptions() {
+  // reset active grep search preferences and options to defaults
   app.findGrepPreferences = NothingEnum.nothing
   app.findChangeGrepOptions = NothingEnum.nothing
+  app.changeGrepPreferences = NothingEnum.nothing
 }

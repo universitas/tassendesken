@@ -1,21 +1,93 @@
 #script "user interface helper functions"
 #include "../includes/index.jsxinc"
 
-var uxStyle = curry(function(style, element) {
-  // background color
-  var g = element.graphics
+//////////////////////////////
+//  Reusable UI Components  //
+//////////////////////////////
 
+function scrollPanel(parent, maxHeight) {
+  // Vertical scrollable scriptui panel
+  var resourceString =
+    "Group {\
+    spacing: 0, margins: 0,\
+    alignment: ['fill', 'fill'],\
+    alignChildren: ['fill', 'fill'],\
+    wrapper: Panel { properties: {borderStyle: 'thin'}, margins: 0,\
+      content: Panel {\
+        alignment: ['fill', 'top'], margins: 0, spacing: 0,\
+        orientation: 'column', alignChildren: ['fill', 'top'] \
+    }},\
+    scrollbar: Scrollbar {\
+      stepdelta: 1, jumpdelta: 1\
+      maxvalue: 0, alignment: ['right', 'fill'], size: [15, -1],},\
+  }"
+  var panel = parent.add(resourceString)
+  var content = panel.wrapper.content
+  content.maximumSize.height = maxHeight || 500
+  panel.scrollbar.onChanging = function scrollHandler() {
+    content.bounds.top = - panel.scrollbar.value * panel.outerHeight
+  }
+  content.onDraw = function drawHandler() {
+    var height = panel.size.height
+    if (panel.outerHeight == height) return
+    var first = content.children[0]
+    var last = content.children[content.children.length - 1]
+    panel.outerHeight = height
+    panel.innerHeight = last.bounds.bottom - first.bounds.top
+    if (panel.innerHeight > panel.outerHeight) {
+      panel.scrollbar.maxvalue =
+        (10 + panel.innerHeight - panel.outerHeight) / panel.outerHeight
+      content.maximumSize.height = panel.innerHeight + 10
+    } else {
+      content.maximumSize.height = panel.outerHeight
+      panel.scrollbar.maxvalue = 0
+    }
+  }
+  return panel.wrapper.content
+}
+
+function dataTable(parent, data) {
+  // display key-value pairs in a table
+  for (var key in data) {
+    var row = parent.add(
+      "Group { \
+      alignment: 'left', margins: 0, \
+      alignChildren: ['left', 'fill'], \
+      key: StaticText { text: 'key', preferredSize: [60, ''] }, \
+      val: StaticText { text: 'val' }, \
+    }"
+    )
+    uxStyle({ fg: 0.4 }, row.key)
+    row.key.text = key + ':'
+    row.val.text = data[key]
+  }
+}
+
+ /////////////////////////
+ //  Utility functions  //
+ /////////////////////////
+
+var uxStyle = curry(function(style, element) {
+  // set multiple ux properties on scriptui element
+  //
+  // usage example:
+  // uxStyle({fg: '#fff', bg: '#222', font: 'dialog:15'})(win)
+  //
   // color examples
   // white = "#FFF", "#FFFFFF", [1,1,1], 1
   // yellow = "#FF0", blue = "#00F", red = "#F00"
+  //
+  // font examples: ("dialog" is the default font)
+  // "Arial-bold:24", "Times", "dialog:12", "dialog-bold"
+  //
+  // useful primer on scriptui fonts
+  // http://www.indiscripts.com/post/2012/05/scriptui-fonts-facts
+
+  var g = element.graphics
   if ('bg' in style)
     g.backgroundColor = g.newBrush(g.BrushType.SOLID_COLOR, uxColor(style.bg))
   if ('fg' in style)
     g.foregroundColor = g.newPen(g.PenType.SOLID_COLOR, uxColor(style.fg), 1)
-
-  // useful primer on scriptui fonts
-  // http://www.indiscripts.com/post/2012/05/scriptui-fonts-facts
-  // examples (dialog is the default font): "Arial-bold:24", "Times", "dialog:12", "dialog-bold"
   if ('font' in style) {
     try {
       g.font = style.font
@@ -26,6 +98,8 @@ var uxStyle = curry(function(style, element) {
   }
 })
 
+// convert hex color or single value to scriptui rgb color
+// string | number | array -> [number, number, number]
 var uxColor = cond([
   [is(Array), identity],
   [
@@ -54,6 +128,7 @@ var uxColor = cond([
 ])
 
 if (ifMain($.fileName)) {
+  // testing and develop
   if (typeof w != 'undefined') w.close()
   var w = new Window(
     'palette { title: "ux styles", preferredSize: [200, 200], location: [1200, 100] }'
@@ -76,3 +151,5 @@ if (ifMain($.fileName)) {
   )
   w.show()
 }
+
+// vi: ft=javascript
