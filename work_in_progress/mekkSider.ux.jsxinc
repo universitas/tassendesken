@@ -2,11 +2,11 @@
 #include "../includes/index.jsxinc"
 #include "ux-utils.jsxinc"
 
-function main(state) {
+function splitPagesDialog(state, callback) {
   resourceString =
     "palette {\
     properties: {resizeable: true},\
-    text: 'Opprett Sider', frameLocation:[1200,10],\
+    text: 'Opprett Sider', frameLocation:[100,100],\
     preferredSize: [400, 400], spacing: 5, margins: 10,\
     helpText: StaticText { alignment: ['fill', 'top'], \
     text: 'Del opp avisa i flere filer' }, \
@@ -41,9 +41,10 @@ function main(state) {
   uxStyle({ fg: 0.4 }, w.thead)
   uxStyle({ bg: 0.98 }, w.scrollPanel)
   w.render = function() {
-    var rows = map(function(page) {
+    map(function(page) {
       pageRow(w.pagesList, page)
     })(w.state.pages)
+    var rows = w.pagesList.children
     for (var i = 0; i < rows.length; i += 2) uxStyle({ bg: 0.9 }, rows[i])
     dataTable(w.dataTable, {
       'utgave nr': w.state.issue.nr,
@@ -55,17 +56,8 @@ function main(state) {
     w.layout.resize()
   }
   w.buttons.accept.onClick = function() {
-    $.clear()
-    var pages = pipe(
-      prop('pages'),
-      filter(prop('firstPage')),
-      pluck('fileName'),
-      map(function(fn) {
-        return w.state.rootDir + '/' + fn + ''
-      })
-    )(w.state)
-    pp(pages)
     w.close()
+    callback(w.state)
   }
   w.buttons.cancel.onClick = function() {
     w.close()
@@ -176,10 +168,16 @@ var INITIAL_STATE = {
       masterName: 'B-Baksida', firstPage: true }
   ],
   rootDir: new Folder('//kant.uio.no/div-universitas-desken/01/INDESIGN'),
-  issue: { åg: 73, nr: 1, pubDate: new Date(2019, 0, 9),
+  issue: { 'åg': 73, nr: 1, pubDate: new Date(2019, 0, 9),
     dato: 'onsdag 9. januar 2019' }
 }
 
-if (ifMain($.fileName)) var w = main(INITIAL_STATE)
+if (ifMain($.fileName)) {
+  var callback = function(data) {
+    $.clear()
+    pp(data)
+  }
+  splitPagesDialog(INITIAL_STATE, callback)
+}
 
 // vi: ft=javascript

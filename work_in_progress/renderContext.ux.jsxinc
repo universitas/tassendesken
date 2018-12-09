@@ -1,0 +1,124 @@
+#script "user interface for page builder"
+#include "../includes/index.jsxinc"
+#include "ux-utils.jsxinc"
+
+function renderContextDialog(state, callback) {
+  resourceString =
+    "palette {\
+    properties: {resizeable: true}, alignChildren: ['fill', 'fill'],\
+    text: 'title', frameLocation:[100, 100],\
+    preferredSize: [400, 400], spacing: 5, margins: 10,\
+    helpText: StaticText { properties: {multiline: true},\
+      alignment: ['fill', 'top'],  preferredSize: [-1, 40] },\
+    thead: Group {\
+      margins: [7,2,25,0], alignment: ['fill', 'top'],\
+      alignChildren: 'fill', preferredSize: [-1, 10],\
+      th0: StaticText {text: 'finn:', preferredSize: [100, -1] },\
+      th1: StaticText {text: 'erstatt:' },\
+    },\
+    scrollPanel: Group {\
+      margins: 0, minimumSize: [350, 100], alignment: ['fill', 'fill'] },\
+    buttons: Group { \
+      alignment: ['fill', 'bottom'], alignChildren: ['fill', 'center'],\
+      margins: [0,10,0,0], minimumSize: [350, 40],\
+      cancel: Button { text: 'Avbryt', preferredSize: [-1, 30]  },\
+      accept: Button { text: 'OK', preferredSize: [-1, 30]  },\
+    }\
+  }"
+  w = new Window(resourceString)
+  w.text = 'Ny utgave av Universitas'
+  w.helpText.text = '\
+  Følgende data er hentet inn fra prodsys om denne ukas utgave\
+  Kontroller at alt er riktig og trykk OK for å legge det inn.'.replace(
+    /^\s*/gm,
+    ''
+  )
+  w.state = state
+  w.scrollArea = scrollPanel(w.scrollPanel, 800)
+  uxStyle({ bg: 0.8 }, w)
+  uxStyle({ fg: 0.4 }, w.thead)
+  uxStyle({ bg: 0.98 }, w.scrollPanel)
+  w.buttons.cancel.onClick = function() {
+    pp(w.state)
+    w.close()
+  }
+  w.buttons.accept.onClick = function() {
+    callback(w.state)
+    w.close()
+  }
+  w.onResize = function(e) {
+    w.layout.resize()
+  }
+  w.render = function() {
+    for (var i = 0; i < w.state.changeList.length; i++) {
+      var state = w.state.changeList[i]
+      var row = _changeListRow(w.scrollArea, state)
+      if (i % 2) uxStyle({ bg: 0.9 }, row)
+    }
+  }
+  w.render()
+  w.show()
+  return w
+}
+
+function _changeListRow(parent, state) {
+  var rs =
+    "Group { margins: [5,2,5,2],\
+    alignChildren: ['left', 'center'], preferredSize: [-1, 10],\
+    key: StaticText {text: 'key', preferredSize: [100, -1] },\
+    val: EditText {alignment: ['fill', 'center'] },\
+  }"
+  var row = parent.add(rs)
+  row.key.text = state[0]
+  row.val.text = defaultTo('')(state[1])
+  row.val.onChange = function() {
+    state[1] = row.val.text
+    // highlight empty fields
+    uxStyle({ bg: state[1] ? '#ffe' : '#ff0' })(row.val)
+  }
+  row.val.onChange()
+  return row
+}
+
+if (ifMain($.fileName)) {
+  var INITIAL_STATE = {
+    changeList: [
+      ['anan.epost', 'geir.dorp@universitas.no'],
+      ['anan.navn', 'Geir Dorp'],
+      ['anan.tlf', '22\u202F85\u202F32\u202F69'],
+      ['anmr.epost', 'fridafli@outlook.com'],
+      ['anmr.navn', 'Frida Fliflet'],
+      ['anmr.tlf', '47258512'],
+      ['dagl.epost', 'simen.eriksen@universitas.no'],
+      ['dagl.navn', 'Simen Eriksen'],
+      ['dagl.tlf', '482 36 713'],
+      ['debr.epost', 'Selmajjoner@gmail.com'],
+      ['debr.navn', 'Selma Joner'],
+      ['debr.tlf', '93808470'],
+      ['dess.navn', 'Kari Eiring'],
+      ['fots.navn', 'Odin Dr\u00F8nen'],
+      ['kulr.epost', 'johannes.fjeld@vikenfiber.no'],
+      ['kulr.navn', 'Johannes Fjeld'],
+      ['kulr.tlf', '926 97 107'],
+      ['magr.epost', 'mariapettrem@gmail.com'],
+      ['magr.navn', 'Maria T. Pettr\u00E9m'],
+      ['magr.tlf', null],
+      ['nyhr.epost', 'henrikgiaever@hotmail.com'],
+      ['nyhr.navn', 'Henrik Gi\u00E6ver'],
+      ['nyhr.tlf', '98670257'],
+      ['red.epost', 'runa.fjellanger@universitas.no'],
+      ['red.navn', 'Runa Fjellanger'],
+      ['red.tlf', '901 59 831'],
+      ['utg.dato', 'onsdag 9. januar 2019'],
+      ['utg.nr', 1],
+      ['utg.\u00E5g', 73]
+    ]
+  }
+  var callback = function(data) {
+    $.clear()
+    pp(data)
+  }
+  renderContextDialog(INITIAL_STATE, callback)
+}
+
+// vi: ft=javascript

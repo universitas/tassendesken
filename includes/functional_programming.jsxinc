@@ -2,6 +2,16 @@
 
 // new functions (might not have tests)
 
+function partial(fn) {
+  // Partial apply variadic function (returns uncurried function)
+  // ((* -> *), ...args) -> * -> *
+  var a0 = [].slice.call(arguments, 1)
+  return function() {
+    var a1 = [].slice.call(arguments, 0)
+    return fn.apply(null, a0.concat(a1))
+  }
+}
+
 var cond = curry(function cond(rules, val) {
   // Switch/case-like function
   // [[(a -> bool), (a -> b)]] -> a -> b
@@ -266,12 +276,10 @@ function curry(fn, args) {
   }
 }
 
-function defaultTo(val0) {
+var defaultTo = curry(function defaultTo(fallback, val) {
   // a -> b? -> b|a
-  return function(val1) {
-    return val1 === undefined ? val0 : val1
-  }
-}
+  return when(isNil, always(fallback))(val)
+})
 
 function descend(fn) {
   // sorting comparator descending
@@ -279,11 +287,11 @@ function descend(fn) {
   return flip(ascend(fn))
 }
 
-function dotProp(name) {
+var dotProp = curry(function dotProp(name, obj) {
   // convenience wrapper for dotted paths
   // 'k.k' -> {k:{k:v}} -> v?
-  return path(name.split('.'))
-}
+  return path(name.split('.'))(obj)
+})
 
 function drop(n) {
   // drop that supports negative indexing
@@ -558,7 +566,7 @@ function withDefault(fn, val) {
 function zip() {
   // zip multiple input arrays / sequences
   // ([a], [b], ...) -> [[a, b, ...]]
-  var arrs = map(arrayFrom)(arguments)
+  var arrs = map(arrayFrom)(arrayFrom(arguments))
   var longest = pipe(
     pluck('length'),
     sort(),

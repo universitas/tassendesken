@@ -1,8 +1,15 @@
 #include ../includes/index.jsxinc
 #include http_via_vbscript.jsx
 
+var ANNONSEANSVARLIG = {
+  navn: 'Geir Dorp',
+  tlf: '22 85 32 69',
+  tittel: 'annonseansvarlig',
+  epost: 'geir.dorp@universitas.no'
+}
+
 // main export
-function buildRenderContext() {
+function fetchContextData() {
   // build context dictionary to fill out placeholder in template file
   var data = _getIssueDataFromApi()
   var context = _staffContext(data)
@@ -33,12 +40,13 @@ function dateLine(dt) {
 }
 
 function _getIssueDataFromApi() {
-  var dumpfile = File($.fileName).parent + '/api.site.dump.json'
   var ENDPOINT = 'https://universitas.no/api/site/'
+  return JSON.parse(https(ENDPOINT).response)
+  var dumpfile = File($.fileName).parent + '/api.site.dump.json'
   try {
     return loadData(dumpfile)
   } catch (e) {}
-  var response = https(endpoint)
+  var response = https(ENDPOINT)
   var data = JSON.parse(response.response)
   if (response.status == 200) dumpData(dumpfile, data)
   return data
@@ -81,13 +89,31 @@ function _staffContext(data) {
     replace(/^(...)\S* +(.).*$/, '$1$2'),
     trim
   )
+  var formatPhone = pipe(
+    defaultTo(''),
+    replace(/\s/g, ''),
+    replace(/^\+47/, ''),
+    cond([
+      [test(/^[49]\d{7}$/), replace(/(...)(..)(...)/, '$1 $2 $3')],
+      [test(/^\d{8}$/), replace(/(..)(..)(..)(..)/, '$1 $2 $3 $4')],
+      [T, identity]
+    ]),
+    replace(/ /g, '\u202f')
+  )
   return pipe(
     prop('staff'),
     map(
       applySpec({
         navn: prop('display_name'),
-        epost: prop('email'),
-        tlf: prop('phone'),
+        epost: pipe(
+          prop('email'),
+          defaultTo(''),
+          toLower
+        ),
+        tlf: pipe(
+          prop('phone'),
+          formatPhone
+        ),
         tittel: dotProp('position.title')
       })
     ),
@@ -99,10 +125,16 @@ function _staffContext(data) {
         )
       ),
       identity
-    ])
+    ]),
+    merge({ anan: ANNONSEANSVARLIG })
   )(data)
 }
 
-if (ifMain($.fileName)) log(jsonify(buildRenderContext()), '$') // for development
-
+if (ifMain($.fileName)) {
+  $.hiresTimer
+  $.clear()
+  var data = fetchContextData() // for development
+  pp(data)
+  $.hiresTimer
+}
 // vi: ft=javascript

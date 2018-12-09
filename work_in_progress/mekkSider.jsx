@@ -3,21 +3,10 @@
 #targetengine "session"
 #include "../includes/index.jsxinc"
 #include "fetch_issue_data.jsxinc"
-#include "render_template_with_context.jsxinc"
+#include "renderContext.jsxinc"
+#include "renderContext.ux.jsxinc"
+#include "mekkSider.ux.jsxinc"
 #include "split_document.jsxinc"
-
-var ANNONSEANSVARLIG = {
-  navn: 'Geir Dorp',
-  tlf: '22 85 32 69',
-  tittel: 'annonseansvarlig',
-  epost: 'geir.dorp@universitas.no'
-}
-var UNIVERSITAS = {
-  adresse: 'Moltke Moes vei 33',
-  post: 'Boks 89 Blindern, 0314 Oslo',
-  epost: 'universitas@universitas.no',
-  web: 'https://universitas.no'
-}
 
 config.mal_avis = 'MAL_AVIS.indt'
 
@@ -37,9 +26,8 @@ function main() {
 function prepareNewspaperTemplate() {
   // inserts context variables into template and splits it into pages
   var doc = app.documents[0]
-  var context = buildRenderContext()
-  context.anan = ANNONSEANSVARLIG
-  var changes = renderTemplate(doc, context)
+  var context = fetchContextData()
+
   var rootDir = Folder(issueFolder(context.issue.nr) + '/INDESIGN/')
   mkdir(rootDir)
   var pages = map(
@@ -62,7 +50,7 @@ function prepareNewspaperTemplate() {
     })
   )(doc.pages)
 
-  var callback = function(data) {
+  var splitPages = function(data) {
     var pages = pipe(
       prop('pages'),
       filter(prop('firstPage')),
@@ -75,25 +63,27 @@ function prepareNewspaperTemplate() {
         })
       )
     )(data)
-
     splitDocument(doc, pages)
+    app.open(pages[0].file.openDlg(undefined, '*.indd', true))
   }
   var initialState = { pages: pages, rootDir: rootDir, issue: context.issue }
-  splitPagesDialog(initialState, callback)
+  splitPagesDialog(initialState, splitPages)
 }
 
 function openNewspaperTemplate() {
   // opens the newspaper template file
-  app.open(File(config.mal_avis))
+  var doc = app.open(File(config.mal_avis))
   dokTools.zoomOut()
+  var context = fetchContextData()
+  var changeList = buildChangeList(doc, context)
+  var callback = pipe(
+    prop('changeList'),
+    curry(renderTemplate)(doc)
+  )
+  renderContextDialog({ changeList: changeList }, callback)
 }
 
-function splitPagesDialog(state, callback) {
-  // dialog window to select where to split newspaper into spreads
-  // (Document, {k: v}, ([{page: Page, file: File}] -> *)) -> 1|2
-  callback(state)
+if (ifMain($.fileName)) {
+  main()
 }
-
-if (ifMain($.fileName)) main()
-
 // vi: ft=javascript

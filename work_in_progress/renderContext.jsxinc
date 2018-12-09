@@ -2,40 +2,52 @@
 #target "indesign"
 #include "../includes/index.jsxinc"
 
-function renderTemplate(doc, context) {
-  app.scriptPreferences.enableRedraw = false
-  var changeList = _buildChangeList(doc, context)
+function renderTemplate(doc, changeList) {
+  // render template variables
+  // (Document, [[k, v]]) -> undefined
   app.doScript(
-    _changePlaceHolders,
+    partial(_changePlaceHolders, doc, changeList),
     ScriptLanguage.JAVASCRIPT,
-    [doc, changeList],
+    undefined,
     UndoModes.FAST_ENTIRE_SCRIPT,
     'change template strings'
   )
-  _clearGrepSearchOptions()
 }
 
-function _buildChangeList(doc, context) {
+function buildChangeList(doc, context) {
   // (Document, {k: v|{k:v}}) -> [[k, v]]
-  var keys = sort(ascending(indentity), _findPlaceHolders(doc))
-  var values = map(flip(dotProp)(context))(keys)
-  return zip(keys, values)
+  var kx = sort()(_findPlaceHolders(doc))
+  var vx = map(flip(dotProp)(context))(kx)
+  return zip(kx, vx)
 }
 
 function _changePlaceHolders(doc, changeList) {
   // (Document, [[k, v]]) -> undefined
   // changes placeholder tags in indesing document based on change list
+
+  // setup
+  var enableRedraw = app.scriptPreferences.enableRedraw
+  app.scriptPreferences.enableRedraw = false
   _clearGrepSearchOptions()
   app.findChangeGrepOptions.properties = {
     includeHiddenLayers: true,
     includeMasterPages: true
   }
+  // replace each item
   for (var i = 0; i < changeList.length; i++) {
-    var ch = changeList[i]
-    app.findGrepPreferences.findWhat = '(?i)\\{\\{ *' + ch[0] + ' *\\}\\}'
-    app.changeGrepPreferences.changeTo = '' + ch[1]
-    app.changeGrep()
+    var k = changeList[i][0]
+    var v = changeList[i][1]
+    if (v) {
+      app.findGrepPreferences.findWhat = '(?i)\\{\\{ *' + k + ' *\\}\\}'
+      app.changeGrepPreferences.changeTo = '' + v
+      app.changeGrep()
+    } else {
+      log('WARNING: key "' + k + '" doesn\'t have a replacement value', $)
+    }
   }
+  // cleanup
+  _clearGrepSearchOptions()
+  app.scriptPreferences.enableRedraw = enableRedraw
 }
 
 function _findPlaceHolders(doc) {
@@ -67,3 +79,5 @@ function _clearGrepSearchOptions() {
   app.findChangeGrepOptions = NothingEnum.nothing
   app.changeGrepPreferences = NothingEnum.nothing
 }
+
+// vi: ft=javascript

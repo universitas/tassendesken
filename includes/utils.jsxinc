@@ -248,15 +248,14 @@ function logToFile(message, filename) {
 
 // log error object to file
 function logError(error, data, logfile) {
-  var datestamp = JSON.stringify(new Date()).substr(0, 20)
-  var scriptfile = error.fileName.replace(/.*SCRIPTS/, '')
-  var filename =
-    logfile ||
-    'ERROR.' +
-      datestamp +
-      '.' +
-      scriptfile.replace(/\W+/g, '-').toLowerCase() +
-      '.json'
+  var datestamp = JSON.stringify(new Date())
+    .slice(1, 20)
+    .replace(/\W+/g, '-')
+  var scriptfile = error.fileName
+    .split('/')
+    .slice(-2)
+    .join('.')
+  var filename = logfile || ['ERROR', datestamp, scriptfile, 'json'].join('.')
   var msg = {
     message: error.message,
     line: error.line,

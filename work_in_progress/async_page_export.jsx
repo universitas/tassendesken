@@ -1,60 +1,71 @@
 #target "indesign"
-#targetengine "session"
+#targetengine "session" // maybe use a dedicated session?
 #include ../includes/index.jsxinc
 
-if (ifMain($.fileName)) main()
-var FILEPATTERN = /^UNI.*.indd$/
-FILEPATTERN = /.indd$/
+// async export pdf when saving outputFile with name matching this pattern
+var FILEPATTERN = config.DEBUG ? /.indd$/ : /^UNI.*000.indd$/
 
-function exportToFile(doc, page, format) {
-  var directory = new Folder(doc.filePath.path + '/PREVIEW/')
-  directory.exists || directory.create()
-  return new File(directory.fsName + '/' + 'page_' + page + '.' + format)
+function asyncPdfExportListener() {
+  var postSaveHandler = pipe(
+    prop('target'),
+    when(
+      pipe(
+        prop('name'),
+        test(FILEPATTERN)
+      ),
+      tryLogErrors(exportEveryPageAsPDF)
+    )
+  )
+  removeEventListeners(DocumentEvent.BEFORE_SAVE)
+  app.addEventListener(DocumentEvent.BEFORE_SAVE, postSaveHandler)
+  $.writeln('added event listener')
+  // postSaveHandler({ target: app.activeDocument })
 }
 
-function export_all_pages_as_pdf(doc, syncronous) {
+function _exportFileName(doc, format, page) {
+  var outputDir = new Folder(doc.filePath.path + '/PREVIEW/')
+  var stem = doc.name.slice(0, 14) // UNI1XTASYYMMDD + PP000.indd
+  mkdir(outputDir)
+  return function(page) {
+    var fileName = stem + zeroPad(2)(page.name) + '000.' + format
+    return new File(outputDir + '/' + fileName)
+  }
+}
+
+function exportEveryPageAsPDF(doc, syncronous) {
   var preset = app.pdfExportPresets.itemByName('UNIVERSITAS')
   if (!preset.isValid) preset = app.pdfExportPresets[-1]
   app.pdfExportPreferences.includeSlugWithPDF = true
-  var files = []
+  var fileNames = _exportFileName(doc, 'pdf')
+  var outputFiles = []
   for (var i = 0; i < doc.pages.length; i++) {
     var page = doc.pages[i]
-    var file = exportToFile(doc, page.name, 'pdf')
     app.pdfExportPreferences.pageRange = page.name
-    if (syncronous) doc.exportFile(ExportFormat.PDF_TYPE, file, false, preset)
-    else doc.asynchronousExportFile(ExportFormat.PDF_TYPE, file, false, preset)
-    files.push(file)
+    var outputFile = fileNames(page)
+    var method = syncronous ? doc.exportFile : doc.asynchronousExportFile
+    method.apply(doc, [ExportFormat.PDF_TYPE, outputFile, false, preset])
+    outputFiles.push(outputFile)
   }
-  return files
+  return outputFiles
 }
 
-function export_all_pages_as_jpeg(doc) {
+function exportEveryPageAsJPEG(doc) {
   var expPrefs = app.jpegExportPreferences
   expPrefs.jpegQuality = JPEGOptionsQuality.MEDIUM
   expPrefs.jpegExportRange = ExportRangeOrAllPages.EXPORT_RANGE
-  expPrefs.useDocumentBleeds = true
+  expPrefs.useDocumentBleeds = false
   expPrefs.exportingSpread = false
   expPrefs.exportResolution = 150
-  var files = []
+  var fileNames = _exportFileName(doc, 'jpg')
+  var outputFiles = []
   for (var i = 0; i < doc.pages.length; i++) {
     var page = doc.pages[i]
-    var file = exportToFile(doc, page.name, 'jpg')
     expPrefs.pageString = page.name
-    doc.exportFile(ExportFormat.JPG, file, false)
-    files.push(file)
+    var outputFile = fileNames(page)
+    doc.exportFile(ExportFormat.JPG, outputFile, false)
+    outputFiles.push(outputFile)
   }
-  log('foo')
-  return files
-}
-
-function postSaveExport(event) {
-  var doc = event.target
-  $.writeln(doc)
-  if (!(doc.constructor.name == 'Document' && doc.name.match(FILEPATTERN))) {
-    $.writeln('didnt match')
-    return
-  }
-  tryLogErrors(export_all_pages_as_pdf)(doc)
+  return outputFiles
 }
 
 function removeEventListeners(eventType) {
@@ -67,11 +78,6 @@ function removeEventListeners(eventType) {
   )(app)
 }
 
-function main() {
-  removeEventListeners(DocumentEvent.BEFORE_SAVE)
-  app.addEventListener(DocumentEvent.BEFORE_SAVE, postSaveExport)
-  $.writeln('added event listener')
-  postSaveExport({ target: app.activeDocument })
-}
+if (ifMain($.fileName)) asyncPdfExportListener()
 
 // vi: ft=javascript

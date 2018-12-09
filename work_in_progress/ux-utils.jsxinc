@@ -113,7 +113,7 @@ var uxColor = cond([
     pipe(
       match(/[0-9a-f]{2}/g),
       map(flip(parseInt)(16)),
-      map(mul(1 / 256))
+      map(mul(1 / 255))
     )
   ],
   [
@@ -121,7 +121,7 @@ var uxColor = cond([
     pipe(
       match(/[0-9a-f]{1}/g),
       map(flip(parseInt)(16)),
-      map(mul(1 / 16))
+      map(mul(1 / 15))
     )
   ],
   [T, add(' is invalid color')]
