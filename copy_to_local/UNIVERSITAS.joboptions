@@ -53,7 +53,7 @@
       1
     ]
   >>
-  /ColorImageDownsampleThreshold 1.50000
+  /ColorImageDownsampleThreshold 1
   /ColorImageDownsampleType /Bicubic
   /ColorImageFilter /DCTEncode
   /ColorImageMinDownsampleDepth 1
@@ -61,7 +61,7 @@
   /ColorImageMinResolutionPolicy /OK
   /ColorImageResolution 300
   /ColorSettingsFile ()
-  /CompatibilityLevel 1.4
+  /CompatibilityLevel 1.6
   /CompressObjects /Tags
   /CompressPages true
   /ConvertImagesToIndexed true
@@ -77,7 +77,7 @@
   >>
   /DetectBlends true
   /DetectCurves 0
-  /DoThumbnails false
+  /DoThumbnails true
   /DownsampleColorImages true
   /DownsampleGrayImages true
   /DownsampleMonoImages true
@@ -89,6 +89,7 @@
   /EncodeGrayImages true
   /EncodeMonoImages true
   /EndPage -1
+  /ExportLayers /ExportVisiblePrintableLayers
   /GrayACSImageDict <<
     /HSamples [
       1
@@ -121,7 +122,7 @@
       1
     ]
   >>
-  /GrayImageDownsampleThreshold 1.50000
+  /GrayImageDownsampleThreshold 1
   /GrayImageDownsampleType /Bicubic
   /GrayImageFilter /DCTEncode
   /GrayImageMinDownsampleDepth 2
@@ -155,12 +156,12 @@
   /MonoImageDict <<
     /K -1
   >>
-  /MonoImageDownsampleThreshold 1.50000
+  /MonoImageDownsampleThreshold 1
   /MonoImageDownsampleType /Bicubic
   /MonoImageFilter /CCITTFaxEncode
   /MonoImageMinResolution 1200
   /MonoImageMinResolutionPolicy /OK
-  /MonoImageResolution 1200
+  /MonoImageResolution 900
   /Namespace [
     (Adobe)
     (Common)
@@ -170,7 +171,7 @@
     true
   ]
   /OPM 1
-  /Optimize true
+  /Optimize false
   /OtherNamespaces [
     <<
       /AsReaderSpreads false
@@ -204,13 +205,13 @@
       ]
       /ConvertColors /ConvertToCMYK
       /DestinationProfileName (ISOnewspaper26v4)
-      /DestinationProfileSelector /WorkingCMYK
+      /DestinationProfileSelector /DocumentCMYK
       /Downsample16BitImages true
       /FlattenerPreset <<
         /PresetSelector /MediumResolution
       >>
       /FormElements false
-      /GenerateStructure true
+      /GenerateStructure false
       /IncludeBookmarks false
       /IncludeHyperlinks false
       /IncludeInteractive false
@@ -224,7 +225,7 @@
         (CreativeSuite)
         (2.0)
       ]
-      /PDFXOutputIntentProfileSelector /NA
+      /PDFXOutputIntentProfileSelector /DocumentCMYK
       /PageMarksFile /RomanDefault
       /PreserveEditing true
       /UntaggedCMYKHandling /UseDocumentProfile
@@ -280,9 +281,9 @@
   /PDFXCompliantPDFOnly false
   /PDFXNoTrimBoxError true
   /PDFXOutputCondition ()
-  /PDFXOutputConditionIdentifier ()
-  /PDFXOutputIntentProfile ()
-  /PDFXRegistryName ()
+  /PDFXOutputConditionIdentifier (CGATS TR 001)
+  /PDFXOutputIntentProfile (U.S. Web Coated \050SWOP\051 v2)
+  /PDFXRegistryName (http://www.color.org)
   /PDFXSetBleedBoxToMediaBox true
   /PDFXTrapped /False
   /PDFXTrimBoxToMediaBoxOffset [

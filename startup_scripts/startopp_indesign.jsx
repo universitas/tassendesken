@@ -1,5 +1,18 @@
 // Dette skriptet skal kjøre før indesign cs5.5+ starter.
 // Det kopierer en del filer fra serveren til hver enkelt mac eller pc
+
+function main() {
+  deleteFiles(folders.local.startup_scripts, '*.js*')
+  for (var n = 0; files_to_copy.length > n; n++) {
+    file = files_to_copy[n]
+    filename = file.filename
+    source = Folder(file.remotefolder)
+    destination = Folder(file.localfolder)
+    copyFiles(destination, source, filename)
+  }
+  app.colorSettings.cmsSettings = 'universitas' // sets the correct colour settings
+}
+
 function get_folders() {
   VERSION = app.version.substr(0, 3) // Versjon av InDesign der "8.0" er CS6.
   LANGUAGE = 'en_GB'
@@ -86,20 +99,6 @@ var files_to_copy = [
   }
 ]
 
-function main() {
-  deleteFiles(folders.local.startup_scripts, '*.js*')
-  for (var n = 0; files_to_copy.length > n; n++) {
-    file = files_to_copy[n]
-
-    filename = file.filename
-    source = Folder(file.remotefolder)
-    destination = Folder(file.localfolder)
-    copyFiles(destination, source, filename)
-  }
-
-  app.colorSettings.cmsSettings = 'universitas' // sets the correct colour settings
-}
-
 function copyFiles(localFolder, serverFolder, fileName) {
   // kopierer filer fra et sted (univ-desken) til et annet (brukerens område på den lokale maskina)
   if (!serverFolder.exists) {
@@ -112,7 +111,7 @@ function copyFiles(localFolder, serverFolder, fileName) {
   for (var j = 0; myFiles.length > j; j++) {
     var myFile = myFiles[j]
     if (myFile.name.substr(0, 2) == '._') {
-      continue;
+      continue
     }
     var funker = false
     var target = new File(localFolder + '/' + myFile.name)

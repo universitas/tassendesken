@@ -80,3 +80,5 @@ function splitDocument(doc, pages) {
 }
 
 if (ifMain($.fileName)) main()
+
+// vi: ft=javascript
