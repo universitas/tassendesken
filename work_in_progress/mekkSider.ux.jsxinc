@@ -1,6 +1,4 @@
 #script "user interface for page builder"
-// #target "indesign"
-// #targetengine "session"
 #include "../includes/index.jsxinc"
 #include "ux-utils.jsxinc"
 

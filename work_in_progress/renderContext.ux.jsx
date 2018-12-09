@@ -1,8 +1,6 @@
-// #script "user interface for page builder"
-// // #target "indesign"
-// // #targetengine "session"
-// #include "../includes/index.jsxinc"
-// #include "ux-utils.jsxinc"
+#script "user interface for page builder"
+#include "../includes/index.jsxinc"
+#include "ux-utils.jsxinc"
 
 function main(state, fetchData) {
   resourceString =

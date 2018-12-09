@@ -25,7 +25,7 @@ function scrollPanel(parent, maxHeight) {
   var content = panel.wrapper.content
   content.maximumSize.height = maxHeight || 500
   panel.scrollbar.onChanging = function scrollHandler() {
-    content.bounds.top = - panel.scrollbar.value * panel.outerHeight
+    content.bounds.top = -panel.scrollbar.value * panel.outerHeight
   }
   content.onDraw = function drawHandler() {
     var height = panel.size.height
@@ -63,9 +63,9 @@ function dataTable(parent, data) {
   }
 }
 
- /////////////////////////
- //  Utility functions  //
- /////////////////////////
+/////////////////////////
+//  Utility functions  //
+/////////////////////////
 
 var uxStyle = curry(function(style, element) {
   // set multiple ux properties on scriptui element

@@ -3,7 +3,7 @@ function pretty() {
   if [[ $# != 0 ]]; then files=$@; else files=(*.js*); fi
   sed -i 's|^#|//#|' $files
   prettier --parser babylon --write $files
-  sed -i 's|^//#|#|' $files
+  sed -i 's|^// *#|#|' $files
   sed -i 's/\(continue\|break\)$/\1;/' $files
 }
 

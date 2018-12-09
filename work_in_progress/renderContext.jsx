@@ -1,7 +1,6 @@
-// #script "document format templatestrings"
-// #target "indesign"
-// #targetengine "session"
-// #include "../includes/index.jsxinc"
+#script "document format templatestrings"
+#target "indesign"
+#include "../includes/index.jsxinc"
 
 function renderTemplate(doc, context) {
   app.scriptPreferences.enableRedraw = false
