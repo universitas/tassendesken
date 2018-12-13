@@ -1,0 +1,3 @@
+# for correct language detection on GitHub
+*.jsx linguist-language=javascript
+*.jsxinc linguist-language=javascript
