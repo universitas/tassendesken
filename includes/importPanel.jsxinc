@@ -1,4 +1,4 @@
-// Dette skriptet er brukergrensesnittet for import.jsx
+﻿// Dette skriptet er brukergrensesnittet for import.jsx
 // Viser et fint panel i InDesign der man kan velge hvilke saker fra prodsys som skal importeres
 #include index.jsxinc
 #target "indesign";
@@ -192,20 +192,21 @@ function importPanel(onImportClick) {
       minRad = listePanel.children[linje]
       minRad.prodsysSakerIndex = linje + listePanel.firstIndex
       minSak = prodsysSaker[minRad.prodsysSakerIndex]
+      black = [0, 0, 0]
       backGroundColor =
         minSak.produsert == STATUS.toDesk
-          ? minRad.prodsysSakerIndex % 2
-            ? [0.95, 0.95, 0.7]
-            : [1.0, 1.0, 0.65]
-          : minRad.prodsysSakerIndex % 2
-          ? [0.85, 0.85, 0.85]
-          : [0.9, 0.9, 0.9]
+          ? (minRad.prodsysSakerIndex % 2 ? [0.95, 0.95, 0.7] : [1.0, 1.0, 0.65])
+          : (minRad.prodsysSakerIndex % 2 ? [0.85, 0.85, 0.85] : [0.9, 0.9, 0.9])
 
       minRad.graphics.backgroundColor = minRad.graphics.newBrush(
         minRad.graphics.BrushType.SOLID_COLOR,
         backGroundColor
       )
-
+      minRad.graphics.foregroundColor = minRad.graphics.newPen(
+        minRad.graphics.PenType.SOLID_COLOR,
+        black,
+        1,
+      )
       // minrad.tittel
       sidetall = minSak.arbeidstittel.match(/side\s?(\d+)/i)
       if (sidetall === null) {
