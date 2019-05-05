@@ -2,16 +2,9 @@
 // Oppstartskriptene bruker ikke denne config-fila, så de må endres for seg.
 
 var config = {} // config-objektet
-$.writeln($.fileName)
-if ($.os.match('Macintosh')) {
-  config.rotMappe = '/univ-desken/' // Rotmappe for macOS
-  config.smallFont = ScriptUI.newFont('Lucida Grande', 'bold', 9) // litt mindre font enn standardstørrelsen
-} else {
-  config.rotMappe = '//kant.uio.no/div-universitas-desken/' // Rotmappe for Windows
-  config.smallFont = ScriptUI.newFont('Arial', 'regular', 9) // litt mindre font enn standardstørrelsen
-}
 
 config.rotMappe = new File($.fileName).parent.parent.fsName
+config.smallFont = ScriptUI.newFont('Arial', 'regular', 9) // litt mindre font enn standardstørrelsen
 
 config.api = {} // legg inn riktig api-innlogging i config_local.jsxinc
 config.api.HOST = 'HEMMELIG' // url til webapi
@@ -71,7 +64,7 @@ config.saksmaler = config.rotMappe + '/../UTTEGNER/MALER/Saksmaler.indl' // bibl
 config.saksmalLibrary = config.rotMappe + '/../UTTEGNER/MALER/Saksmaler.indl' // Biblioteket som saksmalene skal legges til
 config.mal_avis = config.rotMappe + '/../UTTEGNER/MALER/MAL_AVIS.indt' // Avismalen
 
-config.rotRegExp = new RegExp(config.rotMappe + '../') // brukes for å finne bildefiler
+config.rotRegExp = new RegExp('' + Folder(config.rotMappe).parent) // brukes for å finne bildefiler
 
 // sider som skal være i MAL_AVIS.indt  master: Navn på masterpage for
 // oppslaget (Må staves HELT korrekt), tomside: om oppslaget skal være tomt
@@ -92,4 +85,5 @@ config.avismal = [
   { master: 'A-Anmeldelser', tomside: false }, //anmeldelser og kulturplakat 22-23
   { master: 'B-Baksida', tomside: false } //baksida 24
 ]
+for (key in config) { $.writeln(key,': ',config[key]) }
 // vi: ft=javascript

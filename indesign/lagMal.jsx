@@ -1,27 +1,27 @@
-#target "indesign"
+﻿#target "indesign"
 #targetengine "session"
 #include ../includes/index.jsxinc
-#include ./loremipsum.jsx
 
 main()
 
 function main() {
-  // var LoremIpsumizeMe = true // endrer tekst til loremipsum hvis true, tar litt tid.
-  // var promptforLabel = false // Skriptet spør etter Label for hver saksmal
+  var loremIpsumizeMe = true // endrer tekst til loremipsum hvis true, tar litt tid.
+  var promptforLabel = false // Skriptet spør etter Label for hver saksmal
+  var addToLibrary = false // legg til i Saksmaler.indl
   // dokTools.clearSearch()
-  mekkMalGeo(app.selection)
+  mekkMalGeo(app.selection, promptforLabel, loremIpsumizeMe, addToLibrary)
   // tryLogErrors(mekkMalGeo, false)(app.selection, promptforLabel);
   // app.menuActions.item('$ID/Selection Tool').invoke()
 }
 
-function mekkMalGeo(selection) {
+function mekkMalGeo(selection, promptforLabel, loremIpsumizeMe, addToLibrary) {
   if (selection.length === 0) {
     return
   }
   var myPrompt = selection[0].label
   var sakstype = myPrompt
 
-  if (promptMe) {
+  if (promptforLabel) {
     if (myPrompt === '') {
       myPrompt = selection.length == 1 ? myPrompt : ''
       sakstype = prompt('Lag Geometri\rsakstype?', myPrompt) || ''
@@ -49,7 +49,7 @@ function mekkMalGeo(selection) {
     try {
       selection[n].label = ''
     } catch (e) {}
-    if (selection[n] instanceof TextFrame && LoremIpsumizeMe) {
+    if (selection[n] instanceof TextFrame && loremIpsumizeMe) {
       loremIpsumize(selection[n])
     }
     if (selection[n] instanceof Rectangle) {

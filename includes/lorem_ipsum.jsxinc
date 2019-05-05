@@ -1,4 +1,4 @@
-#target "indesign";
+﻿#target "indesign";
 #includepath "../includes/";
 #include "index.jsxinc";
 
@@ -45,12 +45,12 @@ function loremIpsumize(myText) {
     app.findGrepPreferences = NothingEnum.nothing
     app.changeGrepPreferences = NothingEnum.nothing
     app.findGrepPreferences.findWhat =
-      "[\\u\\l'@\u00E6\u00C6]{1," + loremWords.length + '}' // only looks for word-characters and leave punctuation, spaces as they are
+      "[\\u\\l'@\u00E6\u00C6]{1," + 10 + '}' // only looks for word-characters and leave punctuation, spaces as they are
 
     var storyLineNumber = myStory.lines.length // remembers how many lines the story has, and tries to make the new text the same number of lines
     var myWordMatches = myText.findGrep() // an array of Word references that fit the grep
     for (var i = myWordMatches.length - 1; i >= 0; i--)
-      myWordMatches[i].contents = loremipsumWord(myWordMatches[i].contents) // changes the word into a random latin-sounding one
+      myWordMatches[i].contents = loremIpsumWord(myWordMatches[i].contents) // changes the word into a random latin-sounding one
     fineTuneText(storyLineNumber)
   }
 
@@ -64,11 +64,11 @@ function loremIpsumize(myText) {
         var word = myWordMatches[i]
         var newWord
         if (targetNumberOfLines > actualLength) {
-          newWord = loremipsumWord(word.contents + 'a') // adds a letter
+          newWord = loremIpsumWord(word.contents + 'a') // adds a letter
         } else if (targetNumberOfLines < actualLength) {
           newWord =
             word.contents.length > 1
-              ? loremipsumWord(word.contents.slice(0, -1))
+              ? loremIpsumWord(word.contents.slice(0, -1))
               : word.contents // removes a letter
         } else {
           return true // targetNumberOfLines === myStory.lines.length

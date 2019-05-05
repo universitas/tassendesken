@@ -1,4 +1,4 @@
-// Dette skriptet skal kjøre før indesign cs5.5+ starter.
+﻿// Dette skriptet skal kjøre før indesign cs5.5+ starter.
 // Det kopierer en del filer fra serveren til hver enkelt mac eller pc
 
 function main() {
@@ -14,48 +14,33 @@ function main() {
 }
 
 function get_folders() {
-  VERSION = app.version.substr(0, 3) // Versjon av InDesign der "8.0" er CS6.
-  LANGUAGE = 'en_GB'
+  VERSION = app.version.match(/^\d+\.\d+/) // Versjon av InDesign der "8.0" er CS6.
+  LANGUAGE = $.locale
 
-  if ($.os.match('Macintosh')) {
-    DESKTOP = '~/Desktop'
-    PREF =
-      '~/Library/Preferences/Adobe InDesign/Version ' +
-      VERSION +
-      '/' +
-      LANGUAGE +
-      '/'
-    SETTINGS = '~/Library/Application Support/Adobe/'
-    SERVER = '/univ-desken/'
-  } else {
-    DESKTOP = Folder.desktop
-    PREF =
-      Folder.userData +
-      '/Adobe/InDesign/Version ' +
-      VERSION +
-      '/' +
-      LANGUAGE +
-      '/'
-    SETTINGS = Folder.userData + '/Adobe/'
-    SERVER = '//kant.uio.no/div-universitas-desken/'
-  }
+  DESKTOP = Folder.desktop
+  PREF = app.scriptPreferences.scriptsFolder.parent.parent
+  SETTINGS = Folder.userData + '/Adobe/'
+  SCRIPTS = File($.fileName).parent.parent
 
   folders = {
     local: {
-      keyboard_shortcuts: PREF + 'InDesign Shortcut Sets/',
-      startup_scripts: PREF + 'Scripts/Startup Scripts/',
-      script_panel: PREF + 'Scripts/Scripts Panel/',
+      keyboard_shortcuts: PREF + '/InDesign Shortcut Sets/',
+      startup_scripts: PREF + '/Scripts/Startup Scripts/',
+      script_panel: PREF + '/Scripts/Scripts Panel/',
       color_profile: SETTINGS + 'Color/Settings/',
       job_options: SETTINGS + 'Adobe PDF/Settings/',
       desktop: DESKTOP
     },
     server: {
-      libraries: SERVER + 'UTTEGNER/MALER/',
-      repo: SERVER + 'SCRIPTS/copy_to_local/',
-      includes: SERVER + 'SCRIPTS/includes/'
+      libraries: SCRIPTS + '/../UTTEGNER/MALER/',
+      repo: SCRIPTS + '/copy_to_local/',
+      includes: SCRIPTS + '/includes/'
     }
   }
-
+  for (var dir in folders.local) {
+      var folder = Folder(folders.local[dir])
+      $.writeln(folder, ' ', folder.exists)
+  }
   return folders
 }
 
@@ -102,7 +87,7 @@ var files_to_copy = [
 function copyFiles(localFolder, serverFolder, fileName) {
   // kopierer filer fra et sted (univ-desken) til et annet (brukerens område på den lokale maskina)
   if (!serverFolder.exists) {
-    throw 'er ikke koblet til univ-desken'
+    // throw 'er ikke koblet til univ-desken'
   }
   if (!localFolder.exists) {
     localFolder.create()

@@ -1,8 +1,20 @@
-#targetengine session
+﻿#targetengine session
 #includepath ../includes
 #include utils.jsxinc
 
 main()
+
+function curry(fn, args) {
+  // simple function currying
+  // ((a,b,c,...) -> d) -> a -> b -> c -> ... -> d
+  var boundArgs = args || []
+  return function() {
+    var args = concat(boundArgs, arguments)
+    if (args.length < fn.length) return curry(fn, args)
+    else return fn.apply(this, args)
+  }
+}
+
 function main() {
   var scripts_dir = 'SCRIPTS/indesign/'
   var menu_items = [
@@ -20,6 +32,10 @@ function main() {
     var desktop = Folder('~/Desktop/')
   } else { // Windows
     var server = '//kant.uio.no/div-universitas-desken/'
+    if (!server.exists) {
+        server = '/c/Shared/tassendesken/'
+        scripts_dir = 'indesign/'
+    }
     var desktop = Folder(Folder.desktop)
   }
   add_indesign_menu('Universitas', server + scripts_dir, menu_items)
@@ -41,6 +57,9 @@ function add_indesign_menu(menu_name, script_path, menu_items) {
   for (var n = 0; n < menu_items.length; n++) {
     var item_name = menu_items[n][0]
     var script_file = File(script_path + menu_items[n][1])
+    if (!script_file.exists) {
+        throw new Error('The file ' + script_file + ' was not found')
+    }
     var event_handler = make_event_handler(item_name, script_file)
     var menu_item = app.scriptMenuActions.add(item_name)
     menu_item.addEventListener('onInvoke', event_handler)
