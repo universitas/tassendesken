@@ -1,4 +1,4 @@
-﻿#target "indesign"
+#target "indesign"
 #targetengine "session"
 #include ../includes/index.jsxinc
 

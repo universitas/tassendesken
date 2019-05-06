@@ -1,8 +1,9 @@
 # bash function to use prettier with extendscript syntax
 function pretty() {
-  if [[ $# != 0 ]]; then files=$@; else files=(*.js*); fi
+  if [[ $# != 0 ]]; then files=$@; else files=$(echo *.js*); fi
+  sed -i '1s/^\xEF\xBB\xBF//' $files
   sed -i 's|^#|//#|' $files
-  prettier --parser babylon --write $files
+  prettier --parser babel --write $files
   sed -i 's|^// *#|#|' $files
   sed -i 's/\(continue\|break\)$/\1;/' $files
 }

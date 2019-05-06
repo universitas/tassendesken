@@ -1,4 +1,4 @@
-﻿// Diverse konstanter for å konfigurere skriptene. De fleste trivielle endringer skal kunne gjøres i denne fila.
+// Diverse konstanter for å konfigurere skriptene. De fleste trivielle endringer skal kunne gjøres i denne fila.
 // Oppstartskriptene bruker ikke denne config-fila, så de må endres for seg.
 
 var config = {} // config-objektet
@@ -85,5 +85,7 @@ config.avismal = [
   { master: 'A-Anmeldelser', tomside: false }, //anmeldelser og kulturplakat 22-23
   { master: 'B-Baksida', tomside: false } //baksida 24
 ]
-for (key in config) { $.writeln(key,': ',config[key]) }
+for (key in config) {
+  $.writeln(key, ': ', config[key])
+}
 // vi: ft=javascript

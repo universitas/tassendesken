@@ -1,4 +1,4 @@
-﻿#include "base64.jsxinc"
+#include "base64.jsxinc"
 #include "functional_programming.jsxinc"
 #include "utils.jsxinc"
 #include "dokTools.jsxinc"

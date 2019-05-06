@@ -1,4 +1,4 @@
-﻿// Dette skriptet skal kjøre før indesign cs5.5+ starter.
+// Dette skriptet skal kjøre før indesign cs5.5+ starter.
 // Det kopierer en del filer fra serveren til hver enkelt mac eller pc
 
 function main() {
@@ -38,8 +38,8 @@ function get_folders() {
     }
   }
   for (var dir in folders.local) {
-      var folder = Folder(folders.local[dir])
-      $.writeln(folder, ' ', folder.exists)
+    var folder = Folder(folders.local[dir])
+    $.writeln(folder, ' ', folder.exists)
   }
   return folders
 }
@@ -96,7 +96,7 @@ function copyFiles(localFolder, serverFolder, fileName) {
   for (var j = 0; myFiles.length > j; j++) {
     var myFile = myFiles[j]
     if (myFile.name.substr(0, 2) == '._') {
-      continue
+      continue;
     }
     var funker = false
     var target = new File(localFolder + '/' + myFile.name)

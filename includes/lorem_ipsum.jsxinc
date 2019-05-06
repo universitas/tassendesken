@@ -1,4 +1,4 @@
-﻿#target "indesign";
+#target "indesign";
 #includepath "../includes/";
 #include "index.jsxinc";
 
@@ -44,8 +44,7 @@ function loremIpsumize(myText) {
   } else if (myText.contents !== '') {
     app.findGrepPreferences = NothingEnum.nothing
     app.changeGrepPreferences = NothingEnum.nothing
-    app.findGrepPreferences.findWhat =
-      "[\\u\\l'@\u00E6\u00C6]{1," + 10 + '}' // only looks for word-characters and leave punctuation, spaces as they are
+    app.findGrepPreferences.findWhat = "[\\u\\l'@\u00E6\u00C6]{1," + 10 + '}' // only looks for word-characters and leave punctuation, spaces as they are
 
     var storyLineNumber = myStory.lines.length // remembers how many lines the story has, and tries to make the new text the same number of lines
     var myWordMatches = myText.findGrep() // an array of Word references that fit the grep

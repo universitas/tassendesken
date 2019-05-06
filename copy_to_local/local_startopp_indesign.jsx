@@ -1,4 +1,4 @@
-﻿#targetengine session
+#targetengine session
 #includepath ../includes
 #include utils.jsxinc
 
@@ -30,11 +30,12 @@ function main() {
   if ($.os.match('Macintosh')) {
     var server = '/univ-desken/'
     var desktop = Folder('~/Desktop/')
-  } else { // Windows
+  } else {
+    // Windows
     var server = '//kant.uio.no/div-universitas-desken/'
     if (!server.exists) {
-        server = '/c/Shared/tassendesken/'
-        scripts_dir = 'indesign/'
+      server = '/c/Shared/tassendesken/'
+      scripts_dir = 'indesign/'
     }
     var desktop = Folder(Folder.desktop)
   }
@@ -43,22 +44,23 @@ function main() {
 }
 
 function make_event_handler(name, file) {
-  return tryLogErrors(function() { app.doScript(file) }, true)
+  return tryLogErrors(function() {
+    app.doScript(file)
+  }, true)
 }
 
 function add_indesign_menu(menu_name, script_path, menu_items) {
   // lager en meny i Indesign for egne skripts
-  
+
   var existing_menu = app.menus.item('$ID/Main').submenus.item(menu_name)
-  if (existing_menu.isValid) 
-    existing_menu.remove() // sletter menyen og fjerner det som måtte være der fra før av
+  if (existing_menu.isValid) existing_menu.remove() // sletter menyen og fjerner det som måtte være der fra før av
   var new_menu = app.menus.item('$ID/Main').submenus.add(menu_name)
 
   for (var n = 0; n < menu_items.length; n++) {
     var item_name = menu_items[n][0]
     var script_file = File(script_path + menu_items[n][1])
     if (!script_file.exists) {
-        throw new Error('The file ' + script_file + ' was not found')
+      throw new Error('The file ' + script_file + ' was not found')
     }
     var event_handler = make_event_handler(item_name, script_file)
     var menu_item = app.scriptMenuActions.add(item_name)
@@ -74,7 +76,7 @@ function add_indesign_menu(menu_name, script_path, menu_items) {
       if (myItem.isValid) myItem.remove()
       myItem = app.scriptMenuActions.add(item_name)
       myItem.addEventListener('onInvoke', script_file)
-      if (condition())  new_menu.menuItems.add(myItem) 
+      if (condition()) new_menu.menuItems.add(myItem)
     }
     return func
   }
@@ -92,7 +94,8 @@ function add_indesign_menu(menu_name, script_path, menu_items) {
     check_file_open(/saksmaler/i)
   )
 
-  var myDokListener = new_menu.addEventListener('beforeDisplay',
+  var myDokListener = new_menu.addEventListener(
+    'beforeDisplay',
     aktiver_greia,
     false
   )
@@ -101,8 +104,10 @@ function add_indesign_menu(menu_name, script_path, menu_items) {
 
 function open_indesign_libraries(folder) {
   // åpner alle libraries på desktoppen
-  app.scriptPreferences.userInteractionLevel = UserInteractionLevels.NEVER_INTERACT
+  app.scriptPreferences.userInteractionLevel =
+    UserInteractionLevels.NEVER_INTERACT
   app.open(folder.getFiles('*.indl'))
-  app.scriptPreferences.userInteractionLevel = UserInteractionLevels.INTERACT_WITH_ALL
+  app.scriptPreferences.userInteractionLevel =
+    UserInteractionLevels.INTERACT_WITH_ALL
 }
 // vi: ft=javascript
