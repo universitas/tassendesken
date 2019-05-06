@@ -2,11 +2,10 @@
 #includepath ../includes
 #include utils.jsxinc
 
-var SCRIPTDIR = '%SCRIPTDIR%'  // will be replaced by install script
+var SCRIPTDIR = '%SCRIPTDIR%' // will be replaced by install script
 main()
 
 function main() {
-
   var menu_items = [
     // skript som skal ha egne menyvalg
     ['Importer fra prodsys', 'import.jsx'],
@@ -17,7 +16,7 @@ function main() {
     ['Lag spaltestreker', 'spaltestreker.jsx']
   ]
   var desktop = Folder(Folder.desktop)
-  var menu_scripts_dir =  Folder(SCRIPTDIR + '/indesign/')
+  var menu_scripts_dir = Folder(SCRIPTDIR + '/indesign/')
   add_indesign_menu('Universitas', menu_scripts_dir, menu_items)
   open_indesign_libraries(desktop)
 }

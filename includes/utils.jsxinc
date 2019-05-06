@@ -1,6 +1,5 @@
 // Helper functions for logging and page element manipulation
 
-
 function curry(fn, args) {
   // simple function currying
   // ((a,b,c,...) -> d) -> a -> b -> c -> ... -> d
@@ -331,7 +330,7 @@ function sed(source, destination, needle, replacement) {
   }
   open_ok = destination.open('w')
   if (!open_ok) {
-    throw new Error('Cannot open ' + destination )
+    throw new Error('Cannot open ' + destination)
   }
   destination.write(content)
   destination.close()

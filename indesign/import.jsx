@@ -633,7 +633,8 @@ function artikkel(JSONsak, somArtikkelType, mySpread, mySelection) {
       if (j > 0) targetStory.insertionPoints[-1].contents = '\r'
       targetStory.insertionPoints[-1].contents = avsnitt.contents
       // TODO: finn ut hvorfor ikke det er avsnittstil?
-      if (avsnittstil) targetStory.paragraphs[-1].appliedParagraphStyle = avsnittstil
+      if (avsnittstil)
+        targetStory.paragraphs[-1].appliedParagraphStyle = avsnittstil
       dokTools.removeWhiteSpace(targetStory)
     }
   }
