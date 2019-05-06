@@ -547,6 +547,7 @@ var eksportTilProdsys = function(myDoc) {
         // hvis storyen er i en textframe
         myRow.visTekstButton.onClick = (function(myObject) {
           return function() {
+            app.select(myObject)
             dokTools.zoomTo(myObject) // zoom til storyens første textframe
           }
         })(myRow.textFrame)
@@ -579,7 +580,7 @@ var eksportTilProdsys = function(myDoc) {
 
     panel2.avbrytButton.onClick = function() {
       myDialog.close()
-      eksporter(eksportSaker)
+      //eksporter(eksportSaker)
     }
     myDialog.show()
   }

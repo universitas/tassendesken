@@ -1,4 +1,4 @@
-﻿// Bootstrap script for Indesign 
+// Bootstrap script for Indesign 
 // kjør install.jsx som admin for å installere
 
 // på windows/CS5.5 Skal ligge i mappa

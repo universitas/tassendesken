@@ -2,21 +2,11 @@
 #includepath ../includes
 #include utils.jsxinc
 
+var SCRIPTDIR = '%SCRIPTDIR%'  // will be replaced by install script
 main()
 
-function curry(fn, args) {
-  // simple function currying
-  // ((a,b,c,...) -> d) -> a -> b -> c -> ... -> d
-  var boundArgs = args || []
-  return function() {
-    var args = concat(boundArgs, arguments)
-    if (args.length < fn.length) return curry(fn, args)
-    else return fn.apply(this, args)
-  }
-}
-
 function main() {
-  var scripts_dir = 'SCRIPTS/indesign/'
+
   var menu_items = [
     // skript som skal ha egne menyvalg
     ['Importer fra prodsys', 'import.jsx'],
@@ -26,20 +16,9 @@ function main() {
     ['Lag saksmal', 'lagMal.jsx'],
     ['Lag spaltestreker', 'spaltestreker.jsx']
   ]
-
-  if ($.os.match('Macintosh')) {
-    var server = '/univ-desken/'
-    var desktop = Folder('~/Desktop/')
-  } else {
-    // Windows
-    var server = '//kant.uio.no/div-universitas-desken/'
-    if (!server.exists) {
-      server = '/c/Shared/tassendesken/'
-      scripts_dir = 'indesign/'
-    }
-    var desktop = Folder(Folder.desktop)
-  }
-  add_indesign_menu('Universitas', server + scripts_dir, menu_items)
+  var desktop = Folder(Folder.desktop)
+  var menu_scripts_dir =  Folder(SCRIPTDIR + '/indesign/')
+  add_indesign_menu('Universitas', menu_scripts_dir, menu_items)
   open_indesign_libraries(desktop)
 }
 
@@ -58,7 +37,7 @@ function add_indesign_menu(menu_name, script_path, menu_items) {
 
   for (var n = 0; n < menu_items.length; n++) {
     var item_name = menu_items[n][0]
-    var script_file = File(script_path + menu_items[n][1])
+    var script_file = File(script_path + '/' + menu_items[n][1])
     if (!script_file.exists) {
       throw new Error('The file ' + script_file + ' was not found')
     }

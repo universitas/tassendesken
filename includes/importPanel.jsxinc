@@ -193,15 +193,15 @@ function importPanel(onImportClick) {
       minRad.prodsysSakerIndex = linje + listePanel.firstIndex
       minSak = prodsysSaker[minRad.prodsysSakerIndex]
       black = [0, 0, 0]
-      backGroundColor =
-        minSak.produsert == STATUS.toDesk
-          ? minRad.prodsysSakerIndex % 2
+      if (minSak.produsert == STATUS.toDesk) {
+        backGroundColor = minRad.prodsysSakerIndex % 2
             ? [0.95, 0.95, 0.7]
             : [1.0, 1.0, 0.65]
-          : minRad.prodsysSakerIndex % 2
+      } else {
+          backGroundColor = minRad.prodsysSakerIndex % 2
           ? [0.85, 0.85, 0.85]
           : [0.9, 0.9, 0.9]
-
+      }
       minRad.graphics.backgroundColor = minRad.graphics.newBrush(
         minRad.graphics.BrushType.SOLID_COLOR,
         backGroundColor

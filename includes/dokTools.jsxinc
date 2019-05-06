@@ -4,7 +4,9 @@ dokTools.velgStil = function(doc, type, name) {
   // velger en paragraph-, cell-, table-, eller characterStyle, og oppretter en
   // ny hvis den ikke finnes
   var styles = doc[type + 'Styles']
-  return styles.itemByName(name) || styles.add({ name: name })
+  // name = name.replace(/@/g, "")
+  var style = styles.itemByName(name)
+  return style.isValid ? style : styles.add({ name: name })
 }
 
 dokTools.sjekkOverlapp = function(spread, GB) {
@@ -298,7 +300,7 @@ dokTools.zoomOut = function(pageIndex) {
 dokTools.zoomTo = function(myObj) {
   // snedig måte å zoome til et objekt på siden som har geometricBounds.
 
-  if (!app.scriptPreferences.enableRedraw) return
+  // if (!app.scriptPreferences.enableRedraw) return
 
   var marg = 10 // ekstra luft i mm på arket
   var maxZoom = 150 // max innzooming i %
@@ -334,15 +336,15 @@ dokTools.zoomTo = function(myObj) {
     myZoomP = myWindow.zoomPercentage * zoomRatio
     myZoomP = Math.min(myZoomP, maxZoom) // sørger for at innzoomingen ikke er større enn maxZoom<
   }
-  //~   var selection = app.selection
-  //~   var redraw = app.scriptPreferences.enableRedraw
-  //~   app.scriptPreferences.enableRedraw = true
+  var selection = app.selection
+  var redraw = app.scriptPreferences.enableRedraw
+  app.scriptPreferences.enableRedraw = true
 
   app.select(myObj) // myObj blir selektert slik at det havner i midten av zoomen
   myWindow.zoomPercentage = myZoomP // zoomer inn på objektet
-  //~   $.sleep(50)
-  //~   app.selection = selection
-  //~   app.scriptPreferences.enableRedraw = redraw
+  $.sleep(50)
+  app.selection = selection
+  app.scriptPreferences.enableRedraw = redraw
 }
 
 dokTools.onPage = function(item) {

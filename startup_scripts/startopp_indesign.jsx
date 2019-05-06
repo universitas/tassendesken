@@ -1,6 +1,8 @@
 // Dette skriptet skal kjøre før indesign cs5.5+ starter.
 // Det kopierer en del filer fra serveren til hver enkelt mac eller pc
 
+#include ../includes/utils.jsxinc
+
 function main() {
   deleteFiles(folders.local.startup_scripts, '*.js*')
   for (var n = 0; files_to_copy.length > n; n++) {
@@ -8,7 +10,7 @@ function main() {
     filename = file.filename
     source = Folder(file.remotefolder)
     destination = Folder(file.localfolder)
-    copyFiles(destination, source, filename)
+    copyFiles(destination, source, filename, file.replace)
   }
   app.colorSettings.cmsSettings = 'universitas' // sets the correct colour settings
 }
@@ -39,7 +41,6 @@ function get_folders() {
   }
   for (var dir in folders.local) {
     var folder = Folder(folders.local[dir])
-    $.writeln(folder, ' ', folder.exists)
   }
   return folders
 }
@@ -65,12 +66,8 @@ var files_to_copy = [
   {
     filename: 'local_startopp_indesign.jsx', // indesign startup script
     localfolder: folders.local.startup_scripts,
-    remotefolder: folders.server.repo
-  },
-  {
-    filename: 'local_*.jsx', // scripts to indesign script panel
-    localfolder: folders.local.script_panel,
-    remotefolder: folders.server.repo
+    remotefolder: folders.server.repo,
+    replace: true,
   },
   {
     filename: '*.csf', // color profile
@@ -84,7 +81,7 @@ var files_to_copy = [
   }
 ]
 
-function copyFiles(localFolder, serverFolder, fileName) {
+function copyFiles(localFolder, serverFolder, fileName, replace) {
   // kopierer filer fra et sted (univ-desken) til et annet (brukerens område på den lokale maskina)
   if (!serverFolder.exists) {
     // throw 'er ikke koblet til univ-desken'
@@ -93,6 +90,7 @@ function copyFiles(localFolder, serverFolder, fileName) {
     localFolder.create()
   }
   var myFiles = serverFolder.getFiles(fileName)
+  var SCRIPTDIR = File($.fileName).parent.parent
   for (var j = 0; myFiles.length > j; j++) {
     var myFile = myFiles[j]
     if (myFile.name.substr(0, 2) == '._') {
@@ -100,8 +98,13 @@ function copyFiles(localFolder, serverFolder, fileName) {
     }
     var funker = false
     var target = new File(localFolder + '/' + myFile.name)
+    $.writeln(myFile.name)
     if (!target.exists || (target.exists && target.length != myFile.length)) {
-      funker = myFile.copy(target)
+      if (replace) {
+        sed(myFile, target, /%SCRIPTDIR%/, SCRIPTDIR)
+      } else {
+          myFile.copy(target)
+      }
     }
   }
 }

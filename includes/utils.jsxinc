@@ -1,5 +1,17 @@
 // Helper functions for logging and page element manipulation
 
+
+function curry(fn, args) {
+  // simple function currying
+  // ((a,b,c,...) -> d) -> a -> b -> c -> ... -> d
+  var boundArgs = args || []
+  return function() {
+    var args = concat(boundArgs, arguments)
+    if (args.length < fn.length) return curry(fn, args)
+    else return fn.apply(this, args)
+  }
+}
+
 $.clear = function() {
   $.writeln(Array(30000).join(' '))
 }
@@ -68,8 +80,8 @@ function issueFolder(issueNumber) {
 function ifMain(filename) {
   if (typeof filename == 'undefined')
     throw new Error('you must pass in file name `ifMain($.fileName)`')
-
-  var topOfStack = $.stack.split('\n')[0].replace(/[\[\]\s]/g, '')
+  var stack = reject(test(/Event/), $.stack.split('\n'))
+  var topOfStack = stack[0].replace(/[\[\]\s]/g, '')
   var currentFile = filename.replace(/^.*\//, '')
   return currentFile === topOfStack
 }
@@ -305,6 +317,27 @@ function objectKeys(obj) {
   return result
 }
 
+// copy with replacement, kinda like posix sed program
+// (file, file, regex, string) -> void
+function sed(source, destination, needle, replacement) {
+  var open_ok = source.open('r')
+  if (!open_ok) {
+    throw Error('Cannot open ' + source + '! Does file exist?')
+  }
+  var content = source.read()
+  source.close()
+  if (needle) {
+    content = content.replace(needle, replacement)
+  }
+  open_ok = destination.open('w')
+  if (!open_ok) {
+    throw new Error('Cannot open ' + destination )
+  }
+  destination.write(content)
+  destination.close()
+}
+
+// pretty print javascript objects
 function pp(obj) {
   return pipe(
     when(

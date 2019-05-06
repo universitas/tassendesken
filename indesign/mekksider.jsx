@@ -11,7 +11,7 @@ var mekkfilerPanel = {
     var myPages = myDoc.pages.everyItem().getElements()
     var utgaveNr = utgave()
     var myFolder = Folder(
-      config.rotMappe + ('0' + utgaveNr).slice(-2) + '/INDESIGN/'
+      Folder(config.rotMappe).parent + '/' + ('0' + utgaveNr).slice(-2) + '/INDESIGN/'
     )
     if (false === myFolder.exists) {
       myFolder.create()

@@ -8,7 +8,7 @@
 #include "mekkSider.ux.jsxinc"
 #include "split_document.jsxinc"
 
-config.mal_avis = 'MAL_AVIS.indt'
+//config.mal_avis = 'MAL_AVIS.indt'
 
 function main() {
   switch (app.documents.length) {

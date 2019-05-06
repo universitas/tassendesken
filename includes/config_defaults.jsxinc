@@ -85,7 +85,5 @@ config.avismal = [
   { master: 'A-Anmeldelser', tomside: false }, //anmeldelser og kulturplakat 22-23
   { master: 'B-Baksida', tomside: false } //baksida 24
 ]
-for (key in config) {
-  $.writeln(key, ': ', config[key])
-}
+
 // vi: ft=javascript

@@ -65,11 +65,11 @@ D web mt,mt
 D web txt 1,txt
 D web txt 2,txt
 F ingress,ing
-F sidehenvisning
+F sidehenvisning,SLETT
 F stikktit,stikktit
 F tit,tit
 F tit liten,ing
-K minstudietid
+K minstudietid,SLETT
 K notis,txt
 K stikktit,stikktit
 K tit 30,tit

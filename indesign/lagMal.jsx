@@ -1,6 +1,7 @@
 #target "indesign"
 #targetengine "session"
 #include ../includes/index.jsxinc
+#include ../includes/lorem_ipsum.jsxinc
 
 main()
 

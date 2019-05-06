@@ -30,6 +30,7 @@ function scrollPanel(parent, maxHeight) {
   content.onDraw = function drawHandler() {
     var height = panel.size.height
     if (panel.outerHeight == height) return
+    if (content.children.length == 0) return
     var first = content.children[0]
     var last = content.children[content.children.length - 1]
     panel.outerHeight = height
