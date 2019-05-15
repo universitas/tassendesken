@@ -5,7 +5,12 @@ function pretty() {
   sed -i 's|^#|//#|' $files
   prettier --parser babel --write $files
   sed -i 's|^// *#|#|' $files
-  sed -i 's/\(continue\|break\)$/\1;/' $files
+  # remove carrage returns and other trailing spaces
+  sed -i 's/\s*$//' $files
+  # make sure contnue and break is followed by semicolon
+  sed -i 's/\(continue\|break\)\s*$/\1;/' $files
+  # remove BOM
+  sed -i '1s/^\xEF\xBB\xBF//' $files
 }
 
 # vi:ft=sh

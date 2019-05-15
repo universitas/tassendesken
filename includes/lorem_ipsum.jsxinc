@@ -103,7 +103,7 @@ function sameCase(a, b) {
 function loremIpsumWord(word) {
   // prettier-ignore
   var loremWords = [
-    [''], 
+    [''],
     ['i', 'a', 'u'],
     [ 'yo', 'eu', 'ut', 'up', 'sa', 'fo', 'go', 'we', 'ac', 'at', 'to', 'im',
       'oo', 'in', 'of', 'it', 'ma', 'my', 'mi', 'et', 'da' ],
@@ -139,7 +139,7 @@ function loremIpsumWord(word) {
       'vulputate', 'pretizzle', 'phasellus', 'tristique', 'curabitur',
       'facilisis', 'dictizzle', 'elementum', 'tellizzle', 'tortizzle',
       'tempizzle', 'nullizzle', 'mollizzle', 'maurizzle', 'mattizzle',
-      'malesuada', 'fringilla', 'feugizzle' ], 
+      'malesuada', 'fringilla', 'feugizzle' ],
     [ 'iaculizzle', 'euismizzle', 'parturient', 'dapibizzle', 'vestibulum',
       'rhoncizzle', 'aliquizzle', 'integizzle', 'adipiscing', 'shackalack' ],
     [ 'pulvinizzle', 'ultricizzle', 'sagittizzle', 'maecenizzle',

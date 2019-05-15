@@ -74,7 +74,7 @@ function mkdir(folder) {
 function issueFolder(issueNumber) {
   // Number -> String
   if (typeof config == 'undefined')
-     var config = {rotMappe: File($.fileName).parent.parent}
+    var config = { rotMappe: File($.fileName).parent.parent }
   return Folder(config.rotMappe + '/../' + zeroPad(2)(issueNumber))
 }
 
@@ -103,7 +103,8 @@ function titleCase(str) {
 
 function currentIssue(root) {
   // Finner kommende currentIssue av avisa ved å lete etter mappe med høyest tall.
-  for (var i = 50; i > 0; i--) if (Folder(root + '/../' + zeroPad(2)(i)).exists) return i
+  for (var i = 50; i > 0; i--)
+    if (Folder(root + '/../' + zeroPad(2)(i)).exists) return i
   throw new Error('could not find folder')
 }
 
@@ -200,7 +201,7 @@ function toUnicode(theString) {
 // Object -> Object
 function serializeObject(obj) {
   // make object serializable
-  if (typeof uneval === 'undefined') var uneval = String
+  // if (typeof uneval === 'undefined') var uneval = String
   if (obj === undefined || obj === null) return null
   switch (obj.constructor.name) {
     case 'String':

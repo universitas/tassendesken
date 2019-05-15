@@ -40,7 +40,7 @@ function renderContextDialog(state, context, callback) {
   uxStyle({ fg: 0.4 }, w.thead)
   uxStyle({ bg: 0.98 }, w.scrollPanel)
   w.buttons.cancel.onClick = function() {
-    pp(w.state)
+    // pp(w.state)
     w.close()
   }
   w.buttons.accept.onClick = function() {
@@ -48,8 +48,9 @@ function renderContextDialog(state, context, callback) {
     w.close()
   }
   w.buttons.context.onClick = function() {
-    prompt('', jsonify(context, 2), 'context fra prodsys')
+    infoWindow(jsonify(context, 2), 'context fra prodsys')
   }
+
   w.onResize = function(e) {
     w.layout.resize()
   }
@@ -63,6 +64,31 @@ function renderContextDialog(state, context, callback) {
   w.render()
   w.show()
   return w
+}
+
+var infoWindow = function(message, title) {
+  // melding i et edittext-felt
+  var d = new Window('dialog', title)
+  var f = d.graphics.font
+  d.top = d.add('group')
+  d.top.orientation = 'row'
+  d.right = d.top.add('group', undefined)
+  d.right.orientation = 'column'
+  d.rom = d.right.add('edittext', undefined, message, {
+    readonly: true,
+    borderless: false,
+    multiline: true,
+    scrollable: true
+  })
+  d.rom.graphics.font = ScriptUI.newFont(f.name, f.style, f.size - 2)
+  d.rom.preferredSize = [300, 600]
+  d.rom.alignment = 'fill'
+  d.rom.active = false
+  d.ok = d.add('button', undefined, 'Lukk', {
+    name: 'ok'
+  })
+  d.ok.alignment = 'right'
+  d.show()
 }
 
 function _changeListRow(parent, state) {
@@ -83,6 +109,12 @@ function _changeListRow(parent, state) {
   row.val.onChange()
   return row
 }
+
+// take a list of dotted path strings and value pairs and return nested object
+// [[k, v]] -> {k: v|{k: v}}
+var unbuildChangeList = reduce(function(acc, pair) {
+  return assocPath(split('.', pair[0]), pair[1], acc)
+}, {})
 
 if (ifMain($.fileName)) {
   var INITIAL_STATE = {
@@ -122,7 +154,11 @@ if (ifMain($.fileName)) {
     $.clear()
     pp(data)
   }
-  renderContextDialog(INITIAL_STATE, {foo:'bar'}, callback)
+  renderContextDialog(
+    INITIAL_STATE,
+    unbuildChangeList(INITIAL_STATE.changeList),
+    callback
+  )
 }
 
 // vi: ft=javascript

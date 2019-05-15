@@ -70,8 +70,7 @@ function fromPairs(pairs) {
 
 var len = function(val) {
   // a -> Number
-  if (is(Object, val))
-    return keys(val).length
+  if (is(Object, val)) return keys(val).length
   return val.length
 }
 
@@ -217,7 +216,17 @@ function assoc(name, val) {
   // (k, v) -> obj -> obj
   var c = {}
   c[name] = val
-  return mergeRight(c)
+  return function(obj) {
+    if (is(Array)(obj)) {
+      var arr = obj.slice()
+      arr[name] = val
+      return arr
+    } else {
+      var c = {}
+      c[name] = val
+      return merge(obj, c)
+    }
+  }
 }
 
 function bind(fn, args) {
@@ -692,4 +701,27 @@ var toLower = function(s) {
   return ('' + s).toLowerCase()
 }
 
+// WIP
+var assocPath = curry(function(path, value, obj) {
+  var first = head(path)
+  var rest = tail(path)
+  if (len(rest) == 0) {
+    return assoc(first, value)(obj)
+  } else {
+    var nested = prop(first)(obj)
+    if (typeof nested !== 'object') nested = is(Number)(head(rest)) ? [] : {}
+    nested = setPath(rest, value, nested)
+    return assoc(first, nested)(obj)
+  }
+})
+
+var unFlatten = function(list) {
+  var fn = function(acc, pair) {
+    return assocPath(split('.', pair[0]), pair[1], acc)
+  }
+  return reduce(fn, {})(list)
+}
+
+// pp(unFlatten(chlist))
+// pp(assocPath(['foo', 0, 'b', 0], 'hello', {'foo':'bar'}))
 // vi: ft=javascript
