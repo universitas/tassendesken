@@ -110,5 +110,5 @@ if (ifMain($.fileName))
     [],
     UndoModes.ENTIRE_SCRIPT,
     'eksporter'
-  ) 
+  )
 // vi: ft=javascript

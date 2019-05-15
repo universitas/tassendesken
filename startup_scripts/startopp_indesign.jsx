@@ -67,7 +67,7 @@ var files_to_copy = [
     filename: 'local_startopp_indesign.jsx', // indesign startup script
     localfolder: folders.local.startup_scripts,
     remotefolder: folders.server.repo,
-    replace: true,
+    replace: true
   },
   {
     filename: '*.csf', // color profile
@@ -102,7 +102,7 @@ function copyFiles(localFolder, serverFolder, fileName, replace) {
       if (replace) {
         sed(myFile, target, /%SCRIPTDIR%/, SCRIPTDIR)
       } else {
-          myFile.copy(target)
+        myFile.copy(target)
       }
     }
   }

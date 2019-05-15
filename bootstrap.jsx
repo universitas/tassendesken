@@ -1,4 +1,4 @@
-// Bootstrap script for Indesign 
+// Bootstrap script for Indesign
 // kjør install.jsx som admin for å installere
 
 // på windows/CS5.5 Skal ligge i mappa
@@ -8,13 +8,15 @@
 // på windows/CC skal ligge i mappe
 // C:\Program Files (x86)\Common Files\Adobe\Startup Scripts CC\Adobe InDesign\
 
-var SCRIPTDIR = '%SCRIPTDIR%'  // will be replaced by install script
+var SCRIPTDIR = '%SCRIPTDIR%' // will be replaced by install script
 
 function main() {
   var appName = getAppName()
-  if (!appName) return;
-  var scriptFile = new File(SCRIPTDIR + '/startup_scripts/startopp_' + appName + '.jsx')
-  if (!scriptFile.exists) return;
+  if (!appName) return
+  var scriptFile = new File(
+    SCRIPTDIR + '/startup_scripts/startopp_' + appName + '.jsx'
+  )
+  if (!scriptFile.exists) return
   $.evalFile(scriptFile)
 }
 
@@ -22,7 +24,7 @@ function getAppName() {
   if (BridgeTalk.appSpecifier.match('indesign')) {
     // Kjører dette skriptet hvis det er InDesign som åpnes,
     // men bare i #engine = "main"
-    return ($.engineName == 'main') ? 'indesign' : null
+    return $.engineName == 'main' ? 'indesign' : null
   } else return BridgeTalk.appName
 }
 
