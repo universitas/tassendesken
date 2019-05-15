@@ -74,7 +74,9 @@ function mkdir(folder) {
 
 function issueFolder(issueNumber) {
   // Number -> String
-  return config.rotMappe + zeroPad(2)(issueNumber)
+  if (typeof config == 'undefined')
+     var config = {rotMappe: File($.fileName).parent.parent}
+  return Folder(config.rotMappe + '/../' + zeroPad(2)(issueNumber))
 }
 
 function ifMain(filename) {
@@ -102,7 +104,7 @@ function titleCase(str) {
 
 function currentIssue(root) {
   // Finner kommende currentIssue av avisa ved å lete etter mappe med høyest tall.
-  for (var i = 50; i > 0; i--) if (Folder(path + zeroPad(2)(i)).exists) return i
+  for (var i = 50; i > 0; i--) if (Folder(root + '/../' + zeroPad(2)(i)).exists) return i
   throw new Error('could not find folder')
 }
 

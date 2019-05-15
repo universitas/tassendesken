@@ -18,7 +18,8 @@ function buildChangeList(doc, context) {
   // (Document, {k: v|{k:v}}) -> [[k, v]]
   var kx = sort()(_findPlaceHolders(doc))
   var vx = map(flip(dotProp)(context))(kx)
-  return zip(kx, vx)
+  var changeList = zip(kx, vx)
+  return changeList
 }
 
 function _changePlaceHolders(doc, changeList) {

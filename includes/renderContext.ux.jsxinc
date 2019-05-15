@@ -2,7 +2,7 @@
 #include "../includes/index.jsxinc"
 #include "ux-utils.jsxinc"
 
-function renderContextDialog(state, callback) {
+function renderContextDialog(state, context, callback) {
   resourceString =
     "palette {\
     properties: {resizeable: true}, alignChildren: ['fill', 'fill'],\
@@ -21,6 +21,7 @@ function renderContextDialog(state, callback) {
     buttons: Group { \
       alignment: ['fill', 'bottom'], alignChildren: ['fill', 'center'],\
       margins: [0,10,0,0], minimumSize: [350, 40],\
+      context: Button { text: '?', preferredSize: [0, 30] },\
       cancel: Button { text: 'Avbryt', preferredSize: [-1, 30]  },\
       accept: Button { text: 'OK', preferredSize: [-1, 30]  },\
     }\
@@ -45,6 +46,9 @@ function renderContextDialog(state, callback) {
   w.buttons.accept.onClick = function() {
     callback(w.state)
     w.close()
+  }
+  w.buttons.context.onClick = function() {
+    prompt('', jsonify(context, 2), 'context fra prodsys')
   }
   w.onResize = function(e) {
     w.layout.resize()
@@ -118,7 +122,7 @@ if (ifMain($.fileName)) {
     $.clear()
     pp(data)
   }
-  renderContextDialog(INITIAL_STATE, callback)
+  renderContextDialog(INITIAL_STATE, {foo:'bar'}, callback)
 }
 
 // vi: ft=javascript

@@ -1,5 +1,5 @@
 #include ../includes/index.jsxinc
-#include http_via_vbscript.jsx
+#include http_via_vbscript.jsxinc
 
 var ANNONSEANSVARLIG = {
   navn: 'Geir Dorp',

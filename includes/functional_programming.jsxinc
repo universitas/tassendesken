@@ -70,6 +70,8 @@ function fromPairs(pairs) {
 
 var len = function(val) {
   // a -> Number
+  if (is(Object, val))
+    return keys(val).length
   return val.length
 }
 

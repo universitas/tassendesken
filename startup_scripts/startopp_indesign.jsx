@@ -98,7 +98,6 @@ function copyFiles(localFolder, serverFolder, fileName, replace) {
     }
     var funker = false
     var target = new File(localFolder + '/' + myFile.name)
-    $.writeln(myFile.name)
     if (!target.exists || (target.exists && target.length != myFile.length)) {
       if (replace) {
         sed(myFile, target, /%SCRIPTDIR%/, SCRIPTDIR)
