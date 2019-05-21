@@ -20,3 +20,4 @@ amazon_web_service.conf
 # these scripting guides are compressed
 # extract them with `tar -zxf Adobe-Scripting-Guides-and-Samples.tar.gz
 Adobe-Scripting-Guides-and-Samples/
+*.indt

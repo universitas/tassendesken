@@ -7,6 +7,7 @@ function splitPagesDialog(state, callback) {
     "palette {\
     properties: {resizeable: true},\
     text: 'Opprett Sider', frameLocation:[100,100],\
+    minimumSize: [350, 200], \
     preferredSize: [400, 400], spacing: 5, margins: 10,\
     helpText: StaticText { alignment: ['fill', 'top'], \
     text: 'Del opp avisa i flere filer' }, \
@@ -37,15 +38,18 @@ function splitPagesDialog(state, callback) {
   w = new Window(resourceString)
   w.state = state
   w.pagesList = scrollPanel(w.scrollPanel, 640)
-  uxStyle({ bg: 0.8 }, w)
-  uxStyle({ fg: 0.4 }, w.thead)
-  uxStyle({ bg: 0.98 }, w.scrollPanel)
+  uxStyle({ bg: 0.3, fg: 0.9 }, w)
+  uxStyle({ fg: 0.6 }, w.thead)
+  uxStyle({ bg: 0.2, fg: 0.9 }, w.scrollPanel)
+
   w.render = function() {
     map(function(page) {
       pageRow(w.pagesList, page)
     })(w.state.pages)
     var rows = w.pagesList.children
-    for (var i = 0; i < rows.length; i += 2) uxStyle({ bg: 0.9 }, rows[i])
+    for (var i = 0; i < rows.length; i += 2) {
+      uxStyle({ bg: 0.3 }, rows[i])
+    }
     dataTable(w.dataTable, {
       'utgave nr': w.state.issue.nr,
       dato: w.state.issue.dato,
@@ -53,8 +57,11 @@ function splitPagesDialog(state, callback) {
     })
   }
   w.onResize = function(e) {
+    w.pagesList.hide()
     w.layout.resize()
+    w.pagesList.show()
   }
+
   w.buttons.accept.onClick = function() {
     w.close()
     callback(w.state)
@@ -68,7 +75,6 @@ function splitPagesDialog(state, callback) {
     map(function(row) {
       row.state.fileName = row.flname.text = builder(row.state.pageNumber)
     })(w.pagesList.children)
-    w.pagesList.layout.layout(true)
   }
   w.buttons.choose.onClick = function() {
     var folder = Folder.selectDialog(
@@ -82,19 +88,24 @@ function splitPagesDialog(state, callback) {
   }
   w.render()
   w.show()
-  return w
+  w.pagesList.hide()
+  w.pagesList.show()
 }
 
 function pageRow(parent, state) {
   var rs =
     "Group { margins: [5,2,5,2],\
-    alignChildren: ['left', 'center'], preferredSize: [-1, 10],\
-    number: StaticText {text: '01', preferredSize: [45, -1] },\
-    firstp: Checkbox {value: true, preferredSize: [25, -1] },\
+    alignChildren: ['left', 'center'], \
+    preferredSize: [50, 20],\
+    minimumSize: [100, 20],\
+    number: StaticText {text: '01', preferredSize: [45,-1] },\
+    firstp: Checkbox {value: true, preferredSize: [25,-1] },\
     flname: EditText {alignment: ['fill', 'center'] },\
     master: StaticText {alignment: ['right', 'center'], preferredSize: [100, -1]},\
   }"
   var row = parent.add(rs)
+  uxStyle({ fg: 0.8, bg: 0 }, row.flname)
+
   row.state = state
   row.flname.graphics.font = 'Consolas:12'
   row.render = function render() {
@@ -103,6 +114,7 @@ function pageRow(parent, state) {
     row.flname.visible = state.firstPage
     row.flname.text = state.fileName
     row.master.text = state.masterName
+    row.layout.layout()
   }
   row.render()
   row.firstp.onClick = function() {
@@ -167,7 +179,7 @@ var INITIAL_STATE = {
     { pageNumber: 24, fileName: 'UNI11VER19011124000',
       masterName: 'B-Baksida', firstPage: true }
   ],
-  rootDir: new Folder('//kant.uio.no/div-universitas-desken/01/INDESIGN'),
+  rootDir: File($.fileName).parent,
   issue: { 'åg': 73, nr: 1, pubDate: new Date(2019, 0, 9),
     dato: 'onsdag 9. januar 2019' }
 }
@@ -178,6 +190,7 @@ if (ifMain($.fileName)) {
     pp(data)
   }
   splitPagesDialog(INITIAL_STATE, callback)
+  var r0 = w.pagesList.children[0]
 }
 
 // vi: ft=javascript

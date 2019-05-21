@@ -8,12 +8,13 @@
 function scrollPanel(parent, maxHeight) {
   // Vertical scrollable scriptui panel
   var resourceString =
-    "Group {\
-    spacing: 0, margins: 0,\
+    "Panel {\
+    properties: {borderStyle: 'thin'}, \
+    orientation: 'row', spacing: 0, margins: 0,\
     alignment: ['fill', 'fill'],\
     alignChildren: ['fill', 'fill'],\
-    wrapper: Panel { properties: {borderStyle: 'thin'}, margins: 0,\
-      content: Panel {\
+    wrapper: Group {  margins: 0,\
+      content: Group {\
         alignment: ['fill', 'top'], margins: 0, spacing: 0,\
         orientation: 'column', alignChildren: ['fill', 'top'] \
     }},\
@@ -27,7 +28,13 @@ function scrollPanel(parent, maxHeight) {
   panel.scrollbar.onChanging = function scrollHandler() {
     content.bounds.top = -panel.scrollbar.value * panel.outerHeight
   }
-  content.onDraw = function drawHandler() {
+  var spy = content
+  if (/InDesign/.test(app.name) && parseInt(app.version) > 9) {
+    // Hack because adobe InDesign CC is silly
+    spy = content.add('Group {}')
+    panel.scrollbar.stepdelta = 0.1
+  }
+  spy.onDraw = function drawHandler() {
     var height = panel.size.height
     if (panel.outerHeight == height) return
     if (content.children.length == 0) return
@@ -44,7 +51,7 @@ function scrollPanel(parent, maxHeight) {
       panel.scrollbar.maxvalue = 0
     }
   }
-  return panel.wrapper.content
+  return content
 }
 
 function dataTable(parent, data) {
@@ -58,7 +65,7 @@ function dataTable(parent, data) {
       val: StaticText { text: 'val' }, \
     }"
     )
-    uxStyle({ fg: 0.4 }, row.key)
+    uxStyle({ fg: 0.6 }, row.key)
     row.key.text = key + ':'
     row.val.text = data[key]
   }
@@ -132,12 +139,22 @@ if (ifMain($.fileName)) {
   // testing and develop
   if (typeof w != 'undefined') w.close()
   var w = new Window(
-    'palette { title: "ux styles", preferredSize: [200, 200], location: [1200, 100] }'
+    'palette { \
+     properties: {resizeable: true},\
+    title: "ux styles", preferredSize: [200, 100], location: [100, 100] }'
   )
+  uxStyle({ bg: '#444', fg: '#eee' }, w)
+  w.scrollPanel = w.add(
+    "Group { margins: 0, minimumSize: [200, 100], alignment: ['fill', 'fill'] }"
+  )
+  w.onResize = function() {
+    w.layout.resize()
+  }
 
+  w.panelContent = scrollPanel(w.scrollPanel, 100)
   map(
     function(style) {
-      var g = w.add(
+      var g = w.panelContent.add(
         'Group { margins: 10, st: StaticText { text: "hello world" }}'
       )
       uxStyle(style, g)
@@ -147,7 +164,11 @@ if (ifMain($.fileName)) {
       { fg: '#ccf', bg: '#009' },
       { font: 'dialog:20' },
       { font: 'dialog-Bold' },
-      { font: 'Consolas-italic:15', bg: 1 }
+      { font: 'Consolas-italic:15', bg: 1, fg: 0 },
+      { fg: '#ccf', bg: '#009' },
+      { font: 'dialog:20' },
+      { font: 'dialog-Bold' },
+      { font: 'Consolas-italic:15', bg: 1, fg: 0 }
     ]
   )
   w.show()
