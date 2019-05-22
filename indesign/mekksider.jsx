@@ -9,7 +9,9 @@
 #include "mekkSider.ux.jsxinc"
 #include "split_document.jsxinc"
 
-//config.mal_avis = 'MAL_AVIS.indt'
+// var mal = File('~/Desktop/MAL_AVIS.indt')
+// if (mal.exists) config.mal_avis = mal
+// config.mal_avis = 'MAL_AVIS.indt'
 
 function main() {
   switch (app.documents.length) {
@@ -65,7 +67,8 @@ function prepareNewspaperTemplate() {
       )
     )(data)
     splitDocument(doc, pages)
-    app.open(pages[0].file.openDlg(undefined, '*.indd', true))
+    var startWith = pages[0].file.openDlg(undefined, '*.indd', true)
+    startWith && app.open(startWith)
   }
   var initialState = { pages: pages, rootDir: rootDir, issue: context.issue }
   splitPagesDialog(initialState, splitPages)

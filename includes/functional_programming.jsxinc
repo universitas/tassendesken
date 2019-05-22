@@ -710,7 +710,7 @@ var assocPath = curry(function(path, value, obj) {
   } else {
     var nested = prop(first)(obj)
     if (typeof nested !== 'object') nested = is(Number)(head(rest)) ? [] : {}
-    nested = setPath(rest, value, nested)
+    nested = assocPath(rest, value, nested)
     return assoc(first, nested)(obj)
   }
 })

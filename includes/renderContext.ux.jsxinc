@@ -36,9 +36,9 @@ function renderContextDialog(state, context, callback) {
   )
   w.state = state
   w.scrollArea = scrollPanel(w.scrollPanel, 800)
-  uxStyle({ bg: 0.8 }, w)
+  uxStyle({ bg: 0.2, fg: 1 }, w)
   uxStyle({ fg: 0.4 }, w.thead)
-  uxStyle({ bg: 0.98 }, w.scrollPanel)
+  uxStyle({ bg: 0.3 }, w.scrollPanel)
   w.buttons.cancel.onClick = function() {
     // pp(w.state)
     w.close()
@@ -58,7 +58,7 @@ function renderContextDialog(state, context, callback) {
     for (var i = 0; i < w.state.changeList.length; i++) {
       var state = w.state.changeList[i]
       var row = _changeListRow(w.scrollArea, state)
-      if (i % 2) uxStyle({ bg: 0.9 }, row)
+      if (i % 2) uxStyle({ bg: 0.35 }, row)
     }
   }
   w.render()
@@ -101,10 +101,11 @@ function _changeListRow(parent, state) {
   var row = parent.add(rs)
   row.key.text = state[0]
   row.val.text = defaultTo('')(state[1])
+  uxStyle({ bg: 0, fg: 1 })(row.val)
   row.val.onChange = function() {
     state[1] = row.val.text
     // highlight empty fields
-    uxStyle({ bg: state[1] ? '#ffe' : '#ff0' })(row.val)
+    uxStyle({ fg: state[1] ? '#fff' : '#f00' })(row.key)
   }
   row.val.onChange()
   return row

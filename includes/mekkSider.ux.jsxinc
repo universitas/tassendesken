@@ -43,12 +43,11 @@ function splitPagesDialog(state, callback) {
   uxStyle({ bg: 0.2, fg: 0.9 }, w.scrollPanel)
 
   w.render = function() {
-    map(function(page) {
-      pageRow(w.pagesList, page)
+    w.rows = map(function(page) {
+      return pageRow(w.pagesList, page)
     })(w.state.pages)
-    var rows = w.pagesList.children
-    for (var i = 0; i < rows.length; i += 2) {
-      uxStyle({ bg: 0.3 }, rows[i])
+    for (var i = 0; i < w.rows.length; i += 2) {
+      uxStyle({ bg: 0.3 }, w.rows[i])
     }
     dataTable(w.dataTable, {
       'utgave nr': w.state.issue.nr,
@@ -72,9 +71,12 @@ function splitPagesDialog(state, callback) {
   w.buttons.magasin.onClick = function() {
     var val = w.buttons.magasin.value ? '2' : '1'
     var builder = pageFileName(w.state.issue.pubDate, val)
+    map(function(pg) {
+      pg.fileName = builder(pg.pageNumber)
+    })(w.state.pages)
     map(function(row) {
-      row.state.fileName = row.flname.text = builder(row.state.pageNumber)
-    })(w.pagesList.children)
+      row.render()
+    })(w.rows)
   }
   w.buttons.choose.onClick = function() {
     var folder = Folder.selectDialog(
@@ -106,7 +108,6 @@ function pageRow(parent, state) {
   var row = parent.add(rs)
   uxStyle({ fg: 0.8, bg: 0 }, row.flname)
 
-  row.state = state
   row.flname.graphics.font = 'Consolas:12'
   row.render = function render() {
     row.number.text = 'side ' + state.pageNumber
@@ -118,11 +119,11 @@ function pageRow(parent, state) {
   }
   row.render()
   row.firstp.onClick = function() {
-    row.state.firstPage = !row.state.firstPage
+    state.firstPage = !state.firstPage
     row.render()
   }
   row.flname.onChange = function() {
-    row.state.fileName = row.flname.text
+    state.fileName = row.flname.text
   }
   return row
 }
@@ -180,8 +181,8 @@ var INITIAL_STATE = {
       masterName: 'B-Baksida', firstPage: true }
   ],
   rootDir: File($.fileName).parent,
-  issue: { 'åg': 73, nr: 1, pubDate: new Date(2019, 0, 9),
-    dato: 'onsdag 9. januar 2019' }
+  issue: { 'åg': 73, nr: 14, pubDate: new Date(2019, 4, 22),
+    dato: 'onsdag 22. mai 2019' }
 }
 
 if (ifMain($.fileName)) {
@@ -189,6 +190,9 @@ if (ifMain($.fileName)) {
     $.clear()
     pp(data)
   }
+  map(function(pg) {
+    pg.fileName = pageFileName(INITIAL_STATE.issue.pubDate, '1', pg.pageNumber)
+  }, INITIAL_STATE.pages)
   splitPagesDialog(INITIAL_STATE, callback)
   var r0 = w.pagesList.children[0]
 }
